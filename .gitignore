@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+.yarn/cache
+.yarn/unplugged
+.yarn/install-state.gz
+
+.pnp.cjs
+.pnp.loader.mjs
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
