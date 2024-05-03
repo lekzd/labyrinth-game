@@ -1,25 +1,27 @@
 import * as THREE from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
-import {Tiles} from "./generators/types.ts";
-import {Camera} from "./player/camera.ts";
-import {Player} from "./player/player.ts";
+import { Tiles } from "./generators/types.ts";
+import { Camera } from "./player/camera.ts";
+import { Player } from "./player/player.ts";
+import { textures } from './loader.ts';
 
-let scene= new THREE.Scene(),
+let scene = new THREE.Scene(),
   camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1.0, 1000.0),
   renderer = new THREE.WebGLRenderer({ antialias: true }),
   person = Player({ camera, scene }),
   personCamera = Camera({ camera, target: person }),
   stats = new Stats();
 
-const container = document.getElementById( 'app' );
-scene.background = new THREE.Color(0xa0a0a0);
+const container = document.getElementById('app');
+scene.background = new THREE.Color(0xa000000);
+scene.fog = new THREE.Fog(0x000000, 1, 200);
 
-const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x8d8d8d, 3 );
-hemiLight.position.set( 0, 20, 0 );
-scene.add( hemiLight );
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x8d8d8d, 3);
+hemiLight.position.set(0, 20, 0);
+scene.add(hemiLight);
 
-const dirLight = new THREE.DirectionalLight( 0xffffff, 3 );
-dirLight.position.set( 3, 10, 10 );
+const dirLight = new THREE.DirectionalLight(0xffffff, 3);
+dirLight.position.set(3, 10, 10);
 dirLight.castShadow = true;
 dirLight.shadow.camera.top = 2;
 dirLight.shadow.camera.bottom = - 2;
@@ -27,15 +29,15 @@ dirLight.shadow.camera.left = - 2;
 dirLight.shadow.camera.right = 2;
 dirLight.shadow.camera.near = 0.1;
 dirLight.shadow.camera.far = 40;
-scene.add( dirLight );
+scene.add(dirLight);
 
 // Stats
-container.appendChild( stats.dom );
+container.appendChild(stats.dom);
 
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
-container.appendChild( renderer.domElement );
+container.appendChild(renderer.domElement);
 
 /*
 * Рендерит рекурсивно сцену, пробрасывая в подписчиков (персонаж, камера)
@@ -77,12 +79,18 @@ const items = {
     const item = render();
 
     scene.add(item);
-    item.position.set( x * scale, 2, y * scale);
+    item.position.set(x * scale, 2, y * scale);
   },
   ground: (rows, colls) => {
+    const texture = textures.wood_floor.clone()
+
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(rows, colls);
+
     const mesh = new THREE.Mesh(
       new THREE.PlaneGeometry(rows * scale, colls * scale),
-      new THREE.MeshPhongMaterial( { color: 0xcbcbcb, depthWrite: false } )
+      new THREE.MeshPhongMaterial({ color: 0xcbcbcb, depthWrite: false, map: texture })
     );
 
     const x = rows * scale / 2
@@ -96,9 +104,15 @@ const items = {
     scene.add(mesh);
   },
   [Tiles.Wall]: () => {
-    const geometry = new THREE.BoxGeometry( 1 * scale, 4 * scale, 1 * scale);
-    const material = new THREE.MeshLambertMaterial( { color: 'white' } );
-    const cube = new THREE.Mesh( geometry, material );
+    const texture = textures.stone_wall.clone()
+
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(1, 4);
+
+    const geometry = new THREE.BoxGeometry(1 * scale, 4 * scale, 1 * scale);
+    const material = new THREE.MeshLambertMaterial({ color: 'white', map: texture });
+    const cube = new THREE.Mesh(geometry, material);
 
     cube.castShadow = true;
     cube.receiveShadow = true;
