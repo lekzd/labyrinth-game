@@ -9,14 +9,14 @@ export const Camera = (paramsBase) =>  {
 
   const calculateIdealOffset = () =>  {
     //position of camera
-    const idealOffset = new THREE.Vector3(0, 40, -60);
+    const idealOffset = new THREE.Vector3(0, 20, -30);
     idealOffset.applyQuaternion(params.target.Rotation);
     idealOffset.add(params.target.Position);
     return idealOffset;
   }
 
   const calculateIdealLookat = () => {
-    const idealLookat = new THREE.Vector3(0, 10, 50);
+    const idealLookat = new THREE.Vector3(0, 0, 50);
     idealLookat.applyQuaternion(params.target.Rotation);
     idealLookat.add(params.target.Position);
     return idealLookat;
