@@ -3,6 +3,7 @@ import { KeyboardCharacterController, SocketCharacterController } from './contro
 import { models } from '../loader.ts';
 import { DynamicObject } from '../generators/types.ts';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { createTorch } from './createTorch.ts';
 
 
 interface Props extends DynamicObject {
@@ -16,20 +17,10 @@ export const Player = ({ controllable, scene, id }: Props) => {
   const animations = gltf.animations.map(animation => animation.clone());
   const leftArm = target.getObjectByName('mixamorigLeftArm')
   const leftHand = target.getObjectByName('mixamorigLeftHand')
-
-  // Создаем светящуюся сферу
-  const sphereGeometry = new THREE.SphereGeometry(2, 32, 32); // Геометрия сферы
-  const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial); // Создаем сферу с заданной геометрией и материалом
-  sphere.position.set(15, -10, 15); // Позиция факела (относительно руки персонажа)
-
-  const torch = new THREE.PointLight(0xffcc00, 100, 500); // Цвет, интенсивность, дистанция факела
-  torch.position.set(0, 0, 0); // Позиция факела (относительно руки персонажа)
-  torch.castShadow = true
+  const torch = createTorch()
         
   // Прикрепляем факел к руке персонажа
-  sphere.add(torch);
-  leftHand.add(sphere);
+  leftHand.add(torch);
 
   const decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0)
   const acceleration = new THREE.Vector3(1, 0.25, 50.0)
