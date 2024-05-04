@@ -11,10 +11,26 @@ interface Props extends DynamicObject {
 }
 
 export const Player = ({ controllable, scene, id }: Props) => {
-  const gltf = {...models.modelXbot}
+  const gltf = { ...models.modelXbot }
   const target = clone(gltf.scene);
   const animations = gltf.animations.map(animation => animation.clone());
-  
+  const leftArm = target.getObjectByName('mixamorigLeftArm')
+  const leftHand = target.getObjectByName('mixamorigLeftHand')
+
+  // Создаем светящуюся сферу
+  const sphereGeometry = new THREE.SphereGeometry(2, 32, 32); // Геометрия сферы
+  const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial); // Создаем сферу с заданной геометрией и материалом
+  sphere.position.set(15, -10, 15); // Позиция факела (относительно руки персонажа)
+
+  const torch = new THREE.PointLight(0xffcc00, 100, 500); // Цвет, интенсивность, дистанция факела
+  torch.position.set(0, 0, 0); // Позиция факела (относительно руки персонажа)
+  torch.castShadow = true
+        
+  // Прикрепляем факел к руке персонажа
+  sphere.add(torch);
+  leftHand.add(sphere);
+
   const decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0)
   const acceleration = new THREE.Vector3(1, 0.25, 50.0)
   const velocity = new THREE.Vector3(0, 0, 0)
@@ -26,7 +42,9 @@ export const Player = ({ controllable, scene, id }: Props) => {
   target.scale.setScalar(10);
 
   target.traverse(o => {
-    if (o.isMesh) o.castShadow = true;
+    if (o.isMesh) {
+      o.castShadow = true;
+    }
   });
 
   const mixer = new THREE.AnimationMixer(target);
@@ -120,6 +138,10 @@ export const Player = ({ controllable, scene, id }: Props) => {
       position.copy(controlObject.position);
 
       if (mixer) mixer.update(timeInSeconds);
+
+      // обновляем позицию руки с факелом,
+      // чтобы она не зависела от текущей анимации
+      leftArm.rotation.x = Math.PI * -0.3;
     }
   }
 
