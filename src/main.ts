@@ -54,17 +54,6 @@ Promise.all([
 
   render(state)
 
-  for (let i = 0; i < state.staticGrid.length; i++) {
-    const x = i % state.colls
-    const y = Math.floor(i / state.colls)
-  
-    items.block(
-      x,
-      y,
-      1,
-      state.staticGrid[i],
-    )
-  }
-  
+  items.wallsMerged(state)
   items.ground(state.rows, state.colls)
 })

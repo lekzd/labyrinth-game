@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import { Tiles } from "./generators/types.ts";
 import { Camera } from "./player/camera.ts";
 import { Player } from "./player/player.ts";
@@ -12,8 +13,7 @@ const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerH
 const renderer = new THREE.WebGLRenderer({ antialias: true })
 const stats = new Stats()
 
-let personCamera;
-
+const subscribers: { update: (time: number) => void }[] = []
 const persons: ReturnType<typeof Player>[] = []
 
 export const render = (state: State) => {
@@ -23,9 +23,10 @@ export const render = (state: State) => {
     const controllable = activePlayer?.activeObjectId === object.id
     const person = Player({ controllable, scene, ...object })
     persons.push(person)
+    subscribers.push(person)
 
     if (controllable) {
-      personCamera = Camera({ camera, target: person })
+      subscribers.push(Camera({ camera, target: person }))
     }
   })
 
@@ -50,7 +51,6 @@ export const render = (state: State) => {
   * тайминг для апдейта сцены
   * */
   let prevTime = null;
-  const subscribers = [...persons, personCamera].flat(1)
 
   const renderLoop = () => {
     requestAnimationFrame((t) => {
@@ -79,15 +79,36 @@ export const render = (state: State) => {
 
 // TODO: стандартизировать
 export const items = {
-  block: (x, y, z = 0, type) => {
-    const render = items[type];
+  wallsMerged: (state: State) => {
+    const texture = textures.stone_wall.clone()
+    const blocks: THREE.BoxGeometry[] = []
 
-    if (!render) return;
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(1, 4);
 
-    const item = render();
+    for (let i = 0; i < state.staticGrid.length; i++) {
+      const x = i % state.colls
+      const y = Math.floor(i / state.colls)
 
-    scene.add(item);
-    item.position.set(x * scale, 2, y * scale);
+      if (state.staticGrid[i] === Tiles.Wall) {
+        const blockGeometry = new THREE.BoxGeometry(1 * scale, 4 * scale, 1 * scale)
+        blockGeometry.translate(x * scale, 2, y * scale);
+
+        blocks.push(blockGeometry);
+      }
+    }
+
+    const material = new THREE.MeshLambertMaterial({ color: 'white', map: texture });
+    const cube = new THREE.Mesh(
+      BufferGeometryUtils.mergeGeometries(blocks, false),
+      material
+    );
+
+    cube.castShadow = true;
+    cube.receiveShadow = true;
+
+    scene.add(cube)
   },
   ground: (rows, colls) => {
     const texture = textures.wood_floor.clone()
@@ -112,21 +133,5 @@ export const items = {
     mesh.rotation.x = - Math.PI / 2;
     mesh.receiveShadow = true;
     scene.add(mesh);
-  },
-  [Tiles.Wall]: () => {
-    const texture = textures.stone_wall.clone()
-
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(1, 4);
-
-    const geometry = new THREE.BoxGeometry(1 * scale, 4 * scale, 1 * scale);
-    const material = new THREE.MeshLambertMaterial({ color: 'white', map: texture });
-    const cube = new THREE.Mesh(geometry, material);
-
-    cube.castShadow = true;
-    cube.receiveShadow = true;
-
-    return cube;
   },
 }
