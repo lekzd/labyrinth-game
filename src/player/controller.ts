@@ -1,4 +1,4 @@
-const BasicCharacterControllerInput = () => {
+const BasicCharacterControllerInput = (watcherCallback: ([event, handler]: [string, (event: any) => void]) => void) => {
   const keys = {
     forward: false,
     backward: false,
@@ -78,11 +78,17 @@ const BasicCharacterControllerInput = () => {
           break;
       }
     }
-  }).forEach(args => document.addEventListener(...args, false))
+  }).forEach(watcherCallback)
 
   // TODO listerns for btn events
   
   return keys;
 };
 
-export default BasicCharacterControllerInput;
+export const KeyboardCharacterController = () => {
+  return BasicCharacterControllerInput(args => document.addEventListener(...args, false))
+}
+
+export const SocketCharacterController = () => {
+  return BasicCharacterControllerInput(args => null)
+}

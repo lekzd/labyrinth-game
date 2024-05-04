@@ -1,40 +1,70 @@
 import './style.css'
-import render from './render.ts';
+import { render, items } from './render.ts';
 
 import { generateRooms } from './generators/generateRooms'
-import { Tiles } from './generators/types'
-import { random } from './generators/utils'
-import { loadTextures } from './loader.ts';
+import { loadModels, loadTextures } from './loader.ts';
+import { initState } from './state.ts';
+import { DynamicObject, Player } from './generators/types.ts';
 
 const ROWS = 100
 const COLLS = 100
-const BRANCHES = random(3, 8)
 const ROOM_SIZE = 12
 
-const backgroundGrid = Array.from<number>({ length: ROWS * COLLS }).fill(Tiles.Wall)
-const objectsGrid = Array.from<number>({ length: ROWS * COLLS }).fill(0)
+const createPersonObject = (): DynamicObject => {
+  return {
+    id: Math.floor(Math.random() * 1e9),
+    x: 0,
+    y: 0,
+    z: 0,
+  }
+}
 
-generateRooms({
-  COLLS,
-  ROWS,
-  ROOM_SIZE,
-  backgroundGrid,
-  objectsGrid,
-  BRANCHES,
+const createPlayerObject = (activeObjectId: number): Player => {
+  return {
+    id: Math.floor(Math.random() * 1e9),
+    activeObjectId,
+  }
+}
+
+const firstPerson = createPersonObject()
+const firstPlayer = createPlayerObject(firstPerson.id)
+
+const state = initState({
+  rows: ROWS,
+  colls: COLLS,
+  objects: [
+    firstPerson,
+    createPersonObject(),
+  ],
+  players: [
+    createPlayerObject(firstPerson.id)
+  ],
+  activePlayerId: firstPlayer.id
 })
 
-loadTextures().then(() => {
-  for (let i = 0; i < backgroundGrid.length; i++) {
-    const x = i % COLLS
-    const y = Math.floor(i / COLLS)
+generateRooms({
+  state,
+  ROOM_SIZE,
+})
+
+Promise.all([
+  loadTextures(),
+  loadModels(),
+]).then(() => {
+
+  render(state)
+
+  for (let i = 0; i < state.staticGrid.length; i++) {
+    const x = i % state.colls
+    const y = Math.floor(i / state.colls)
   
-    render.block(
+    items.block(
       x,
       y,
       1,
-      backgroundGrid[i],
+      state.staticGrid[i],
     )
   }
   
-  render.ground(ROWS, COLLS)
+  items.ground(state.rows, state.colls)
 })

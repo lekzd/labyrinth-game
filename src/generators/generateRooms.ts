@@ -1,14 +1,6 @@
-import { Tiles } from "./types"
+import { State } from "../state"
+import { RoomConfig, Tiles } from "./types"
 import { drawRect, drawTiles, random, range, shuffle } from "./utils"
-
-type RoomConfig = {
-  width: number
-  height: number
-  actions: Tiles[]
-  tiles: Tiles[]
-  x: number
-  y: number
-}
 
 const EXITS = [
   Tiles.NorthExit,
@@ -65,17 +57,18 @@ const getPerpendicularExits = (from: Tiles): Tiles[] => {
   return [Tiles.NorthExit, Tiles.SouthExit]
 }
 
+type GeneratorConfig = {
+  state: State
+  ROOM_SIZE: number
+}
+
 export const generateRooms = ({
-  COLLS,
-  ROWS,
+  state,
   ROOM_SIZE,
-  backgroundGrid,
-  objectsGrid,
-  BRANCHES,
-}: any) => {
+}: GeneratorConfig) => {
   // draw central room
-  const roomStartX = (COLLS - ROOM_SIZE) >> 1
-  const roomStartY = (ROWS - ROOM_SIZE) >> 1
+  const roomStartX = (state.colls - ROOM_SIZE) >> 1
+  const roomStartY = (state.rows - ROOM_SIZE) >> 1
   const centralRoom = generateRoom({
     width: ROOM_SIZE,
     height: ROOM_SIZE,
@@ -89,7 +82,11 @@ export const generateRooms = ({
     ]
   })
 
-  drawTiles(backgroundGrid, roomStartX, roomStartY, centralRoom.width, centralRoom.height, COLLS, centralRoom.tiles)
+  const { staticGrid, rooms } = state
+
+  drawTiles(staticGrid, roomStartX, roomStartY, centralRoom.width, centralRoom.height, state.colls, centralRoom.tiles)
+
+  rooms.push(centralRoom)
 
   // draw branches
   const branches = shuffle(range(2, 6))
@@ -128,7 +125,8 @@ export const generateRooms = ({
   
       const room = generateRoom({ width, height, actions, x, y })
   
-      drawTiles(backgroundGrid, x, y, width, height, COLLS, room.tiles)
+      drawTiles(staticGrid, x, y, width, height, state.colls, room.tiles)
+      rooms.push(room)
 
       if (deep < 1 && random(0, 3) === 0) {
         addSequence(room, shuffle(getPerpendicularExits(action))[0], random(1, 5), deep + 1)
@@ -149,5 +147,10 @@ export const generateRooms = ({
 
     addSequence(parentRoom, action, length, 0)
   }
+
+  state.setState({
+    staticGrid,
+    rooms,
+  })
   
 }

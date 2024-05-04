@@ -1,49 +1,48 @@
 import * as THREE from 'three';
-import BasicCharacterControllerInput from './controller.ts';
-import modelXbot from "../models/gltf/Xbot.glb";
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { KeyboardCharacterController, SocketCharacterController } from './controller.ts';
+import { models } from '../loader.ts';
+import { DynamicObject } from '../generators/types.ts';
+import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
-export const Player = (params) => {
-  let
-    target,
-    mixer,
-    decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0),
-    acceleration = new THREE.Vector3(1, 0.25, 50.0),
-    velocity = new THREE.Vector3(0, 0, 0),
-    position = new THREE.Vector3(),
-    animations = {},
-    input = BasicCharacterControllerInput(),
-    stateMachine = {},
-    actions = [];
 
-  // Load Models
-  const loader = new GLTFLoader();
-  loader.load(modelXbot, gltf => {
-    target = gltf.scene;
-    params.scene.add(target);
+interface Props extends DynamicObject {
+  controllable: boolean
+  scene: any
+}
 
-    target.scale.setScalar(10);
+export const Player = ({ controllable, scene, id }: Props) => {
+  const gltf = {...models.modelXbot}
+  const target = clone(gltf.scene);
+  const animations = gltf.animations.map(animation => animation.clone());
+  
+  const decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0)
+  const acceleration = new THREE.Vector3(1, 0.25, 50.0)
+  const velocity = new THREE.Vector3(0, 0, 0)
+  const position = new THREE.Vector3()
+  const input = controllable ? KeyboardCharacterController() : SocketCharacterController()
 
-    target.traverse(o => {
-      if (o.isMesh) o.castShadow = true;
-    });
+  scene.add(target);
 
-    animations = gltf.animations;
-    mixer = new THREE.AnimationMixer( target );
+  target.scale.setScalar(10);
 
-    for (const clip of animations) {
-      animations[clip.name] = {
-        clip: clip,
-        action: mixer.clipAction(clip),
-      };
-    }
-    stateMachine = CharacterFSM({ animations })
-    stateMachine.setState('idle');
-
-    for (const action of actions) action();
+  target.traverse(o => {
+    if (o.isMesh) o.castShadow = true;
   });
 
+  const mixer = new THREE.AnimationMixer(target);
+
+  for (const clip of animations) {
+    animations[clip.name] = {
+      clip: clip,
+      action: mixer.clipAction(clip),
+    };
+  }
+  const stateMachine = CharacterFSM({ animations })
+  stateMachine.setState('idle');
+
   const root = {
+    id,
+
     get Position() {
       return position;
     },
@@ -52,11 +51,6 @@ export const Player = (params) => {
       return target?.quaternion || new THREE.Quaternion();
     },
     setPosition: (position) => {
-      if (!target) {
-        actions.push(() => root.setPosition(position))
-        return;
-      }
-
       Object.assign(target.position, position)
     },
     update: (timeInSeconds) => {
@@ -238,7 +232,7 @@ const initStates = ({ animations, setState }) => ({
     update(_, input) {
       if (input.forward) {
         setState('walk');
-      } else if(input.backward) {
+      } else if (input.backward) {
         setState('walkBack');
       }
     }
