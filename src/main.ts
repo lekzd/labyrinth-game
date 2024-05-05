@@ -56,5 +56,5 @@ Promise.all([
   render(state)
 
   items.trees(state)
-  items.ground(state.rows, state.colls)
+  items.ground(state)
 })

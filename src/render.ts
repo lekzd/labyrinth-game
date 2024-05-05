@@ -113,8 +113,8 @@ export const items = {
   },
   trees: (state: State) => {
     for (let i = 0; i < state.staticGrid.length; i++) {
-      const x = i % state.colls + frandom(-0.5, 0.5)
-      const y = Math.floor(i / state.colls) + frandom(-0.5, 0.5)
+      const x = i % state.colls + frandom(-0.2, 0.2)
+      const y = Math.floor(i / state.colls) + frandom(-0.2, 0.2)
 
       if (state.staticGrid[i] === Tiles.Wall) {
         const cube = items[Tiles.Tree]();
@@ -125,7 +125,8 @@ export const items = {
       }
     }
   },
-  ground: (rows, colls) => {
+  ground: (state: State) => {
+    const { rows, colls } = state
     const texture = textures.wood_floor.clone()
 
     texture.wrapS = THREE.RepeatWrapping;
@@ -139,7 +140,7 @@ export const items = {
       new THREE.MeshPhongMaterial({ color: 0x241b0f, depthWrite: false })
     );
 
-    const grassMesh = grass.render(rows * scale, colls * scale, scene);
+    const grassMesh = grass.render(state);
 
     const x = rows * scale / 2
     const z = colls * scale / 2

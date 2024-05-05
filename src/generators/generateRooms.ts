@@ -9,6 +9,9 @@ const EXITS = [
   Tiles.WestExit,
 ]
 
+let id = 0
+const getId = () => id++
+
 const generateRoom = ({
   width,
   height,
@@ -25,22 +28,27 @@ const generateRoom = ({
   drawRect(tiles, 1, 1, width - 2, height - 2, width, Tiles.Floor)
 
   if (actions.includes(Tiles.NorthExit)) {
+    drawRect(tiles, width >> 1, 0, 1, height >> 1, width, Tiles.Empty)
     tiles[getIndex(width >> 1, 0)] = Tiles.NorthExit
   }
 
   if (actions.includes(Tiles.SouthExit)) {
+    drawRect(tiles, width >> 1, height >> 1, 1, height >> 1, width, Tiles.Empty)
     tiles[getIndex(width >> 1, height - 1)] = Tiles.SouthExit
   }
 
   if (actions.includes(Tiles.WestExit)) {
+    drawRect(tiles, 0, height >> 1, width >> 1, 1, width, Tiles.Empty)
     tiles[getIndex(0, height >> 1)] = Tiles.WestExit
   }
 
   if (actions.includes(Tiles.EastExit)) {
+    drawRect(tiles, width >> 1, height >> 1, width >> 1, 1, width, Tiles.Empty)
     tiles[getIndex(width - 1, height >> 1)] = Tiles.EastExit
   }
 
   return {
+    id: getId(),
     width,
     height,
     actions,
@@ -70,6 +78,7 @@ export const generateRooms = ({
   const roomStartX = (state.colls - ROOM_SIZE) >> 1
   const roomStartY = (state.rows - ROOM_SIZE) >> 1
   const centralRoom = generateRoom({
+    id: getId(),
     width: ROOM_SIZE,
     height: ROOM_SIZE,
     x: roomStartX,
@@ -95,35 +104,39 @@ export const generateRooms = ({
     for (let i = 0; i < length; i++) {
       let x = parentRoom.x
       let y = parentRoom.y
-      const width = random(5, 15)
-      const height = random(5, 15)
+      const width = random(3, 8) * 2
+      const height = random(3, 8) * 2
       const actions: Tiles[] = []
   
       if (action === Tiles.NorthExit) {
         x += (parentRoom.width - width) >> 1
         y -= height - 1
         actions.push(Tiles.SouthExit)
+        actions.push(Tiles.NorthExit)
       }
   
       if (action === Tiles.SouthExit) {
         x += (parentRoom.width - width) >> 1
         y += parentRoom.height - 1
         actions.push(Tiles.NorthExit)
+        actions.push(Tiles.SouthExit)
       }
   
       if (action === Tiles.WestExit) {
         y += (parentRoom.height - height) >> 1
         x -= width - 1
         actions.push(Tiles.EastExit)
+        actions.push(Tiles.WestExit)
       }
   
       if (action === Tiles.EastExit) {
         y += (parentRoom.height - height) >> 1
         x += parentRoom.width - 1
         actions.push(Tiles.WestExit)
+        actions.push(Tiles.EastExit)
       }
   
-      const room = generateRoom({ width, height, actions, x, y })
+      const room = generateRoom({ id: getId(), width, height, actions, x, y })
   
       drawTiles(staticGrid, x, y, width, height, state.colls, room.tiles)
       rooms.push(room)

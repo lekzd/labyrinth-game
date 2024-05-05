@@ -2,8 +2,10 @@ import {models, modelType} from "../loader.ts";
 
 export enum Tiles {
   Floor,
-  Wall ,
+  Wall,
   Tree,
+
+  Empty,
 
   NorthExit,
   WestExit,
@@ -26,6 +28,7 @@ export type Player = {
 }
 
 export type RoomConfig = {
+  id: number,
   width: number
   height: number
   actions: Tiles[]
