@@ -5,10 +5,13 @@ const BasicCharacterControllerInput = (watcherCallback: ([event, handler]: [stri
     left: false,
     right: false,
     enter: false,
+    speed: false,
   };
 
   Object.entries({
     keydown: (event) => {
+      keys.speed = event.shiftKey;
+
       switch (event.keyCode) {
         case 87: // w
           keys.forward = true;

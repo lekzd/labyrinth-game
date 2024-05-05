@@ -15,7 +15,7 @@ export type State = {
 export const initState = (initialState: Partial<State>): State => {
   const { rows = 100, colls = 100, objects = [], rooms = [] } = initialState
 
-  const staticGrid = Array.from<number>({ length: rows * colls }).fill(Tiles.Wall)
+  const staticGrid = Array.from<number>({ length: rows * colls }).fill(Tiles.Tree)
 
   const setState = (newState: Partial<State>) => {
     Object.assign(state, newState)

@@ -11,14 +11,16 @@ interface Props extends DynamicObject {
   scene: any
 }
 
-export const Player = ({ controllable, scene, id }: Props) => {
-  const gltf = { ...models.modelXbot }
-  const target = clone(gltf.scene);
-  const animations = gltf.animations.map(animation => animation.clone());
+export const Player = ({ controllable, scene, id, type }: Props) => {
+  const model = models[type];
+
+  const target = clone(model);
+  const animations = model.animations.map(animation => animation.clone());
+
   const leftArm = target.getObjectByName('mixamorigLeftArm')
   const leftHand = target.getObjectByName('mixamorigLeftHand')
   const torch = createTorch()
-        
+
   // Прикрепляем факел к руке персонажа
   leftHand.add(torch);
 
@@ -28,20 +30,25 @@ export const Player = ({ controllable, scene, id }: Props) => {
   const position = new THREE.Vector3()
   const input = controllable ? KeyboardCharacterController() : SocketCharacterController()
 
-  scene.add(target);
+  target.scale.multiplyScalar(.05);
+  target.updateMatrix();
 
-  target.scale.setScalar(10);
+  scene.add(target);
 
   target.traverse(o => {
     if (o.isMesh) {
+      o.material.map = new THREE.TextureLoader().load(`model/${target.name}_Texture.png`)
+      o.material.needsUpdate = true
+
       o.castShadow = true;
+      o.receiveShadow = true;
     }
   });
 
   const mixer = new THREE.AnimationMixer(target);
 
   for (const clip of animations) {
-    animations[clip.name] = {
+    animations[clip.name.replace('CharacterArmature|', '').toLowerCase()] = {
       clip: clip,
       action: mixer.clipAction(clip),
     };
@@ -89,11 +96,11 @@ export const Player = ({ controllable, scene, id }: Props) => {
 
       //set user speed here
       if (input.forward) {
-        acc.multiplyScalar(3.0);
+        acc.multiplyScalar(input.speed ? 6.0 : 3.0);
         velocity.z += acc.z * timeInSeconds;
       }
       if (input.backward) {
-        acc.multiplyScalar(3.0);
+        acc.multiplyScalar(input.speed ? 6.0 : 3.0);
         velocity.z -= acc.z * timeInSeconds;
       }
       if (input.left) {
@@ -181,10 +188,9 @@ const initStates = ({ animations, setState }) => ({
   walk: {
     Name: 'walk',
     Enter(prevState) {
-      console.log('animations', animations)
-      const curAction = animations['walk'].action;
+      const curAction = animations['walk']?.action || { play: () => {} };
       if (prevState) {
-        const prevAction = animations[prevState.Name].action;
+        const prevAction = animations[prevState.Name]?.action;
 
         curAction.enabled = true;
 
@@ -206,7 +212,7 @@ const initStates = ({ animations, setState }) => ({
   walkBack: {
     Name: 'walk',
     Enter(prevState) {
-      const curAction = animations['walk'].action;
+      const curAction = animations['walk']?.action || { play: () => {} };
       if (prevState) {
         const prevAction = animations[prevState.Name].action;
 
@@ -226,12 +232,36 @@ const initStates = ({ animations, setState }) => ({
       setState('idle');
     },
   },
+  run: {
+    Name: 'run',
+    Enter(prevState) {
+      const curAction = animations['run']?.action || { play: () => {} };
+      if (prevState) {
+        const prevAction = animations[prevState.Name]?.action;
+
+        curAction.enabled = true;
+
+
+        curAction.crossFadeFrom(prevAction, 0.5, true);
+        curAction.play();
+      } else {
+        curAction.play();
+      }
+    },
+    update(timeElapsed, input) {
+      if (input.forward) {
+        return;
+      }
+
+      setState('idle');
+    },
+  },
   idle: {
     Name: 'idle',
     Enter(prevState) {
-      const idleAction = animations['idle'].action;
+      const idleAction = animations['idle']?.action || { play: () => {} };
       if (prevState) {
-        const prevAction = animations[prevState.Name].action;
+        const prevAction = animations[prevState.Name]?.action;
         idleAction.time = 0.0;
         idleAction.enabled = true;
         idleAction.setEffectiveTimeScale(1.0);
@@ -244,7 +274,7 @@ const initStates = ({ animations, setState }) => ({
     },
     update(_, input) {
       if (input.forward) {
-        setState('walk');
+        setState(input.speed ? 'run' : 'walk');
       } else if (input.backward) {
         setState('walkBack');
       }

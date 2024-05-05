@@ -4,7 +4,8 @@ import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 import { Tiles } from "./generators/types.ts";
 import { Camera } from "./player/camera.ts";
 import { Player } from "./player/player.ts";
-import { textures } from './loader.ts';
+import * as grass from "./grass.ts";
+import {models, modelType, textures, worlds} from './loader.ts';
 import { State } from './state.ts';
 
 const scale = 10;
@@ -13,12 +14,11 @@ const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerH
 const renderer = new THREE.WebGLRenderer({ antialias: true })
 const stats = new Stats()
 
-const subscribers: { update: (time: number) => void }[] = []
+const subscribers: { update: (time: number) => void }[] = [grass]
 const persons: ReturnType<typeof Player>[] = []
 
 export const render = (state: State) => {
   const activePlayer = state.players.find(player => player.id = state.activePlayerId)
-
   state.objects.forEach(object => {
     const controllable = activePlayer?.activeObjectId === object.id
     const person = Player({ controllable, scene, ...object })
@@ -58,6 +58,7 @@ export const render = (state: State) => {
 
       renderLoop();
 
+      stats.update();
       renderer.render(scene, camera);
 
       const timeElapsedS = (t - prevTime) * 0.001;
@@ -117,21 +118,66 @@ export const items = {
     texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(rows, colls);
 
+    const geometry = new THREE.PlaneGeometry(rows * scale, colls * scale);
+
     const mesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(rows * scale, colls * scale),
-      new THREE.MeshPhongMaterial({ color: 0xcbcbcb, depthWrite: false, map: texture })
+      geometry,
+      new THREE.MeshPhongMaterial({ color: 0x2D5F25, depthWrite: false })
     );
+
+    const grassMesh = grass.render(rows * scale, colls * scale);
 
     const x = rows * scale / 2
     const z = colls * scale / 2
 
     Object.assign(mesh.position, { x, z })
+    Object.assign(grassMesh.position, { x, z })
     persons.forEach(person => {
       person.setPosition({ x, z })
     })
 
     mesh.rotation.x = - Math.PI / 2;
     mesh.receiveShadow = true;
+
     scene.add(mesh);
+    scene.add(grassMesh);
   },
+  [Tiles.Wall]: () => {
+    const texture = textures.stone_wall.clone()
+
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(1, 4);
+
+    const geometry = new THREE.BoxGeometry(1 * scale, 4 * scale, 1 * scale);
+    const material = new THREE.MeshLambertMaterial({ color: 'white', map: texture });
+    const cube = new THREE.Mesh(geometry, material);
+
+    cube.castShadow = true;
+    cube.receiveShadow = true;
+
+    return cube;
+  },
+  [Tiles.Tree]: () => {
+    const model = Object.values(worlds)[Math.floor(Math.random()*Object.values(worlds).length)];
+
+    const target = model.clone();
+
+    target.scale.multiplyScalar(.05);
+
+    target.traverse(o => {
+      if (o.isMesh) {
+        o.material.map = textures.tree;
+        o.material.needsUpdate = true
+
+        o.castShadow = true;
+        o.receiveShadow = true;
+      }
+    });
+
+    target.castShadow = true;
+    target.receiveShadow = true;
+
+    return target;
+  }
 }

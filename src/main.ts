@@ -2,7 +2,7 @@ import './style.css'
 import { render, items } from './render.ts';
 
 import { generateRooms } from './generators/generateRooms'
-import { loadModels, loadTextures } from './loader.ts';
+import {loadModels, loadTextures, loadWorld, modelType} from './loader.ts';
 import { initState } from './state.ts';
 import { DynamicObject, Player } from './generators/types.ts';
 
@@ -13,6 +13,7 @@ const ROOM_SIZE = 12
 const createPersonObject = (): DynamicObject => {
   return {
     id: Math.floor(Math.random() * 1e9),
+    type: Object.values(modelType)[Math.floor(Math.random()*Object.values(modelType).length)] as modelType,
     x: 0,
     y: 0,
     z: 0,
@@ -50,8 +51,8 @@ generateRooms({
 Promise.all([
   loadTextures(),
   loadModels(),
+  loadWorld()
 ]).then(() => {
-
   render(state)
 
   items.wallsMerged(state)
