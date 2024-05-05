@@ -30,7 +30,7 @@ export const render = (state: State) => {
     }
   })
 
-  const container = document.getElementById('app');
+  const container = document.getElementById('app')!;
 
   const hemiLight = new THREE.HemisphereLight(0xffffff, 0x8d8d8d, 0.1);
   hemiLight.position.set(0, 20, 0);
