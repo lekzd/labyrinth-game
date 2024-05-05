@@ -7,9 +7,9 @@ import {Player} from "./player/player.ts";
 import * as grass from "./grass.ts";
 import {textures, worlds} from './loader.ts';
 import {State} from './state.ts';
+import {scene} from './scene.ts';
 
 const scale = 10;
-const scene = new THREE.Scene()
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1.0, 1000.0)
 const renderer = new THREE.WebGLRenderer({ antialias: true })
 const stats = new Stats()
@@ -31,21 +31,8 @@ export const render = (state: State) => {
   })
 
   const container = document.getElementById('app');
-  scene.background = new THREE.Color(0xa000000);
-  scene.fog = new THREE.Fog(0x000000, 1, 200);
 
-  const dirLight = new THREE.DirectionalLight(0xffffff, 3);
-  dirLight.position.set(3, 10, 10);
-  dirLight.castShadow = true;
-  dirLight.shadow.camera.top = 2;
-  dirLight.shadow.camera.bottom = - 2;
-  dirLight.shadow.camera.left = - 2;
-  dirLight.shadow.camera.right = 2;
-  dirLight.shadow.camera.near = 0.1;
-  dirLight.shadow.camera.far = 40;
-  scene.add(dirLight);
-
-  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x8d8d8d, 3);
+  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x8d8d8d, 0.1);
   hemiLight.position.set(0, 20, 0);
   scene.add(hemiLight);
 
@@ -147,10 +134,10 @@ export const items = {
 
     const mesh = new THREE.Mesh(
       geometry,
-      new THREE.MeshPhongMaterial({ color: 0x2D5F25, depthWrite: false })
+      new THREE.MeshPhongMaterial({ color: 0x241b0f, depthWrite: false })
     );
 
-    const grassMesh = grass.render(rows * scale, colls * scale);
+    const grassMesh = grass.render(rows * scale, colls * scale, scene);
 
     const x = rows * scale / 2
     const z = colls * scale / 2

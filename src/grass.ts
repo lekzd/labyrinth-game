@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {scene} from './scene.ts';
 
 let simpleNoise = `
     float N (vec2 st) { // https://thebookofshaders.com/10/
@@ -24,14 +25,16 @@ let simpleNoise = `
   `;
 
 const vertexShader = `
-  varying vec2 vUv;
   uniform float time;
+
+  varying vec2 vUv;
+  varying vec4 vViewPosition;
   
   ${simpleNoise}
   
 	void main() {
-
     vUv = uv;
+
     float t = time * 2.;
     
     // VERTEX POSITION
@@ -55,25 +58,49 @@ const vertexShader = `
     //
     
     vec4 modelViewPosition = modelViewMatrix * mvPosition;
+    vViewPosition = modelViewPosition;
     gl_Position = projectionMatrix * modelViewPosition;
 
 	}
 `;
 
 const fragmentShader = `
+  uniform vec3 directionalLightColor;
+  uniform vec3 fogColor; // Цвет тумана
+  uniform float fogNear; // Начальная дистанция тумана
+  uniform float fogFar; // Конечная дистанция тумана
+
   varying vec2 vUv;
+  varying vec4 vViewPosition;
   
   void main() {
+    // Расчет коэффициента тумана для данной вершины
+    float fogFactor = smoothstep(fogNear, fogFar, length(vViewPosition));
+
   	vec3 baseColor = vec3( 0.31, 1.0, 0.5 );
+
     float clarity = ( vUv.y * 0.875 ) + 0.125;
-    gl_FragColor = vec4( baseColor * clarity, 1 );
+
+    gl_FragColor = vec4( baseColor * clarity * mix(directionalLightColor, fogColor, fogFactor), 1.0 );
   }
 `;
 
 const uniforms = {
   time: {
     value: 0
-  }
+  },
+  directionalLightColor: {
+    value: [0.2, 0.1, 0]
+  },
+  fogColor: {
+    value: scene.fog.color,
+  },
+  fogNear: {
+    value: scene.fog.near,
+  },
+  fogFar: {
+    value: scene.fog.far,
+  },
 }
 
 const leavesMaterial = new THREE.ShaderMaterial({
@@ -114,7 +141,6 @@ export const render = (width, height) => {
     dummy.updateMatrix();
     instancedMesh.setMatrixAt( i, dummy.matrix );
     instancedMesh.receiveShadow = true;
-
   }
 
   return instancedMesh

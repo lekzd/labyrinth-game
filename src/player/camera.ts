@@ -1,24 +1,22 @@
 import * as THREE from 'three';
 
-export const Camera = (paramsBase) =>  {
+export const Camera = ({ camera, target }) =>  {
   let
-    params = paramsBase,
-    camera = params.camera,
     currentPosition = new THREE.Vector3(),
     currentLookat = new THREE.Vector3();
 
   const calculateIdealOffset = () =>  {
     //position of camera
     const idealOffset = new THREE.Vector3(0, 20, -20);
-    idealOffset.applyQuaternion(params.target.Rotation);
-    idealOffset.add(params.target.Position);
+    idealOffset.applyQuaternion(target.Rotation);
+    idealOffset.add(target.Position);
     return idealOffset;
   }
 
   const calculateIdealLookat = () => {
     const idealLookat = new THREE.Vector3(0, 0, 50);
-    idealLookat.applyQuaternion(params.target.Rotation);
-    idealLookat.add(params.target.Position);
+    idealLookat.applyQuaternion(target.Rotation);
+    idealLookat.add(target.Position);
     return idealLookat;
   }
 
