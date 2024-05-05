@@ -27,6 +27,7 @@ let simpleNoise = `
 const vertexShader = `
   uniform float time;
 
+  varying float vNoise;
   varying vec2 vUv;
   varying vec4 vViewPosition;
   
@@ -48,12 +49,14 @@ const vertexShader = `
     
     float noise = smoothNoise(mvPosition.xz * 0.5 + vec2(0., t));
     noise = pow(noise * 0.5 + 0.5, 2.) * 2.;
+    vNoise = noise;
     
     // here the displacement is made stronger on the blades tips.
     float dispPower = 1. - cos( uv.y * 3.1416 * 0.5 );
     
     float displacement = noise * ( 0.3 * dispPower );
     mvPosition.z -= displacement;
+    mvPosition.x += displacement;
     
     //
     
@@ -70,14 +73,15 @@ const fragmentShader = `
   uniform float fogNear; // Начальная дистанция тумана
   uniform float fogFar; // Конечная дистанция тумана
 
+  varying float vNoise;
   varying vec2 vUv;
   varying vec4 vViewPosition;
   
   void main() {
     // Расчет коэффициента тумана для данной вершины
-    float fogFactor = smoothstep(fogNear, fogFar, length(vViewPosition));
+    float fogFactor = smoothstep(fogNear, fogFar, length(vViewPosition)) * 3.0;
 
-  	vec3 baseColor = vec3( 0.31, 1.0, 0.5 );
+  	vec3 baseColor = vec3( 0.31 * vNoise, 1.0 * vNoise, 0.5 );
 
     float clarity = ( vUv.y * 0.875 ) + 0.125;
 
@@ -90,7 +94,7 @@ const uniforms = {
     value: 0
   },
   directionalLightColor: {
-    value: [0.2, 0.1, 0]
+    value: [0.3, 0.15, 0]
   },
   fogColor: {
     value: scene.fog.color,
@@ -117,7 +121,7 @@ const leavesMaterial = new THREE.ShaderMaterial({
 const dummy = new THREE.Object3D();
 
 export const update = (time) => {
-  leavesMaterial.uniforms.time.value = time;
+  leavesMaterial.uniforms.time.value += time;
   leavesMaterial.uniformsNeedUpdate = true;
 }
 
@@ -137,6 +141,7 @@ export const render = (width, height) => {
     dummy.scale.setScalar( 0.001 + Math.random() * 0.001 );
 
     dummy.rotation.y = Math.random() * Math.PI;
+    dummy.rotation.x = Math.random() * (Math.PI / 2);
 
     dummy.updateMatrix();
     instancedMesh.setMatrixAt( i, dummy.matrix );
