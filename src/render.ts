@@ -9,6 +9,7 @@ import {textures, worlds} from './loader.ts';
 import {State} from './state.ts';
 import {scene} from './scene.ts';
 import { frandom } from './generators/utils.ts';
+import { createCampfire } from './objects/campfire/index.ts';
 
 const scale = 10;
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1.0, 1000.0)
@@ -143,10 +144,25 @@ export const items = {
     const x = rows * scale / 2
     const z = colls * scale / 2
 
+    const campfire = createCampfire()
+
+    subscribers.push(campfire)
+
+    Object.assign(campfire.mesh.position, { x, z })
+
+    scene.add(campfire.mesh)
+
     Object.assign(mesh.position, { x, z })
     Object.assign(grassMesh.position, { x, z })
-    persons.forEach(person => {
-      person.setPosition({ x, z })
+
+
+    persons.forEach((person, index) => {
+      const angle = (index / persons.length) * (Math.PI * 2)
+
+      person.setPosition({
+        z: z + (Math.sin(angle) * 20),
+        x: x + (Math.cos(angle) * 20),
+      })
     })
 
     mesh.rotation.x = - Math.PI / 2;
