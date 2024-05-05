@@ -21,7 +21,7 @@ const generateRoom = ({
     return (y * width) + x
   }
 
-  drawRect(tiles, 0, 0, width, height, width, Tiles.Tree)
+  drawRect(tiles, 0, 0, width, height, width, Tiles.Wall)
   drawRect(tiles, 1, 1, width - 2, height - 2, width, Tiles.Floor)
 
   if (actions.includes(Tiles.NorthExit)) {

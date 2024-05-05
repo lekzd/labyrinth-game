@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
-import { Tiles } from "./generators/types.ts";
-import { Camera } from "./player/camera.ts";
-import { Player } from "./player/player.ts";
+import {Tiles} from "./generators/types.ts";
+import {Camera} from "./player/camera.ts";
+import {Player} from "./player/player.ts";
 import * as grass from "./grass.ts";
-import {models, modelType, textures, worlds} from './loader.ts';
-import { State } from './state.ts';
+import {textures, worlds} from './loader.ts';
+import {State} from './state.ts';
 
 const scale = 10;
 const scene = new THREE.Scene()
@@ -34,7 +34,18 @@ export const render = (state: State) => {
   scene.background = new THREE.Color(0xa000000);
   scene.fog = new THREE.Fog(0x000000, 1, 200);
 
-  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x8d8d8d, 0.1);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 3);
+  dirLight.position.set(3, 10, 10);
+  dirLight.castShadow = true;
+  dirLight.shadow.camera.top = 2;
+  dirLight.shadow.camera.bottom = - 2;
+  dirLight.shadow.camera.left = - 2;
+  dirLight.shadow.camera.right = 2;
+  dirLight.shadow.camera.near = 0.1;
+  dirLight.shadow.camera.far = 40;
+  scene.add(dirLight);
+
+  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x8d8d8d, 3);
   hemiLight.position.set(0, 20, 0);
   scene.add(hemiLight);
 
@@ -110,6 +121,20 @@ export const items = {
     cube.receiveShadow = true;
 
     scene.add(cube)
+  },
+  trees: (state: State) => {
+    for (let i = 0; i < state.staticGrid.length; i++) {
+      const x = i % state.colls
+      const y = Math.floor(i / state.colls)
+
+      if (state.staticGrid[i] === Tiles.Tree) {
+        const cube = items[Tiles.Tree]();
+
+        Object.assign(cube.position, { x, z: y })
+
+        scene.add(cube)
+      }
+    }
   },
   ground: (rows, colls) => {
     const texture = textures.wood_floor.clone()

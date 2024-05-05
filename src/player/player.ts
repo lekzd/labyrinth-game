@@ -17,8 +17,9 @@ export const Player = ({ controllable, scene, id, type }: Props) => {
   const target = clone(model);
   const animations = model.animations.map(animation => animation.clone());
 
-  const leftArm = target.getObjectByName('mixamorigLeftArm')
-  const leftHand = target.getObjectByName('mixamorigLeftHand')
+  // TODO: найти руку
+  const leftArm = target.getObjectByName('ShoulderR')
+  const leftHand = target.getObjectByName('ShoulderR')
   const torch = createTorch()
 
   // Прикрепляем факел к руке персонажа
