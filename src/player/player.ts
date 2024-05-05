@@ -17,14 +17,6 @@ export const Player = ({ controllable, scene, id, type }: Props) => {
   const target = clone(model);
   const animations = model.animations.map(animation => animation.clone());
 
-  // TODO: найти руку
-  const leftArm = target.getObjectByName('ShoulderR')
-  const leftHand = target.getObjectByName('ShoulderR')
-  const torch = createTorch()
-
-  // Прикрепляем факел к руке персонажа
-  leftHand.add(torch);
-
   const decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0)
   const acceleration = new THREE.Vector3(1, 0.25, 50.0)
   const velocity = new THREE.Vector3(0, 0, 0)
@@ -45,6 +37,13 @@ export const Player = ({ controllable, scene, id, type }: Props) => {
       o.receiveShadow = true;
     }
   });
+
+  const leftArm = target.getObjectByName('ShoulderL')
+  const leftHand = target.getObjectByName('Fist1L')
+  const torch = createTorch()
+
+  // Прикрепляем факел к руке персонажа
+  leftHand.add(torch);
 
   const mixer = new THREE.AnimationMixer(target);
 

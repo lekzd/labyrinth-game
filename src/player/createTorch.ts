@@ -3,13 +3,13 @@ import * as THREE from 'three';
 export const createTorch = () => {
   // Создаем светящуюся сферу
   const sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(2, 32, 32), // Геометрия сферы
+    new THREE.SphereGeometry(0.1, 32, 32), // Геометрия сферы
     new THREE.MeshBasicMaterial({ color: 0xffffff }),
   );
-  sphere.position.set(15, -0, 15); // Позиция факела (относительно руки персонажа)
+  sphere.position.set(0.2, 0.07, -0.07); // Позиция факела (относительно руки персонажа)
 
   const cone = new THREE.Mesh(
-    new THREE.ConeGeometry( 5, 20, 32 ),
+    new THREE.ConeGeometry( 0.25, 1, 32 ),
     new THREE.MeshBasicMaterial( {color: 0x000000} )
   )
 
