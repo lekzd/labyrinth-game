@@ -26,10 +26,16 @@ let simpleNoise = `
 
 const vertexShader = `
   uniform float time;
+  uniform vec3 directionalLightColor;
+  uniform vec3 fogColor; // Цвет тумана
+  uniform float fogNear; // Начальная дистанция тумана
+  uniform float fogFar; // Конечная дистанция тумана
 
   varying float vNoise;
   varying vec2 vUv;
   varying vec4 vViewPosition;
+  varying float vFogFactor;
+  varying vec3 vFogColor;
   
   ${simpleNoise}
   
@@ -62,30 +68,33 @@ const vertexShader = `
     
     vec4 modelViewPosition = modelViewMatrix * mvPosition;
     vViewPosition = modelViewPosition;
-    gl_Position = projectionMatrix * modelViewPosition;
+    vFogFactor = smoothstep(fogNear, fogFar, length(modelViewPosition)) * 3.0;
+    vFogColor = mix(directionalLightColor, fogColor, vFogFactor);
 
+    gl_Position = projectionMatrix * modelViewPosition;
 	}
 `;
 
 const fragmentShader = `
   uniform vec3 directionalLightColor;
   uniform vec3 fogColor; // Цвет тумана
-  uniform float fogNear; // Начальная дистанция тумана
-  uniform float fogFar; // Конечная дистанция тумана
 
   varying float vNoise;
   varying vec2 vUv;
   varying vec4 vViewPosition;
+  varying float vFogFactor;
+  varying vec3 vFogColor;
   
   void main() {
-    // Расчет коэффициента тумана для данной вершины
-    float fogFactor = smoothstep(fogNear, fogFar, length(vViewPosition)) * 3.0;
+    if (vFogFactor > 1.99) {
+      discard;
+    }
 
   	vec3 baseColor = vec3( 0.31 * vNoise, 1.0 * vNoise, 0.5 );
 
     float clarity = ( vUv.y * 0.875 ) + 0.125;
 
-    gl_FragColor = vec4( baseColor * clarity * mix(directionalLightColor, fogColor, fogFactor), 1.0 );
+    gl_FragColor = vec4( baseColor * clarity * vFogColor, 1.0 );
   }
 `;
 
