@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {scene} from './scene.ts';
 import { createLeavesMaterial } from './materials/leavesMaterial/index.ts';
 
-const uniforms = {
+export const uniforms = {
   time: {
     value: 0
   },

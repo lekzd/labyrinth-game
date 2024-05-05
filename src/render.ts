@@ -8,6 +8,7 @@ import * as grass from "./grass.ts";
 import {textures, worlds} from './loader.ts';
 import {State} from './state.ts';
 import {scene} from './scene.ts';
+import { frandom } from './generators/utils.ts';
 
 const scale = 10;
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1.0, 1000.0)
@@ -111,13 +112,13 @@ export const items = {
   },
   trees: (state: State) => {
     for (let i = 0; i < state.staticGrid.length; i++) {
-      const x = i % state.colls
-      const y = Math.floor(i / state.colls)
+      const x = i % state.colls + frandom(-0.5, 0.5)
+      const y = Math.floor(i / state.colls) + frandom(-0.5, 0.5)
 
-      if (state.staticGrid[i] === Tiles.Tree) {
+      if (state.staticGrid[i] === Tiles.Wall) {
         const cube = items[Tiles.Tree]();
 
-        Object.assign(cube.position, { x, z: y })
+        Object.assign(cube.position, { x: x * scale, z: y * scale })
 
         scene.add(cube)
       }
@@ -182,8 +183,8 @@ export const items = {
         o.material.map = textures.tree;
         o.material.needsUpdate = true
 
-        o.castShadow = true;
-        o.receiveShadow = true;
+        // o.castShadow = true;
+        // o.receiveShadow = true;
       }
     });
 

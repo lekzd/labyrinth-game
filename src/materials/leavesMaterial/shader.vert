@@ -60,7 +60,7 @@ void main() {
 
   vec4 modelViewPosition = modelViewMatrix * mvPosition;
   vViewPosition = modelViewPosition;
-  vFogFactor = smoothstep(fogNear, fogFar, length(modelViewPosition)) * 3.0;
+  vFogFactor = smoothstep(fogNear, fogFar, length(modelViewPosition)) * 6.0;
   vFogColor = mix(directionalLightColor, fogColor, vFogFactor);
 
   gl_Position = projectionMatrix * modelViewPosition;

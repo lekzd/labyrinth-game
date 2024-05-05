@@ -55,6 +55,6 @@ Promise.all([
 ]).then(() => {
   render(state)
 
-  items.wallsMerged(state)
+  items.trees(state)
   items.ground(state.rows, state.colls)
 })
