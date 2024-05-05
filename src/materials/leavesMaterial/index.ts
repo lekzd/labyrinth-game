@@ -25,6 +25,6 @@ export const createLeavesMaterial = (uniforms: Uniforms) => {
     vertexShader,
     fragmentShader,
     uniforms,
-    side: THREE.DoubleSide
+    side: THREE.DoubleSide,
   });
 }

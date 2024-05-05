@@ -10,6 +10,7 @@ import {State} from './state.ts';
 import {scene} from './scene.ts';
 import { frandom } from './generators/utils.ts';
 import { createCampfire } from './objects/campfire/index.ts';
+import { createTerrainMaterial } from './materials/terrain/index.ts';
 
 const scale = 10;
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1.0, 1000.0)
@@ -127,17 +128,11 @@ export const items = {
   },
   ground: (state: State) => {
     const { rows, colls } = state
-    const texture = textures.wood_floor.clone()
-
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(rows, colls);
-
     const geometry = new THREE.PlaneGeometry(rows * scale, colls * scale);
 
     const mesh = new THREE.Mesh(
       geometry,
-      new THREE.MeshPhongMaterial({ color: 0x241b0f, depthWrite: false })
+      createTerrainMaterial(state),
     );
 
     const grassMesh = grass.render(state);
@@ -155,7 +150,6 @@ export const items = {
 
     Object.assign(mesh.position, { x, z })
     Object.assign(grassMesh.position, { x, z })
-
 
     persons.forEach((person, index) => {
       const angle = (index / persons.length) * (Math.PI * 2)

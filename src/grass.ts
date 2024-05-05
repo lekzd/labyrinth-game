@@ -44,7 +44,7 @@ export const render = (state: State) => {
   const dummy = new THREE.Object3D();
   const width = state.colls * 10
   const height = state.rows * 10
-  const instancesPerTile = 120
+  const instancesPerTile = 150
   const instanceNumber = state.staticGrid.filter(tile => tilesWithGrass.includes(tile)).length * instancesPerTile
   const geometry = new THREE.PlaneGeometry(width, height);
   const instancedMesh = new THREE.InstancedMesh(geometry, leavesMaterial, instanceNumber );
@@ -61,7 +61,7 @@ export const render = (state: State) => {
     }
 
     for ( let i=0 ; i<instancesPerTile ; i++ ) {
-      const variable = 5 + j % 6
+      const variable = 5 + j % 5.5
 
       dummy.position.set(
         (width * -0.5) + x + frandom(-variable, variable),

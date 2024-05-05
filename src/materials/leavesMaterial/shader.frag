@@ -8,10 +8,6 @@ varying float vFogFactor;
 varying vec3 vFogColor;
 
 void main() {
-  if(vFogFactor > 1.99) {
-    discard;
-  }
-
   vec3 baseColor = vec3(0.31 * vNoise, 1.0 * vNoise, 0.5);
 
   float clarity = (vUv.y * 0.875) + 0.125;
