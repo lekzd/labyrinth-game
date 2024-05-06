@@ -8,6 +8,7 @@
     "types": [
       "vite-plugin-glsl/ext"
     ],
+    "jsx": "react",
 
     /* Bundler mode */
     "moduleResolution": "bundler",

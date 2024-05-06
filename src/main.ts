@@ -10,7 +10,7 @@ import { random } from './generators/utils.ts';
 
 const ROWS = 100
 const COLLS = 100
-const ROOM_SIZE = 12
+const ROOM_SIZE = 13
 
 const createPersonObject = (): DynamicObject => {
   return {

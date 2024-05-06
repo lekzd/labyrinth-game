@@ -137,8 +137,8 @@ export const items = {
 
     const grassMesh = grass.render(state);
 
-    const x = rows * scale / 2
-    const z = colls * scale / 2
+    const x = rows * scale >> 1
+    const z = colls * scale >> 1
 
     const campfire = createCampfire()
 
