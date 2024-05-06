@@ -15,9 +15,16 @@ export type State = {
 }
 
 export const initState = (initialState: Partial<State>): State => {
-  const { rows = 100, colls = 100, objects = [], rooms = [] } = initialState
+  const {
+    rows = 100,
+    colls = 100,
+    objects = [],
+    rooms = [],
+    players = [],
+    activePlayerId = -1,
+  } = initialState
 
-  const staticGrid = Array.from<number>({ length: rows * colls }).fill(Tiles.Wall)
+  const staticGrid = Array.from<number>({ length: rows * colls }).fill(Tiles.Floor)
 
   const setState = (newState: Partial<State>) => {
     Object.assign(state, newState)
@@ -29,6 +36,8 @@ export const initState = (initialState: Partial<State>): State => {
     colls,
     staticGrid,
     objects,
+    players,
+    activePlayerId,
     rooms,
     setState
   }

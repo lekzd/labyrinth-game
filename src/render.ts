@@ -8,7 +8,7 @@ import * as grass from "./grass.ts";
 import {textures, worlds} from './loader.ts';
 import {State} from './state.ts';
 import {scene} from './scene.ts';
-import { frandom } from './generators/utils.ts';
+import { frandom, random } from './generators/utils.ts';
 import { createCampfire } from './objects/campfire/index.ts';
 import { createTerrainMaterial } from './materials/terrain/index.ts';
 
@@ -176,7 +176,7 @@ export const items = {
     texture.repeat.set(1, 4);
 
     const geometry = new THREE.BoxGeometry(1 * scale, 4 * scale, 1 * scale);
-    const material = new THREE.MeshLambertMaterial({ color: 'white', map: texture });
+    const material = new THREE.MeshLambertMaterial({ map: texture });
     const cube = new THREE.Mesh(geometry, material);
 
     cube.castShadow = true;
@@ -185,7 +185,7 @@ export const items = {
     return cube;
   },
   [Tiles.Tree]: () => {
-    const model = Object.values(worlds)[Math.floor(Math.random()*Object.values(worlds).length)];
+    const model = Object.values(worlds)[random(0, Object.values(worlds).length)];
 
     const target = model.clone();
 
