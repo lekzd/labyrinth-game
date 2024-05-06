@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { KeyboardCharacterController, SocketCharacterController } from './controller.ts';
 import { models } from '../loader.ts';
-import { DynamicObject } from '../generators/types.ts';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
-import { createTorch } from './createTorch.ts';
+import { createTorch } from '../objects/torch';
+import { DynamicObject } from '../types/DynamicObject.ts';
+import { NpcAnimationStates } from './NpcAnimationStates.ts';
 
 
 interface Props extends DynamicObject {
@@ -38,8 +39,8 @@ export const Player = ({ controllable, scene, id, type }: Props) => {
     }
   });
 
-  const leftArm = target.getObjectByName('ShoulderL')
-  const leftHand = target.getObjectByName('Fist1L')
+  const leftArm = target.getObjectByName('ShoulderL')!
+  const leftHand = target.getObjectByName('Fist1L')!
   const torch = createTorch()
 
   // Прикрепляем факел к руке персонажа
@@ -66,10 +67,21 @@ export const Player = ({ controllable, scene, id, type }: Props) => {
     get Rotation() {
       return target?.quaternion || new THREE.Quaternion();
     },
-    setPosition: (position) => {
+    setPosition: (position: Partial<THREE.Vector3Like>) => {
       Object.assign(target.position, position)
     },
-    update: (timeInSeconds) => {
+    setRotation: (angle: number) => {
+      const controlObject = target;
+      const quaternion = new THREE.Quaternion();
+      const axis = new THREE.Vector3(0, 1, 0);
+      const npcRotation = controlObject.quaternion.clone();
+
+      quaternion.setFromAxisAngle(axis, angle);
+      npcRotation.multiply(quaternion);
+
+      controlObject.quaternion.copy(npcRotation);
+    },
+    update: (timeInSeconds: number) => {
       if (!stateMachine.currentState) {
         return;
       }
@@ -88,10 +100,6 @@ export const Player = ({ controllable, scene, id, type }: Props) => {
       velocity.add(frameDecceleration);
 
       const controlObject = target;
-      const _Q = new THREE.Quaternion();
-      const _A = new THREE.Vector3();
-      const _R = controlObject.quaternion.clone();
-
       const acc = acceleration.clone();
 
       //set user speed here
@@ -104,17 +112,11 @@ export const Player = ({ controllable, scene, id, type }: Props) => {
         velocity.z -= acc.z * timeInSeconds;
       }
       if (input.left) {
-        _A.set(0, 1, 0);
-        _Q.setFromAxisAngle(_A, 4.0 * Math.PI * timeInSeconds * acceleration.y);
-        _R.multiply(_Q);
+        root.setRotation(4.0 * Math.PI * timeInSeconds * acceleration.y);
       }
       if (input.right) {
-        _A.set(0, 1, 0);
-        _Q.setFromAxisAngle(_A, 4.0 * -Math.PI * timeInSeconds * acceleration.y);
-        _R.multiply(_Q);
+        root.setRotation(4.0 * -Math.PI * timeInSeconds * acceleration.y);
       }
-
-      controlObject.quaternion.copy(_R);
 
       const oldPosition = new THREE.Vector3();
       oldPosition.copy(controlObject.position);
@@ -185,10 +187,10 @@ const CharacterFSM = ({ animations }) => {
 };
 
 const initStates = ({ animations, setState }) => ({
-  walk: {
-    Name: 'walk',
+  [NpcAnimationStates.walk]: {
+    Name: NpcAnimationStates.walk,
     Enter(prevState) {
-      const curAction = animations['walk']?.action || { play: () => {} };
+      const curAction = animations[NpcAnimationStates.walk]?.action || { play: () => {} };
       if (prevState) {
         const prevAction = animations[prevState.Name]?.action;
 
@@ -206,13 +208,13 @@ const initStates = ({ animations, setState }) => ({
         return;
       }
 
-      setState('idle');
+      setState(NpcAnimationStates.idle);
     },
   },
-  walkBack: {
-    Name: 'walk',
+  [NpcAnimationStates.walkBack]: {
+    Name: NpcAnimationStates.walk,
     Enter(prevState) {
-      const curAction = animations['walk']?.action || { play: () => {} };
+      const curAction = animations[NpcAnimationStates.walk]?.action || { play: () => {} };
       if (prevState) {
         const prevAction = animations[prevState.Name].action;
 
@@ -229,13 +231,13 @@ const initStates = ({ animations, setState }) => ({
         return;
       }
 
-      setState('idle');
+      setState(NpcAnimationStates.idle);
     },
   },
-  run: {
-    Name: 'run',
+  [NpcAnimationStates.run]: {
+    Name: NpcAnimationStates.run,
     Enter(prevState) {
-      const curAction = animations['run']?.action || { play: () => {} };
+      const curAction = animations[NpcAnimationStates.run]?.action || { play: () => {} };
       if (prevState) {
         const prevAction = animations[prevState.Name]?.action;
 
@@ -253,13 +255,13 @@ const initStates = ({ animations, setState }) => ({
         return;
       }
 
-      setState('idle');
+      setState(NpcAnimationStates.idle);
     },
   },
-  idle: {
-    Name: 'idle',
+  [NpcAnimationStates.idle]: {
+    Name: NpcAnimationStates.idle,
     Enter(prevState) {
-      const idleAction = animations['idle']?.action || { play: () => {} };
+      const idleAction = animations[NpcAnimationStates.idle]?.action || { play: () => {} };
       if (prevState) {
         const prevAction = animations[prevState.Name]?.action;
         idleAction.time = 0.0;
@@ -274,9 +276,9 @@ const initStates = ({ animations, setState }) => ({
     },
     update(_, input) {
       if (input.forward) {
-        setState(input.speed ? 'run' : 'walk');
+        setState(input.speed ? NpcAnimationStates.run : NpcAnimationStates.walk);
       } else if (input.backward) {
-        setState('walkBack');
+        setState(NpcAnimationStates.walkBack);
       }
     }
   }

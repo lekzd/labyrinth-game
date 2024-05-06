@@ -1,4 +1,6 @@
-import { DynamicObject, Player, RoomConfig, Tiles } from "./generators/types"
+import { Player, RoomConfig } from "./generators/types"
+import { DynamicObject } from "./types/DynamicObject"
+import { Tiles } from "./types/Tiles"
 
 // TODO: засунуть сюда какой-нибудь стейт-менеджер
 export type State = {

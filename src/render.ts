@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
-import {Tiles} from "./generators/types.ts";
+import {Tiles} from "./types/Tiles.ts";
 import {Camera} from "./player/camera.ts";
 import {Player} from "./player/player.ts";
 import * as grass from "./grass.ts";
@@ -158,6 +158,8 @@ export const items = {
         z: z + (Math.sin(angle) * 20),
         x: x + (Math.cos(angle) * 20),
       })
+
+      person.setRotation(Math.PI * 1.5 - angle)
     })
 
     mesh.rotation.x = - Math.PI / 2;

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Tiles } from "../../generators/types";
+import { Tiles } from "../../types/Tiles";
 import { State } from "../../state";
 import { frandom } from '../../generators/utils';
 

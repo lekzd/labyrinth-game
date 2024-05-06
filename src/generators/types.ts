@@ -1,26 +1,4 @@
-import {models, modelType} from "../loader.ts";
-
-export enum Tiles {
-  Floor,
-  Wall,
-  Tree,
-
-  Empty,
-
-  NorthExit,
-  WestExit,
-  SouthExit,
-  EastExit,
-}
-
-export type DynamicObject = {
-  id: number,
-  type: modelType
-
-  x: number,
-  y: number,
-  z: number,
-}
+import { Tiles } from "../types/Tiles.ts";
 
 export type Player = {
   id: number,

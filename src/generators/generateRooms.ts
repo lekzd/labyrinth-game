@@ -1,5 +1,6 @@
 import { State } from "../state"
-import { RoomConfig, Tiles } from "./types"
+import { Tiles } from "../types/Tiles"
+import { RoomConfig } from "./types"
 import { drawRect, drawTiles, random, range, shuffle } from "./utils"
 
 const EXITS = [

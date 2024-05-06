@@ -1,4 +1,4 @@
-import { Tiles } from "./types"
+import { Tiles } from "../types/Tiles"
 import { drawRect, frandom, range, shuffle } from "./utils"
 
 export const generateCaves = ({
