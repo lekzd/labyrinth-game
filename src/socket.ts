@@ -1,7 +1,8 @@
-const { protocol } = window.location;
+const { protocol, search } = window.location;
 
 const host = 'channel.frontende.ru'
-const channel = ''; // TODO: from url
+const urlParams = new URLSearchParams(search);
+const channel = urlParams.get('channel') || '';
 
 const handlers = new Map(), path = `ws${protocol === 'https:' ? 's' : ''}://${host}/ws?channel=${channel}`;
 

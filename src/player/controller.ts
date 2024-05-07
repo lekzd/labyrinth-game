@@ -10,7 +10,9 @@ const BasicCharacterControllerInput = (watcherCallback: ([event, handler]: [stri
   };
 
   Object.entries({
-    mousedown: (event) => {},
+    mousedown: (event) => {
+
+    },
     keydown: (event) => {
       keys.speed = event.shiftKey;
 
