@@ -21,7 +21,7 @@ export const createCampfire = () => {
 
   for (let i = 0; i < positions.length; i += 3) {
     positions[i] = (Math.random() * 4 - 2); // Рандомное положение частицы по оси X
-    positions[i + 1] = (Math.random() * 2 + 1); // Рандомное положение частицы по оси Y
+    positions[i + 1] = (Math.random() * 2 + 0); // Рандомное положение частицы по оси Y
     positions[i + 2] = (Math.random() * 4 - 2); // Рандомное положение частицы по оси Z
 
     indexes[i] = i / positions.length
@@ -74,8 +74,7 @@ export const createCampfire = () => {
   return {
     mesh: base,
     update: (timeDelta: number) => {
-      // particleMaterial.uniforms.time.value += timeDelta / 10;
-      particleMaterial.uniforms.time.value = performance.now() / 1000;
+      particleMaterial.uniforms.time.value += timeDelta * 2;
       particleMaterial.uniformsNeedUpdate = true;
     }
   }

@@ -2,17 +2,15 @@
 attribute float size; // Атрибут для размера частиц
 attribute vec3 values; // Атрибут для размера частиц
 uniform float time; // Uniform-переменная для времени
-varying float vAnimation; // Передача данных во фрагментный шейдер
+varying float vAnimation;
 varying float vIndex;
+varying float vYFactor;
 
 void main() {
     // Передача размера частицы во фрагментный шейдер
-    vAnimation = size;
     vIndex = values.x;
-    float animation = sin(time * 2.0 * (values.x * 2.0)); 
-
-    // Используйте фиксированные позиции вершин для частиц
-    // vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    float animation = sin(time * 2.0 * (values.x * 2.0));
+    vAnimation = animation;
 
     vec4 mvPosition = vec4(position, 1.0);
     #ifdef USE_INSTANCING
@@ -21,15 +19,14 @@ void main() {
 
     vec4 modelViewPosition = modelViewMatrix * mvPosition;
 
+    vYFactor = (mod(time + values.y + (vIndex * 10.0), 10.0)) * 3.0;
 
-    // Вы можете применить здесь дополнительные преобразования, если это необходимо
-
-    gl_PointSize = size + ((1.0 - mod(time, 1.0)) * 10.0); // Установка размера частицы
+    gl_PointSize = size + (20.0 - vYFactor); // Установка размера частицы
 
     vec4 basePosition = projectionMatrix * modelViewPosition;
 
-    basePosition.y += (values.x * 10.0) + ((mod(time, 1.0)) * 10.0);
-    basePosition.x += animation;
+    basePosition.y += vYFactor;
+    basePosition.x += vAnimation;
 
     gl_Position = basePosition;
 }
