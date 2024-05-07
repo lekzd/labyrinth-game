@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  front:
+    container_name: front
+    build:
+      context: ./
+    volumes:
+      - .:/home/node/app
+
+  back:
+    container_name: back
+    restart: always
+    build:
+      context: ./
+      dockerfile: ./server/Dockerfile
+    ports:
+      - 5123:8080
