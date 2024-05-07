@@ -49,5 +49,5 @@ export const createTerrainMaterial = (state: State) => {
   const canvas = createTerrainCanvas(state, .4, 4);
   const texture = new THREE.CanvasTexture(canvas);
 
-  return new THREE.MeshBasicMaterial({ map: texture, color: 0x444444 });
+  return new THREE.MeshPhongMaterial({ map: texture, color: 0x444444, fog: true });
 }

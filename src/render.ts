@@ -147,8 +147,6 @@ export const items = {
 
     Object.assign(campfire.mesh.position, { x, z })
 
-    scene.add(campfire.mesh)
-
     Object.assign(mesh.position, { x, z })
     Object.assign(grassMesh.position, { x, z })
 
@@ -168,6 +166,7 @@ export const items = {
 
     scene.add(mesh);
     scene.add(grassMesh);
+    scene.add(campfire.mesh);
   },
   [Tiles.Wall]: () => {
     const texture = textures.stone_wall.clone()
