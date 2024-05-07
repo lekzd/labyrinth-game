@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { Tiles } from "../../types/Tiles";
 import { State } from "../../state";
-import { frandom } from '../../generators/utils';
+import { frandom } from '../../utils/random';
+import { makeCtx } from '../../utils/makeCtx';
 
 const BACKGROUND_COLOR = `rgb(1,2,0)`;
 
@@ -25,13 +26,10 @@ const getColor = (tile: Tiles) => {
 
 export const createTerrainMaterial = (state: State) => {
   const tileSize = 3
-  const canvas = document.createElement('canvas')!;
-  canvas.width = state.colls * tileSize;
-  canvas.height = state.rows * tileSize;
-  const ctx = canvas.getContext('2d')!;
+  const ctx = makeCtx(state.colls * tileSize, state.rows * tileSize)
 
   ctx.fillStyle = BACKGROUND_COLOR
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
   state.staticGrid.forEach((tile, i) => {
     const x = (i % state.colls) * tileSize
@@ -41,7 +39,7 @@ export const createTerrainMaterial = (state: State) => {
     ctx.fillRect(x - (tileSize >> 1), y - (tileSize >> 1), tileSize, tileSize)
   })
 
-  const texture = new THREE.CanvasTexture(canvas);
+  const texture = new THREE.CanvasTexture(ctx.canvas);
 
   return new THREE.MeshBasicMaterial({ map: texture, color: 0x444444 });
 }

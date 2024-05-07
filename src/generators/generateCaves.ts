@@ -1,5 +1,7 @@
 import { Tiles } from "../types/Tiles"
-import { drawRect, frandom, range, shuffle } from "./utils"
+import { frandom } from "../utils/random"
+import { shuffle } from "../utils/shuffle"
+import { drawRect, range } from "./utils"
 
 export const generateCaves = ({
   COLLS,

@@ -1,7 +1,10 @@
 import { State } from "../state"
 import { Tiles } from "../types/Tiles"
+import { random } from "../utils/random"
+import { shuffle } from "../utils/shuffle"
+import { something } from "../utils/something"
 import { RoomConfig } from "./types"
-import { drawRect, drawTiles, random, range, shuffle } from "./utils"
+import { drawRect, drawTiles, range } from "./utils"
 
 const EXITS = [
   Tiles.NorthExit,
@@ -180,7 +183,7 @@ export const generateRooms = ({
       const perpendicularExits = getPerpendicularExits(action)
 
       if (deep < 1 && random(0, 3) === 0) {
-        actions.push(shuffle(perpendicularExits)[0])
+        actions.push(something(perpendicularExits))
       }
   
       const room = generateRoom({ id: getId(), width, height, actions, x, y })

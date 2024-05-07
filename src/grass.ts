@@ -3,7 +3,7 @@ import {scene} from './scene.ts';
 import { createLeavesMaterial } from './materials/leavesMaterial/index.ts';
 import { State } from './state.ts';
 import { Tiles } from './types/Tiles.ts';
-import { frandom } from './generators/utils.ts';
+import { frandom } from './utils/random.ts';
 
 export const uniforms = {
   time: {

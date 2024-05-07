@@ -6,7 +6,7 @@ import {loadModels, loadTextures, loadWorld, modelType} from './loader.ts';
 import { initState } from './state.ts';
 import { Player } from './generators/types.ts';
 import { DynamicObject } from './types/DynamicObject.ts';
-import { random } from './generators/utils.ts';
+import { something } from './utils/something.ts';
 
 const ROWS = 100
 const COLLS = 100
@@ -15,7 +15,7 @@ const ROOM_SIZE = 13
 const createPersonObject = (): DynamicObject => {
   return {
     id: Math.floor(Math.random() * 1e9),
-    type: Object.values(modelType)[random(0, Object.values(modelType).length)] as modelType,
+    type: something(Object.values(modelType)),
     x: 0,
     y: 0,
     z: 0,

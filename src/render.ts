@@ -8,9 +8,10 @@ import * as grass from "./grass.ts";
 import {textures, worlds} from './loader.ts';
 import {State} from './state.ts';
 import {scene} from './scene.ts';
-import { frandom, random } from './generators/utils.ts';
 import { createCampfire } from './objects/campfire/index.ts';
 import { createTerrainMaterial } from './materials/terrain/index.ts';
+import { something } from './utils/something.ts';
+import { frandom } from './utils/random.ts';
 
 const scale = 10;
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1.0, 1000.0)
@@ -114,7 +115,7 @@ export const items = {
   },
   trees: (state: State) => {
     for (let i = 0; i < state.staticGrid.length; i++) {
-      const x = i % state.colls + frandom(-0.2, 0.2)
+      const x = i % state.colls + frandom(-0.5, 0.5)
       const y = Math.floor(i / state.colls) + frandom(-0.5, 0.5)
 
       if (state.staticGrid[i] === Tiles.Wall) {
@@ -185,7 +186,7 @@ export const items = {
     return cube;
   },
   [Tiles.Tree]: () => {
-    const model = Object.values(worlds)[random(0, Object.values(worlds).length)];
+    const model = something(Object.values(worlds));
 
     const target = model.clone();
 
