@@ -24,7 +24,6 @@ const tilesWithGrass = [
 ]
 
 export const render = (state: State) => {
-
   const uniforms = {
     time: {
       value: 0
@@ -42,7 +41,7 @@ export const render = (state: State) => {
       value: scene.fog.far,
     },
     terrainImage: {
-      value: new THREE.CanvasTexture(createTerrainCanvas(state, .4, 4))
+      value: new THREE.CanvasTexture(createTerrainCanvas(state, 10, 4))
     }
   }
   

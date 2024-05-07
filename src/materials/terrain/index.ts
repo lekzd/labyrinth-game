@@ -7,7 +7,7 @@ import { makeCtx } from '../../utils/makeCtx';
 const BACKGROUND_COLOR = `rgb(1,2,0)`;
 
 export const createTerrainCanvas = (state: State, noiseFactor: number, tileSize: number) => {
-  const r = (v: number) => frandom(v-3,v+3)
+  const r = (v: number) => frandom(-noiseFactor, noiseFactor)
 
   const getColor = (tile: Tiles) => {
     const noise = r(noiseFactor)
