@@ -130,6 +130,14 @@ export const state = initState({
   objects: [
     createCampfireObject(),
     ...heroes,
+    createObject({
+      type: 'Box',
+      position: {
+        x: 80 + (COLLS * scale) >> 1,
+        y: 5,
+        z: (ROWS * scale) >> 1,
+      }
+    })
   ],
   players: [
     createPlayerObject(firstHero.id)

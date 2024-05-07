@@ -13,6 +13,7 @@ import { createTerrainMaterial } from './materials/terrain/index.ts';
 import { something } from './utils/something.ts';
 import { frandom } from './utils/random.ts';
 import { ObjectType } from './types/ObjectType.ts';
+import { Box } from './objects/box/index.ts';
 
 const scale = 10;
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1.0, 1000.0)
@@ -32,6 +33,8 @@ const getObjectClass = (type: ObjectType) => {
   switch (type) {
     case 'Campfire':
       return Campfire;
+    case 'Box':
+      return Box;
     default:
       return Player;
   }
