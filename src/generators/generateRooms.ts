@@ -127,7 +127,7 @@ export const generateRooms = ({
   
       if (action === Tiles.NorthExit) {
         x += (parentRoom.width - width) >> 1
-        y -= height - 1
+        y -= height
         if (y < 0) {
           y = 0
           isLast = true
@@ -140,7 +140,7 @@ export const generateRooms = ({
   
       if (action === Tiles.SouthExit) {
         x += (parentRoom.width - width) >> 1
-        y += parentRoom.height - 1
+        y += parentRoom.height
         if (y > state.rows) {
           y = state.rows
           isLast = true
@@ -153,7 +153,7 @@ export const generateRooms = ({
   
       if (action === Tiles.WestExit) {
         y += (parentRoom.height - height) >> 1
-        x -= width - 1
+        x -= width
         if (x < 0) {
           x = 0
           isLast = true
@@ -166,7 +166,7 @@ export const generateRooms = ({
   
       if (action === Tiles.EastExit) {
         y += (parentRoom.height - height) >> 1
-        x += parentRoom.width - 1
+        x += parentRoom.width
         if (x > state.colls) {
           x = state.colls
           isLast = true

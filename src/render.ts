@@ -115,7 +115,7 @@ export const items = {
   trees: (state: State) => {
     for (let i = 0; i < state.staticGrid.length; i++) {
       const x = i % state.colls + frandom(-0.2, 0.2)
-      const y = Math.floor(i / state.colls) + frandom(-0.2, 0.2)
+      const y = Math.floor(i / state.colls) + frandom(-0.5, 0.5)
 
       if (state.staticGrid[i] === Tiles.Wall) {
         const cube = items[Tiles.Tree]();
