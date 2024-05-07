@@ -4,20 +4,23 @@ import fragmentShader from './shader.frag'
 
 type Uniforms = {
   time: {
-      value: number;
+    value: number;
   };
   directionalLightColor: {
-      value: number[];
+    value: number[];
   };
   fogColor: {
-      value: any;
+    value: any;
   };
   fogNear: {
-      value: any;
+    value: any;
   };
   fogFar: {
-      value: any;
+    value: any;
   };
+  terrainImage: {
+    value: any;
+  }
 }
 
 export const createLeavesMaterial = (uniforms: Uniforms) => {

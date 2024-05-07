@@ -4,26 +4,9 @@ import { createLeavesMaterial } from './materials/leavesMaterial/index.ts';
 import { State } from './state.ts';
 import { Tiles } from './types/Tiles.ts';
 import { frandom } from './utils/random.ts';
+import { createTerrainCanvas } from './materials/terrain/index.ts';
 
-export const uniforms = {
-  time: {
-    value: 0
-  },
-  directionalLightColor: {
-    value: [0.3, 0.15, 0]
-  },
-  fogColor: {
-    value: scene.fog.color,
-  },
-  fogNear: {
-    value: scene.fog.near,
-  },
-  fogFar: {
-    value: scene.fog.far,
-  },
-}
-
-const leavesMaterial = createLeavesMaterial(uniforms)
+let leavesMaterial;
 
 /////////
 // MESH
@@ -41,13 +24,38 @@ const tilesWithGrass = [
 ]
 
 export const render = (state: State) => {
+
+  const uniforms = {
+    time: {
+      value: 0
+    },
+    directionalLightColor: {
+      value: [0.3, 0.15, 0]
+    },
+    fogColor: {
+      value: scene.fog.color,
+    },
+    fogNear: {
+      value: scene.fog.near,
+    },
+    fogFar: {
+      value: scene.fog.far,
+    },
+    terrainImage: {
+      value: new THREE.CanvasTexture(createTerrainCanvas(state, .4, 4))
+    }
+  }
+  
+  leavesMaterial = createLeavesMaterial(uniforms)
+
   const dummy = new THREE.Object3D();
   const width = state.colls * 10
   const height = state.rows * 10
   const instancesPerTile = 150
   const instanceNumber = state.staticGrid.filter(tile => tilesWithGrass.includes(tile)).length * instancesPerTile
   const geometry = new THREE.PlaneGeometry(width, height);
-  const instancedMesh = new THREE.InstancedMesh(geometry, leavesMaterial, instanceNumber );
+  const instancedMesh = new THREE.InstancedMesh(geometry, leavesMaterial, instanceNumber);
+  const instanceAttribute = new THREE.InstancedBufferAttribute(new Float32Array(instanceNumber * 3), 3);
 
   let instanceIndex = 0
 
@@ -75,11 +83,20 @@ export const render = (state: State) => {
       dummy.rotation.x = frandom(0, Math.PI / 2);
   
       dummy.updateMatrix();
-      instancedMesh.setMatrixAt( instanceIndex++, dummy.matrix );
+      instancedMesh.setMatrixAt( instanceIndex, dummy.matrix );
+      instanceAttribute.setXYZ(
+        instanceIndex,
+        (x / (state.colls * 10)),
+        1 - (y / (state.rows * 10)),
+        0
+      )
+
+      instanceIndex++
     }
   }
 
   instancedMesh.receiveShadow = true;
+  instancedMesh.instanceColor = instanceAttribute;
 
   return instancedMesh
 }

@@ -9,6 +9,7 @@ varying vec2 vUv;
 varying vec4 vViewPosition;
 varying float vFogFactor;
 varying vec3 vFogColor;
+varying vec3 vInstanceColor;
 
 float N(vec2 st) { // https://thebookofshaders.com/10/
   return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
@@ -33,6 +34,7 @@ float smoothNoise(vec2 ip) { // https://www.youtube.com/watch?v=zXsWftRdsvU
 
 void main() {
   vUv = uv;
+  vInstanceColor = instanceColor;
 
   float t = time * 2.;
 
@@ -60,7 +62,7 @@ void main() {
 
   vec4 modelViewPosition = modelViewMatrix * mvPosition;
   vViewPosition = modelViewPosition;
-  vFogFactor = smoothstep(fogNear, fogFar, length(modelViewPosition)) * 6.0;
+  vFogFactor = smoothstep(fogNear, fogFar, length(modelViewPosition));
   vFogColor = mix(directionalLightColor, fogColor, vFogFactor);
 
   gl_Position = projectionMatrix * modelViewPosition;
