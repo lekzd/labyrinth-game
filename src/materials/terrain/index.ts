@@ -21,7 +21,7 @@ export const createTerrainCanvas = (state: State, noiseFactor: number, tileSize:
       case Tiles.Wall:
         return `rgb(0,0,0)`
       default:
-        return `rgb(${10+noise},${20+noise},0)`
+        return `rgb(${2+noise},${4+noise},0)`
     }
   }
 
@@ -42,6 +42,18 @@ export const createTerrainCanvas = (state: State, noiseFactor: number, tileSize:
     )
   })
 
+  //todo: генерировать статический свет в зависимости от источников света
+  const c = Math.round(ctx.canvas.width / 2)
+
+  const gradient = ctx.createRadialGradient(c, c, 5, c, c, 20);
+  gradient.addColorStop(0, 'rgba(255, 50, 0, 0.5)');
+  gradient.addColorStop(1, 'rgba(0, 0, 50, 0.1)');
+
+  ctx.arc(c, c, 20, 0, 2 * Math.PI);
+
+  ctx.fillStyle = gradient;
+  ctx.fill();
+
   return ctx.canvas
 }
 
@@ -49,5 +61,5 @@ export const createTerrainMaterial = (state: State) => {
   const canvas = createTerrainCanvas(state, .4, 4);
   const texture = new THREE.CanvasTexture(canvas);
 
-  return new THREE.MeshPhongMaterial({ map: texture, color: 0x444444, fog: true });
+  return new THREE.MeshPhongMaterial({ map: texture, color: 0xffffff, fog: true });
 }
