@@ -21,8 +21,8 @@ export const update = (time: number) => {
   lightsCtx.clearRect(0, 0, lightsCtx.canvas.width, lightsCtx.canvas.height)
 
   state.objects.forEach(object => {
-    const x = object.x / 10
-    const y = object.z / 10
+    const x = object.position.x / 10
+    const y = object.position.z / 10
 
     const innerRadius = 1
     const outerRadius = 5

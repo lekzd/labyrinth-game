@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import vertexShader from './shader.vert'
 import fragmentShader from './shader.frag'
 import { frandom } from '../../utils/random';
+import { DynamicObject } from '../../types/DynamicObject';
 
-export const createCampfire = () => {
-
+export const Campfire = (props: DynamicObject) => {
   const base = new THREE.Object3D()
 
   const sphere = new THREE.Mesh(
@@ -33,12 +33,6 @@ export const createCampfire = () => {
   const particleGeometry = new THREE.BufferGeometry();
   particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   particleGeometry.setAttribute('values', new THREE.BufferAttribute(indexes, 3));
-
-  const pointsMaterial = new THREE.PointsMaterial({
-    color: 0xFF4500, // Оранжевый цвет для пламени
-    size: 0.1, // Размер частиц
-    sizeAttenuation: true,
-  });
 
   const particleMaterial = new THREE.ShaderMaterial({
     uniforms: {
@@ -70,6 +64,8 @@ export const createCampfire = () => {
   torch.shadow.blurSamples = 5
 
   base.add(torch);
+
+  Object.assign(base.position, props.position);
 
   return {
     mesh: base,

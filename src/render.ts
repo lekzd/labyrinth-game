@@ -2,16 +2,17 @@ import * as THREE from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import {Tiles} from "./types/Tiles.ts";
-import {Camera} from "./player/camera.ts";
-import {Player} from "./player/player.ts";
+import {Camera} from "./objects/hero/camera.ts";
+import {Player} from "./objects/hero/player.ts";
 import * as grass from "./grass.ts";
 import {textures, worlds} from './loader.ts';
 import {State} from './state.ts';
 import {scene} from './scene.ts';
-import { createCampfire } from './objects/campfire/index.ts';
+import { Campfire } from './objects/campfire/index.ts';
 import { createTerrainMaterial } from './materials/terrain/index.ts';
 import { something } from './utils/something.ts';
 import { frandom } from './utils/random.ts';
+import { ObjectType } from './types/ObjectType.ts';
 
 const scale = 10;
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1.0, 1000.0)
@@ -19,18 +20,37 @@ const renderer = new THREE.WebGLRenderer({ antialias: true })
 const stats = new Stats()
 
 const subscribers: { update: (time: number) => void }[] = [grass]
-const persons: ReturnType<typeof Player>[] = []
+
+type MapObject = {
+  update: (time: number) => void,
+  mesh: THREE.Object3D<THREE.Object3DEventMap>,
+}
+
+const objects: MapObject[] = []
+
+const getObjectClass = (type: ObjectType) => {
+  switch (type) {
+    case 'Campfire':
+      return Campfire;
+    default:
+      return Player;
+  }
+}
 
 export const render = (state: State) => {
   const activePlayer = state.players.find(player => player.id = state.activePlayerId)
-  state.objects.forEach((object, index) => {
-    const controllable = activePlayer?.activeObjectId === object.id
-    const person = Player({ index, controllable, scene, ...object })
-    persons.push(person)
-    subscribers.push(person)
+
+  state.objects.forEach((objectConfig) => {
+    const controllable = activePlayer?.activeObjectId === objectConfig.id
+    const ObjectConstructor = getObjectClass(objectConfig.type)
+    const object = ObjectConstructor({ ...objectConfig })
+
+    objects.push(object)
+    subscribers.push(object)
+    scene.add(object.mesh)
 
     if (controllable) {
-      subscribers.push(Camera({ camera, target: person }))
+      subscribers.push(Camera({ camera, target: object }))
     }
   })
 
@@ -141,32 +161,14 @@ export const items = {
     const x = rows * scale >> 1
     const z = colls * scale >> 1
 
-    const campfire = createCampfire()
-
-    subscribers.push(campfire)
-
-    Object.assign(campfire.mesh.position, { x, z })
-
     Object.assign(mesh.position, { x, z })
     Object.assign(grassMesh.position, { x, z })
-
-    persons.forEach((person, index) => {
-      const angle = (index / persons.length) * (Math.PI * 2)
-
-      person.setPosition({
-        z: z + (Math.sin(angle) * 20),
-        x: x + (Math.cos(angle) * 20),
-      })
-
-      person.setRotation(Math.PI * 1.5 - angle)
-    })
 
     mesh.rotation.x = - Math.PI / 2;
     mesh.receiveShadow = true;
 
     scene.add(mesh);
     scene.add(grassMesh);
-    scene.add(campfire.mesh);
   },
   [Tiles.Wall]: () => {
     const texture = textures.stone_wall.clone()

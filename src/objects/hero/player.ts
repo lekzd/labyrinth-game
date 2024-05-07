@@ -1,35 +1,37 @@
 import * as THREE from 'three';
 import { KeyboardCharacterController, SocketCharacterController } from './controller.ts';
-import { models } from '../loader.ts';
+import { models } from '../../loader.ts';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
-import { createTorch } from '../objects/torch';
-import { DynamicObject } from '../types/DynamicObject.ts';
+import { createTorch } from '../torch/index.ts';
+import { DynamicObject } from '../../types/DynamicObject.ts';
 import { NpcAnimationStates } from './NpcAnimationStates.ts';
-import { state } from '../state.ts';
+import { state } from '../../state.ts';
 
+interface Props extends DynamicObject {}
 
-interface Props extends DynamicObject {
-  index: number
-  controllable: boolean
-  scene: any
-}
-
-export const Player = ({ index, controllable, scene, id, type }: Props) => {
+export const Player = ({ id, type, position, rotation }: Props) => {
   const model = models[type];
 
+  if (!model) {
+    throw Error(`No model with type "${type}"`)
+  }
+
+  const index = state.objects.findIndex(object => object.id === id)
+  const activePlayer = state.players.find(player => player.id = state.activePlayerId)
+  const controllable = activePlayer?.activeObjectId === id
   const target = clone(model);
   const animations = model.animations.map(animation => animation.clone());
 
   const decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0)
   const acceleration = new THREE.Vector3(1, 0.25, 50.0)
   const velocity = new THREE.Vector3(0, 0, 0)
-  const position = new THREE.Vector3()
   const input = controllable ? KeyboardCharacterController() : SocketCharacterController()
+
+  Object.assign(target.position, position)
+  Object.assign(target.quaternion, rotation)
 
   target.scale.multiplyScalar(.05);
   target.updateMatrix();
-
-  scene.add(target);
 
   target.traverse(o => {
     if (o.isMesh) {
@@ -61,9 +63,10 @@ export const Player = ({ index, controllable, scene, id, type }: Props) => {
 
   const root = {
     id,
+    mesh: target,
 
     get Position() {
-      return position;
+      return target.position;
     },
 
     get Rotation() {
@@ -134,11 +137,9 @@ export const Player = ({ index, controllable, scene, id, type }: Props) => {
       controlObject.position.add(forward);
       controlObject.position.add(sideways);
 
-      position.copy(controlObject.position);
-
-      state.objects[index].x = position.x
-      state.objects[index].y = position.y
-      state.objects[index].z = position.z
+      state.objects[index].position.x = controlObject.position.x
+      state.objects[index].position.y = controlObject.position.y
+      state.objects[index].position.z = controlObject.position.z
 
       if (mixer) mixer.update(timeInSeconds);
 

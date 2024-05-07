@@ -12,7 +12,7 @@ const texturesMap = {
 
 export const textures: LoaderResourcesMap = {}
 
-type LoaderResourcesMap = Partial<Record<keyof typeof texturesMap, any>>
+type LoaderResourcesMap = Partial<Record<keyof typeof texturesMap, THREE.Texture>>
 
 export const loadTextures = async (): Promise<LoaderResourcesMap> => {
   let loaded = 0
@@ -21,7 +21,7 @@ export const loadTextures = async (): Promise<LoaderResourcesMap> => {
   return new Promise(resolve => {
     entries.forEach(([textureName, path], index) => {
       textureLoader.load(path, (texture) => {
-        textures[textureName] = texture
+        textures[textureName as keyof typeof texturesMap] = texture
         loaded++
 
         if (loaded === entries.length) {
@@ -40,7 +40,7 @@ export enum modelType {
   Wizard = 'Wizard',
 }
 
-type LoaderModelsMap = Partial<Record<modelType, any>>
+type LoaderModelsMap = Partial<Record<modelType, THREE.Group<THREE.Object3DEventMap>>>
 
 export const models: LoaderModelsMap = {}
 

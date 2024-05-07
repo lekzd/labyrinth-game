@@ -7,7 +7,7 @@ export const Camera = ({ camera, target }) =>  {
 
   const calculateIdealOffset = () =>  {
     //position of camera
-    const idealOffset = new THREE.Vector3(-10, 20, -20);
+    const idealOffset = new THREE.Vector3(-10, 20, -25);
     idealOffset.applyQuaternion(target.Rotation);
     idealOffset.add(target.Position);
     return idealOffset;
