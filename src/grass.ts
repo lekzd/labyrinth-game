@@ -1,19 +1,45 @@
 import * as THREE from 'three';
 import {scene} from './scene.ts';
 import { createLeavesMaterial } from './materials/leavesMaterial/index.ts';
-import { State } from './state.ts';
+import { State, state } from './state.ts';
 import { Tiles } from './types/Tiles.ts';
 import { frandom } from './utils/random.ts';
 import { createTerrainCanvas } from './materials/terrain/index.ts';
+import { makeCtx } from './utils/makeCtx.ts';
 
-let leavesMaterial;
+let leavesMaterial: THREE.ShaderMaterial;
+let lightsCtx: CanvasRenderingContext2D;
 
 /////////
 // MESH
 /////////
 
-export const update = (time) => {
+export const update = (time: number) => {
   leavesMaterial.uniforms.time.value += time;
+  leavesMaterial.uniformsNeedUpdate = true;
+
+  lightsCtx.clearRect(0, 0, lightsCtx.canvas.width, lightsCtx.canvas.height)
+
+  state.objects.forEach(object => {
+    const x = object.x / 10
+    const y = object.z / 10
+
+    const innerRadius = 1
+    const outerRadius = 5
+
+    const gradient = lightsCtx.createRadialGradient(x, y, innerRadius, x, y, outerRadius);
+    gradient.addColorStop(0, 'rgba(200, 150, 0, 0.3)');
+    gradient.addColorStop(1, 'rgba(0, 0, 10, 0.1)');
+
+    lightsCtx.beginPath()
+    lightsCtx.arc(x, y, outerRadius, 0, 2 * Math.PI);
+
+    lightsCtx.fillStyle = gradient;
+    lightsCtx.fill();
+  })
+
+  leavesMaterial.uniforms.lightsImage.value = new THREE.CanvasTexture(lightsCtx.canvas)
+
   leavesMaterial.uniformsNeedUpdate = true;
 }
 
@@ -24,6 +50,8 @@ const tilesWithGrass = [
 ]
 
 export const render = (state: State) => {
+  lightsCtx = makeCtx(state.colls, state.rows)
+
   const uniforms = {
     time: {
       value: 0
@@ -42,6 +70,9 @@ export const render = (state: State) => {
     },
     terrainImage: {
       value: new THREE.CanvasTexture(createTerrainCanvas(state, 10, 4))
+    },
+    lightsImage: {
+      value: new THREE.CanvasTexture(lightsCtx.canvas)
     }
   }
   

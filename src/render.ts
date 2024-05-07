@@ -23,9 +23,9 @@ const persons: ReturnType<typeof Player>[] = []
 
 export const render = (state: State) => {
   const activePlayer = state.players.find(player => player.id = state.activePlayerId)
-  state.objects.forEach(object => {
+  state.objects.forEach((object, index) => {
     const controllable = activePlayer?.activeObjectId === object.id
-    const person = Player({ controllable, scene, ...object })
+    const person = Player({ index, controllable, scene, ...object })
     persons.push(person)
     subscribers.push(person)
 

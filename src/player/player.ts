@@ -5,14 +5,16 @@ import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { createTorch } from '../objects/torch';
 import { DynamicObject } from '../types/DynamicObject.ts';
 import { NpcAnimationStates } from './NpcAnimationStates.ts';
+import { state } from '../state.ts';
 
 
 interface Props extends DynamicObject {
+  index: number
   controllable: boolean
   scene: any
 }
 
-export const Player = ({ controllable, scene, id, type }: Props) => {
+export const Player = ({ index, controllable, scene, id, type }: Props) => {
   const model = models[type];
 
   const target = clone(model);
@@ -118,9 +120,6 @@ export const Player = ({ controllable, scene, id, type }: Props) => {
         root.setRotation(4.0 * -Math.PI * timeInSeconds * acceleration.y);
       }
 
-      const oldPosition = new THREE.Vector3();
-      oldPosition.copy(controlObject.position);
-
       const forward = new THREE.Vector3(0, 0, 1);
       forward.applyQuaternion(controlObject.quaternion);
       forward.normalize();
@@ -136,6 +135,10 @@ export const Player = ({ controllable, scene, id, type }: Props) => {
       controlObject.position.add(sideways);
 
       position.copy(controlObject.position);
+
+      state.objects[index].x = position.x
+      state.objects[index].y = position.y
+      state.objects[index].z = position.z
 
       if (mixer) mixer.update(timeInSeconds);
 

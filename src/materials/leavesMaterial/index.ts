@@ -21,6 +21,9 @@ type Uniforms = {
   terrainImage: {
     value: any;
   }
+  lightsImage: {
+    value: any;
+  }
 }
 
 export const createLeavesMaterial = (uniforms: Uniforms) => {
