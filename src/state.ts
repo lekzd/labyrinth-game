@@ -134,7 +134,7 @@ export const state = initState({
       type: 'Box',
       position: {
         x: 80 + (COLLS * scale) >> 1,
-        y: 5,
+        y: 0,
         z: (ROWS * scale) >> 1,
       }
     })

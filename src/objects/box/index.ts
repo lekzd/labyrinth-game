@@ -1,11 +1,24 @@
 import * as THREE from 'three';
+import * as CANNON from 'cannon';
 import { DynamicObject } from "../../types/DynamicObject";
+import { physicWorld } from '../../cannon';
 
 export const Box = (props: DynamicObject) => {
+  const physicY = 0
+  const halfExtents = new CANNON.Vec3(5, 5, 5);
+  const boxShape = new CANNON.Box(halfExtents);
+  const boxGeometry = new THREE.BoxGeometry(
+    halfExtents.x * 2,
+    halfExtents.y * 2,
+    halfExtents.z * 2,
+  );
+
   const mesh = new THREE.Mesh(
-    new THREE.BoxGeometry(10, 10, 10),
+    boxGeometry,
     new THREE.MeshPhongMaterial({ color: 0xffffff, fog: true }),
   )
+  const boxBody = new CANNON.Body({ mass: 10 });
+  boxBody.addShape(boxShape);
 
   Object.assign(mesh.position, props.position)
   Object.assign(mesh.quaternion, props.rotation)
@@ -13,8 +26,20 @@ export const Box = (props: DynamicObject) => {
   mesh.receiveShadow = true
   mesh.castShadow = true
 
+  boxBody.position.set(
+    props.position.x,
+    props.position.y + 10,
+    props.position.z,
+  )
+
+  // boxBody.quaternion.copy(props.rotation)
+
+  physicWorld.addBody(boxBody);
+
   return {
     mesh,
-    update: (time: number) => {}
+    update: (time: number) => {},
+    physicBody: boxBody,
+    physicY,
   }
 }

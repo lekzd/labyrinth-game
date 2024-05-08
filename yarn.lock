@@ -2890,6 +2890,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/cannon@npm:^0":
+  version: 0.1.12
+  resolution: "@types/cannon@npm:0.1.12"
+  checksum: 10/4a653ba4d0ba86e250dec658969f088ddc273eaae7719bfed681cbe1b19f56e06315fdb00d9f26b7abc6a51c748bc7155ba5846d9aed90ed96fadf4ba2b30d4a
+  languageName: node
+  linkType: hard
+
 "@types/connect@npm:*":
   version: 3.4.38
   resolution: "@types/connect@npm:3.4.38"
@@ -3763,6 +3770,13 @@ __metadata:
   version: 1.0.30001616
   resolution: "caniuse-lite@npm:1.0.30001616"
   checksum: 10/779c126bbe4be99500f52bf4f03df27058a26a4f37a335288bfef8859078edbd42a0fa75acd74464154c5e8c74c62f7248be4af8db3af3ed705bd989fb160569
+  languageName: node
+  linkType: hard
+
+"cannon@npm:^0.6.2":
+  version: 0.6.2
+  resolution: "cannon@npm:0.6.2"
+  checksum: 10/909e3a26e59981d774c7a7ba80031e7d3c85ae265267685926a173168fc8e89ff095a814549797eb6380569f178dd77fe22435624b253e0eb1f06c3b729eda7e
   languageName: node
   linkType: hard
 
@@ -5977,9 +5991,11 @@ __metadata:
     "@storybook/react": "npm:^8.0.10"
     "@storybook/react-vite": "npm:^8.0.10"
     "@storybook/test": "npm:^8.0.10"
+    "@types/cannon": "npm:^0"
     "@types/react": "npm:^18"
     "@types/three": "npm:^0"
     "@types/ws": "npm:^8"
+    cannon: "npm:^0.6.2"
     react: "npm:^18.3.1"
     storybook: "npm:^8.0.10"
     three: "npm:^0.164.1"

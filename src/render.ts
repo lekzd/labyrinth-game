@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as CANNON from 'cannon';
 import Stats from 'three/addons/libs/stats.module.js';
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import {Tiles} from "./types/Tiles.ts";
@@ -14,6 +15,7 @@ import { something } from './utils/something.ts';
 import { frandom } from './utils/random.ts';
 import { ObjectType } from './types/ObjectType.ts';
 import { Box } from './objects/box/index.ts';
+import { createGroundBody, createPhysicBox, physicWorld } from './cannon.ts';
 
 const scale = 10;
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1.0, 1000.0)
@@ -25,6 +27,8 @@ const subscribers: { update: (time: number) => void }[] = [grass]
 type MapObject = {
   update: (time: number) => void,
   mesh: THREE.Object3D<THREE.Object3DEventMap>,
+  physicBody?: CANNON.Body
+  physicY?: number
 }
 
 const objects: MapObject[] = []
@@ -95,6 +99,21 @@ export const render = (state: State) => {
         upd(timeElapsedS);
       }
 
+      const fixedTimeStep = 1.0 / 60.0; // seconds
+
+      physicWorld.step(fixedTimeStep);
+
+      objects.forEach(object => {
+        if (object.physicBody) {
+          object.mesh.position.set(
+            object.physicBody.position.x,
+            object.physicBody.position.y - (object.physicY ?? 0),
+            object.physicBody.position.z,
+          )
+          object.mesh.quaternion.copy(object.physicBody.quaternion)
+        }
+      })
+
       prevTime = t;
     });
   }
@@ -146,6 +165,17 @@ export const items = {
 
         Object.assign(cube.position, { x: x * scale, z: y * scale })
 
+        const physicY = 10
+        const physicBody = createPhysicBox({ x: 5, y: physicY, z: 5 }, { mass: 0 });
+
+        physicBody.position.set(
+          x * scale,
+          physicY,
+          y * scale,
+        )
+
+        physicWorld.addBody(physicBody)
+
         scene.add(cube)
       }
     }
@@ -169,6 +199,8 @@ export const items = {
 
     mesh.rotation.x = - Math.PI / 2;
     mesh.receiveShadow = true;
+
+    physicWorld.addBody(createGroundBody());
 
     scene.add(mesh);
     scene.add(grassMesh);

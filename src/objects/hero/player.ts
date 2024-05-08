@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import { KeyboardCharacterController, SocketCharacterController } from './controller.ts';
-import { models } from '../../loader.ts';
+import { modelType, models } from '../../loader.ts';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { createTorch } from '../torch/index.ts';
 import { DynamicObject } from '../../types/DynamicObject.ts';
 import { NpcAnimationStates } from './NpcAnimationStates.ts';
 import { state } from '../../state.ts';
+import { createPhysicBox, physicWorld } from '../../cannon.ts';
 
 interface Props extends DynamicObject {}
 
@@ -29,6 +30,22 @@ export const Player = ({ id, type, position, rotation }: Props) => {
 
   Object.assign(target.position, position)
   Object.assign(target.quaternion, rotation)
+
+  const physicY = 5
+
+  const physicBody = createPhysicBox(
+    { x: 2, y: physicY, z: 2 },
+    { mass: type === modelType.Monk ? 50 : 25, fixedRotation: true }
+  );
+
+  physicBody.position.set(
+    position.x,
+    position.y + physicY,
+    position.z,
+  )
+  physicBody.quaternion.copy(rotation)
+
+  physicWorld.addBody(physicBody);
 
   target.scale.multiplyScalar(.05);
   target.updateMatrix();
@@ -64,6 +81,8 @@ export const Player = ({ id, type, position, rotation }: Props) => {
   const root = {
     id,
     mesh: target,
+    physicBody,
+    physicY,
 
     get Position() {
       return target.position;
@@ -73,7 +92,12 @@ export const Player = ({ id, type, position, rotation }: Props) => {
       return target?.quaternion || new THREE.Quaternion();
     },
     setPosition: (position: Partial<THREE.Vector3Like>) => {
-      Object.assign(target.position, position)
+      // Object.assign(target.position, position)
+      physicBody.position.set(
+        position.x ? position.x : physicBody.position.x,
+        position.y ? position.y + physicY : physicBody.position.y,
+        position.z ? position.z : physicBody.position.z,
+      )
     },
     setRotation: (angle: number) => {
       const controlObject = target;
@@ -84,7 +108,9 @@ export const Player = ({ id, type, position, rotation }: Props) => {
       quaternion.setFromAxisAngle(axis, angle);
       npcRotation.multiply(quaternion);
 
-      controlObject.quaternion.copy(npcRotation);
+      // controlObject.quaternion.copy(npcRotation);
+
+      physicBody.quaternion.copy(npcRotation);
     },
     update: (timeInSeconds: number) => {
       if (!stateMachine.currentState) {
@@ -136,6 +162,13 @@ export const Player = ({ id, type, position, rotation }: Props) => {
 
       controlObject.position.add(forward);
       controlObject.position.add(sideways);
+
+      // Object.assign(physicBody.position, controlObject.position);
+      physicBody.position.set(
+        controlObject.position.x,
+        controlObject.position.y + physicY,
+        controlObject.position.z,
+      )
 
       state.objects[index].position.x = controlObject.position.x
       state.objects[index].position.y = controlObject.position.y
