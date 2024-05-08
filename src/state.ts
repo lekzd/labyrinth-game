@@ -4,9 +4,9 @@ import { modelType } from "./loader"
 import { DynamicObject } from "./types/DynamicObject"
 import { Tiles } from "./types/Tiles"
 import { something } from "./utils/something"
-import {mergeDeep, throttle} from "./utils.ts";
 import { frandom } from './utils/random';
 import {NpcAnimationStates} from "./objects/hero/NpcAnimationStates.ts";
+import {mergeDeep} from "./utils/mergeDeep.ts";
 
 type setState = (state: Partial<State>, params?: { permoment?: boolean, server?: boolean, throttle?: string }) => void
 
@@ -16,7 +16,9 @@ export type State = {
   colls: number
   staticGrid: Tiles[]
   rooms: RoomConfig[]
-  objects: Record<string, DynamicObject | Player>
+  objects: Record<string, DynamicObject>
+  players: Record<string, Player>
+  activePlayerId: number
   setState: setState
   listen(handler: setState): void;
 }
@@ -25,10 +27,12 @@ export const initState = (initialState: Partial<State>): State => {
   const {
     rows = 100,
     colls = 100,
-    objects = [],
+    objects = {},
     rooms = [],
-    staticGrid = Array.from<number>({ length: rows * colls }).fill(Tiles.Floor),
+    players = {},
   } = initialState
+
+  const staticGrid = Array.from<number>({ length: rows * colls }).fill(Tiles.Floor)
 
   const subscribers = new Set();
 
@@ -54,21 +58,21 @@ export const initState = (initialState: Partial<State>): State => {
     colls,
     staticGrid,
     objects,
+    players,
     rooms,
-    setState,
-    listen
+    listen,
+    setState
   }
 
   return state
 }
 
-const ROWS = 100
-const COLLS = 100
+export const ROWS = 100
+export const COLLS = 100
 
-let id = 0
-const getId = () => id++
+const getId = () => `${Math.floor(Math.random() * 100)}`
 
-const createObject = (data: Partial<DynamicObject>): DynamicObject => {
+export const createObject = (data: Partial<DynamicObject>): DynamicObject => {
   return {
     id: getId(),
     type: 'Box',
@@ -93,16 +97,16 @@ export const createHeroObject = (data: Partial<DynamicObject>): DynamicObject =>
   return createObject({ ...data, state: NpcAnimationStates.idle, type: something(Object.values(modelType)) })
 }
 
-const createPlayerObject = (activeObjectId: number): Player => {
+export const createPlayerObject = (activeObjectId: string): Player => {
   return {
-    id: Math.floor(Math.random() * 1e9),
-    activeObjectId,
+    id: `${Math.floor(Math.random() * 1e9)}`,
+    activeObjectId: `${activeObjectId}`,
   }
 }
 
-const scale = 10
+export const scale = 10
 
-const createCampfireObject = (): DynamicObject => {
+export const createCampfireObject = (): DynamicObject => {
   return createObject({
     type: 'Campfire',
     position: {
@@ -113,53 +117,11 @@ const createCampfireObject = (): DynamicObject => {
   })
 }
 
-const personsCount = 3
-const heroes = []
-
-for (let i = 0; i < personsCount; i++) {
-  const angle = (i / personsCount) * (Math.PI * 2)
-  const x = (COLLS * scale) >> 1
-  const z = (ROWS * scale) >> 1
-  const quaternion = new THREE.Quaternion();
-  const axis = new THREE.Vector3(0, 1, 0);
-
-  quaternion.setFromAxisAngle(axis, Math.PI * 1.5 - angle);
-
-  heroes.push(createHeroObject({
-    position: {
-      x: x + (Math.cos(angle) * 20),
-      y: 0,
-      z: z + (Math.sin(angle) * 20),
-    },
-    rotation: quaternion
-  }))
-}
-
-
 export const state = initState({
   rows: ROWS,
   colls: COLLS,
-  objects: [
-    createCampfireObject(),
-    ...heroes,
-    createObject({
-      type: 'Box',
-      position: {
-        x: 80 + (COLLS * scale) >> 1,
-        y: 0,
-        z: (ROWS * scale) >> 1,
-      }
-    }),
-
-    ...Array(10).fill(1).map((a, i) => createObject({
-      type: 'Box',
-      position: {
-        x: frandom(-100, -150) + (COLLS * scale) >> 1,
-        y: i * 10,
-        z: frandom(-20, 20) + (ROWS * scale) >> 1,
-      }
-    }))
-  ].reduce((acc, it) => ({ ...acc, [it.id]: it }), {}),
+  objects: {},
+  players: {},
 })
 
 window.state = state

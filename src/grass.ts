@@ -15,21 +15,19 @@ let lightsCtx: CanvasRenderingContext2D;
 /////////
 
 export const update = (time: number) => {
-  if (!lightsCtx) return;
-
   leavesMaterial.uniforms.time.value += time;
   leavesMaterial.uniformsNeedUpdate = true;
 
   lightsCtx.clearRect(0, 0, lightsCtx.canvas.width, lightsCtx.canvas.height)
 
   for (const id in state.objects) {
-    const object = state.objects[id]
+    const object = state.objects[id];
 
     const x = object.position.x / 10
     const y = object.position.z / 10
 
     if (['Box', 'Campfire'].includes(object.type)) {
-      return
+      continue
     }
 
     const innerRadius = 1

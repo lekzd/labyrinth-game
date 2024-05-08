@@ -1,5 +1,5 @@
 import { ObjectType } from "./ObjectType"
-import {NpcAnimationStates} from "../player/NpcAnimationStates.ts";
+import {NpcAnimationStates} from "../objects/hero/NpcAnimationStates.ts";
 
 type ObjectVector3 = {
   x: number
@@ -17,10 +17,8 @@ type ObjectQuaternion = {
 export type DynamicObject = {
   id: string,
   type: ObjectType,
-  state: NpcAnimationStates,
+  state?: NpcAnimationStates,
 
   position: ObjectVector3,
   rotation: ObjectQuaternion,
-
-  angle: number,
 }

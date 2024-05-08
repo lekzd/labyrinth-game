@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { KeyboardCharacterController, SocketCharacterController } from './controller.ts';
 import { modelType, models } from '../../loader.ts';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { createTorch } from '../torch/index.ts';
@@ -10,7 +9,7 @@ import { createPhysicBox, physicWorld } from '../../cannon.ts';
 
 interface Props extends DynamicObject {}
 
-export const Player = ({ id, type, position: positionProps, state: personState, rotation }: Props) => {
+export const Player = ({ id, type, position, rotation }: Props) => {
   const model = models[type];
 
   if (!model) {
@@ -24,7 +23,7 @@ export const Player = ({ id, type, position: positionProps, state: personState, 
   const acceleration = new THREE.Vector3(1, 0.25, 50.0)
   const velocity = new THREE.Vector3(0, 0, 0)
 
-  Object.assign(target.position, positionProps)
+  Object.assign(target.position, position)
   Object.assign(target.quaternion, rotation)
 
   const physicY = 5
@@ -35,9 +34,9 @@ export const Player = ({ id, type, position: positionProps, state: personState, 
   );
 
   physicBody.position.set(
-    positionProps.x,
-    positionProps.y + physicY,
-    positionProps.z,
+    position.x,
+    position.y + physicY,
+    position.z,
   )
   physicBody.quaternion.copy(rotation)
 
@@ -72,7 +71,7 @@ export const Player = ({ id, type, position: positionProps, state: personState, 
     };
   }
   const stateMachine = CharacterFSM({ animations })
-  stateMachine.setState(state.objects[id]?.state || personState);
+  stateMachine.setState('idle');
 
   const root = {
     id,
@@ -80,35 +79,29 @@ export const Player = ({ id, type, position: positionProps, state: personState, 
     physicBody,
     physicY,
 
+    get position() {
+      return target.position;
+    },
     get acceleration() {
       return acceleration;
-    },
-    get quaternion() {
-      return target.quaternion;
-    },
-    get decceleration() {
-      return decceleration;
     },
     get velocity() {
       return velocity;
     },
-    get target() {
-      return target;
+    get decceleration() {
+      return decceleration;
     },
-
-    get position() {
-      return target.position;
+    get quaternion() {
+      return target?.quaternion;
     },
-
-    get Rotation() {
-      return target?.quaternion || new THREE.Quaternion();
+    get rotation() {
+      return target?.quaternion;
     },
     setPosition: (position: Partial<THREE.Vector3Like>) => {
-      // Object.assign(target.position, position)
       physicBody.position.set(
-        position.x ? position.x : physicBody.position.x,
+        position.x || physicBody.position.x,
         position.y ? position.y + physicY : physicBody.position.y,
-        position.z ? position.z : physicBody.position.z,
+        position.z || physicBody.position.z,
       )
     },
     setRotation: (angle: number) => {
@@ -120,7 +113,7 @@ export const Player = ({ id, type, position: positionProps, state: personState, 
       quaternion.setFromAxisAngle(axis, angle);
       npcRotation.multiply(quaternion);
 
-      // controlObject.quaternion.copy(npcRotation);
+      controlObject.quaternion.copy(npcRotation);
 
       physicBody.quaternion.copy(npcRotation);
     },
@@ -128,14 +121,18 @@ export const Player = ({ id, type, position: positionProps, state: personState, 
       if (!stateMachine.currentState) {
         return;
       }
+      const obj = state.objects[id];
 
-      const { state: S, position, angle } = state.objects[id];
+      stateMachine.update(timeInSeconds, obj.state);
 
-      stateMachine.setState(S);
+      physicBody.position.set(
+        obj.position.x,
+        obj.position.y + physicY,
+        obj.position.z,
+      )
 
-      root.setPosition(position);
-      root.setRotation(angle);
-
+      physicBody.quaternion.copy(obj.rotation)
+      Object.assign(target.quaternion, obj.rotation)
 
       if (mixer) mixer.update(timeInSeconds);
 
@@ -177,11 +174,8 @@ const CharacterFSM = ({ animations }) => {
       return currentState;
     },
     setState,
-    update(timeElapsed, nextState) {
-      if (currentState) {
-        //calling update method from State
-        currentState.update(timeElapsed, nextState);
-      }
+    update(timeElapsed, next) {
+     setState(next)
     },
   }
 };

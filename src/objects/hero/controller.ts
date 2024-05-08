@@ -1,7 +1,11 @@
 import * as THREE from 'three';
 import {state} from "../../state.ts";
-import {isEqual} from "../../utils.ts";
 import {send} from "../../socket.ts";
+import {isEqual} from "../../utils/isEqual.ts";
+import {pickBy} from "../../utils/pickBy.ts";
+import {throttle} from "../../utils/throttle.ts";
+
+const sendThrottle = state.setState
 
 const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler]: [string, (event: any) => void]) => void) => {
   const input = {
@@ -93,33 +97,15 @@ const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler
   }).forEach(watcherCallback)
 
   // TODO listerns for btn events
-  
+
   return {
     ...input,
     update: (timeInSeconds) => {
-      const { id, velocity, decceleration, position, acceleration } = person;
+      const { id, velocity, decceleration, position, physicY, physicBody, acceleration } = person;
       const prev = state.objects[id];
       const next = { ...prev, state: 'idle', }
 
       const acc = acceleration.clone();
-
-      //set user speed here
-      if (input.forward) {
-        next.state = input.speed ? 'run' : 'walk';
-        acc.multiplyScalar(input.speed ? 6.0 : 3.0);
-        velocity.z += acc.z * timeInSeconds;
-      }
-      if (input.backward) {
-        next.state = input.speed ? 'run' : 'walk';
-        acc.multiplyScalar(input.speed ? 6.0 : 3.0);
-        velocity.z -= acc.z * timeInSeconds;
-      }
-      if (input.left) {
-        next.angle = 4.0 * Math.PI * timeInSeconds * acceleration.y;
-      }
-      if (input.right) {
-        next.angle = 4.0 * -Math.PI * timeInSeconds * acceleration.y;
-      }
 
       const frameDecceleration = new THREE.Vector3(
         velocity.x * decceleration.x,
@@ -132,32 +118,50 @@ const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler
 
       velocity.add(frameDecceleration);
 
+      const controlObject = person;
+
+      //set user speed here
+      if (input.forward) {
+        next.state = input.speed ? 'run' : 'walk';
+        acc.multiplyScalar(input.speed ? 6.0 : 3);
+        velocity.z += acc.z * timeInSeconds;
+      }
+      if (input.backward) {
+        next.state = input.speed ? 'run' : 'walk';
+        acc.multiplyScalar(input.speed ? 6.0 : 3);
+        velocity.z -= acc.z * timeInSeconds;
+      }
+      if (input.left) {
+        person.setRotation(4.0 * Math.PI * timeInSeconds * acceleration.y);
+      }
+      if (input.right) {
+        person.setRotation(4.0 * -Math.PI * timeInSeconds * acceleration.y);
+      }
+
       const forward = new THREE.Vector3(0, 0, 1);
-      forward.applyQuaternion(person.quaternion);
+      forward.applyQuaternion(controlObject.quaternion);
       forward.normalize();
 
       const sideways = new THREE.Vector3(1, 0, 0);
-      sideways.applyQuaternion(person.quaternion);
+      sideways.applyQuaternion(controlObject.quaternion);
       sideways.normalize();
 
       sideways.multiplyScalar(velocity.x * timeInSeconds);
       forward.multiplyScalar(velocity.z * timeInSeconds);
 
-      person.position.add(forward);
-      person.position.add(sideways);
-      next.rotation.x = person.quaternion.x;
-      next.rotation.y = person.quaternion.y;
-      next.rotation.z = person.quaternion.z;
-      next.rotation.w = person.quaternion.w;
+      controlObject.position.add(forward);
+      controlObject.position.add(sideways);
 
-      position.copy(person.position);
-      next.position = position;
+      // Object.assign(physicBody.position, controlObject.position);
+      person.setPosition(controlObject.position)
+
+      next.position = pickBy(controlObject.position, ['x', 'y', 'z']);
+      next.rotation = pickBy(controlObject.rotation, ['x', 'y', 'z', 'w']);
 
       if (!isEqual(prev, next)) {
-        send({ objects: { [person.id]: next } })
+        sendThrottle({ objects: { [person.id]: next } })
       }
-
-      Object.assign(state.objects[person.id], next)
+      state.objects[person.id] = next;
     }
   };
 };
@@ -165,6 +169,6 @@ const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler
 export const KeyboardCharacterController = (person) => (
   BasicCharacterControllerInput(
     person,
-      args => document.addEventListener(...args, false)
+    args => document.addEventListener(...args, false)
   )
 )

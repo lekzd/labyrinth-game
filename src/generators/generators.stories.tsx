@@ -26,7 +26,6 @@ const PreviewCanvas = ({ rows, colls }) => {
 
   useEffect(() => {
     const state = initState({ rows, colls })
-
     state.setState(
       generateRooms({
         state,

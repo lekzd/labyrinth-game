@@ -38,7 +38,6 @@ const connect = () => {
   };
 
   ws.onmessage = async evt => {
-    console.log('evt', evt.data.toString())
     const item = JSON.parse(evt.data);
 
     for (const handler of handlers.keys()) {
@@ -54,9 +53,9 @@ export const send = (next = null) => {
 
   if (!ws || ws.readyState !== ws.OPEN) return requests.push(next);
 
-  console.group('SEND');
-  console.log(next);
-  console.groupEnd();
+  // console.group('SEND');
+  // console.log(next);
+  // console.groupEnd();
 
   setTimeout(() => ws.send(JSON.stringify(next)), 500)
 }

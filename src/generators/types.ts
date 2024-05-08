@@ -1,8 +1,8 @@
 import { Tiles } from "../types/Tiles.ts";
 
 export type Player = {
-  id: number,
-  activeObjectId: number
+  id: string,
+  activeObjectId: string
 }
 
 export type RoomConfig = {

@@ -1,33 +1,81 @@
 import './style.css'
-import { render, items } from './render.ts';
+import {render, items, addObjects} from './render.ts';
+import * as THREE from 'three';
 
 import { generateRooms } from './generators/generateRooms'
 import { loadModels, loadTextures, loadWorld } from './loader.ts';
-import {createHeroObject, state} from './state.ts';
+import {
+  COLLS,
+  createCampfireObject,
+  createHeroObject,
+  createObject,
+  createPlayerObject,
+  ROWS,
+  scale,
+  state
+} from './state.ts';
 import {onUpdate, send} from "./socket.ts";
+import {frandom} from "./utils/random.ts";
+import {pickBy} from "./utils/pickBy.ts";
 
 const ROOM_SIZE = 13
 
-export const player = createHeroObject({ position: { x: 520, y:0, z:500 } })
-
-
-// Слушаем обновление с сокета
-onUpdate((message) => {
-  if (!message.init) {
-    state.setState(message, { server: true })
-    return;
+onUpdate((next) => {
+  if (!next.init) {
+    state.setState(next, { server: true })
+    return
   }
 
-  // TODO: меню с выбором персонажей,
-  //  генерация мира на основе количества персов
+  const personsCount = 2
+  const heroes = []
 
-  // Стартуем мир
-  state.setState(
-    generateRooms({
+  for (let i = 0; i < personsCount; i++) {
+    const angle = (i / personsCount) * (Math.PI * 2)
+    const x = (COLLS * scale) >> 1
+    const z = (ROWS * scale) >> 1
+    const quaternion = new THREE.Quaternion();
+    const axis = new THREE.Vector3(0, 1, 0);
+
+    quaternion.setFromAxisAngle(axis, Math.PI * 1.5 - angle);
+
+    heroes.push(createHeroObject({
+      position: {
+        x: x + (Math.cos(angle) * 20),
+        y: 0,
+        z: z + (Math.sin(angle) * 20),
+      },
+      rotation: pickBy(quaternion, ['x', 'y', 'z', 'w'])
+    }))
+  }
+
+  state.setState({
+    ...generateRooms({
       state,
       ROOM_SIZE,
-    })
-  )
+    }),
+    objects: [
+      createCampfireObject(),
+      ...heroes,
+      createObject({
+        type: 'Box',
+        position: {
+          x: 80 + (COLLS * scale) >> 1,
+          y: 0,
+          z: (ROWS * scale) >> 1,
+        }
+      }),
+
+      ...Array(10).fill(1).map((a, i) => createObject({
+        type: 'Box',
+        position: {
+          x: frandom(-100, -150) + (COLLS * scale) >> 1,
+          y: i * 10,
+          z: frandom(-20, 20) + (ROWS * scale) >> 1,
+        }
+      }))
+    ].reduce((acc, item) => ({ ...acc, [item.id]: item }), {}),
+
+  })
 })
 
 state.listen((next, params) => {
@@ -36,20 +84,41 @@ state.listen((next, params) => {
     items.ground({ ...state, ...next })
   }
 
+  if (next.objects) addObjects(next.objects)
+
   if (!params?.server)
     send(next)
 })
 
-// Входим с готовым персонажем
-state.setState({
-  objects: {
-    [player.id]: player
-  }
+const x = (COLLS * scale) >> 1
+const z = (ROWS * scale) >> 1
+const angle = (0 / 3) * (Math.PI * 2)
+const quaternion = new THREE.Quaternion()
+
+const objectHero = createHeroObject({
+  position: {
+    x: x + (Math.cos(angle) * 20),
+    y: 0,
+    z: z + (Math.sin(angle) * 20),
+  },
+  rotation: pickBy(quaternion, ['x', 'y', 'z', 'w'])
 });
 
-Promise.all(
-  [loadWorld, loadModels, loadTextures]
-    .map(func => func())
-).then(() => {
+export const currentPlayer = createPlayerObject(objectHero.id)
+
+Promise.all([
+  loadTextures(),
+  loadModels(),
+  loadWorld()
+]).then(() => {
   render(state)
+
+  state.setState({
+    objects: {
+      [objectHero.id]: objectHero
+    },
+    players: {
+      [currentPlayer.id]: currentPlayer
+    }
+  })
 })
