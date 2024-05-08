@@ -24,6 +24,10 @@ export const update = (time: number) => {
     const x = object.position.x / 10
     const y = object.position.z / 10
 
+    if (['Box', 'Campfire'].includes(object.type)) {
+      return
+    }
+
     const innerRadius = 1
     const outerRadius = 5
 
