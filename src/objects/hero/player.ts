@@ -125,11 +125,7 @@ export const Player = ({ id, type, position, rotation }: Props) => {
 
       stateMachine.update(timeInSeconds, obj.state);
 
-      physicBody.position.set(
-        obj.position.x,
-        obj.position.y + physicY,
-        obj.position.z,
-      )
+      root.setPosition(obj.position)
 
       physicBody.quaternion.copy(obj.rotation)
       Object.assign(target.quaternion, obj.rotation)
