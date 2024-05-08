@@ -8,7 +8,8 @@ import {onUpdate, send} from "./socket.ts";
 
 const ROOM_SIZE = 13
 
-export const player = createHeroObject()
+export const player = createHeroObject({ position: { x: 520, y:0, z:500 } })
+
 
 // Слушаем обновление с сокета
 onUpdate((message) => {
@@ -34,12 +35,12 @@ state.listen((next, params) => {
     items.trees({ ...state, ...next })
     items.ground({ ...state, ...next })
   }
+
   if (!params?.server)
     send(next)
 })
 
 // Входим с готовым персонажем
-
 state.setState({
   objects: {
     [player.id]: player

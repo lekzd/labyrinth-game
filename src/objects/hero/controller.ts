@@ -99,7 +99,7 @@ const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler
     update: (timeInSeconds) => {
       const { id, velocity, decceleration, position, acceleration } = person;
       const prev = state.objects[id];
-      const next = { ...prev, angle: 0, state: 'idle', }
+      const next = { ...prev, state: 'idle', }
 
       const acc = acceleration.clone();
 
@@ -145,6 +145,10 @@ const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler
 
       person.position.add(forward);
       person.position.add(sideways);
+      next.rotation.x = person.quaternion.x;
+      next.rotation.y = person.quaternion.y;
+      next.rotation.z = person.quaternion.z;
+      next.rotation.w = person.quaternion.w;
 
       position.copy(person.position);
       next.position = position;

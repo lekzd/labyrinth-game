@@ -23,7 +23,6 @@ export const Player = ({ id, type, position: positionProps, state: personState, 
   const decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0)
   const acceleration = new THREE.Vector3(1, 0.25, 50.0)
   const velocity = new THREE.Vector3(0, 0, 0)
-  const position = new THREE.Vector3()
 
   Object.assign(target.position, positionProps)
   Object.assign(target.quaternion, rotation)
@@ -98,7 +97,7 @@ export const Player = ({ id, type, position: positionProps, state: personState, 
     },
 
     get position() {
-      return position;
+      return target.position;
     },
 
     get Rotation() {
@@ -130,19 +129,11 @@ export const Player = ({ id, type, position: positionProps, state: personState, 
         return;
       }
 
-      const { state: S, x, y, z, angle } = state.objects[id];
+      const { state: S, position, angle } = state.objects[id];
 
       stateMachine.setState(S);
 
-      physicBody.position.set(
-        x,
-        y + physicY,
-        z,
-      )
-
-      target.position.x = x;
-      target.position.z = z;
-      target.position.y = y;
+      root.setPosition(position);
       root.setRotation(angle);
 
 
