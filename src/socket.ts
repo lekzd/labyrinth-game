@@ -53,11 +53,11 @@ export const send = (next = null) => {
 
   if (!ws || ws.readyState !== ws.OPEN) return requests.push(next);
 
-  // console.group('SEND');
-  // console.log(next);
-  // console.groupEnd();
+  console.group('SEND');
+  console.log(next);
+  console.groupEnd();
 
-  setTimeout(() => ws.send(JSON.stringify(next)), 500)
+  setTimeout(() => ws.send(JSON.stringify(next)), 0)
 }
 
 export const onUpdate = (handle) => {

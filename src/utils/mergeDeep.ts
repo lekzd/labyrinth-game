@@ -10,12 +10,12 @@ export const mergeDeep = (target, ...sources) => {
   if (isObject(target) && isObject(source)) {
     for (const key in source) {
       if (isObject(source[key])) {
-        if (!target[key]) Object.assign(target, { [key]: {} });
+        if (!target[key]) target[key] = {}
         mergeDeep(target[key], source[key]);
       } else if (Array.isArray(target[key]) && Array.isArray(source[key])) {
         target[key].push(...source[key]);
       } else {
-        Object.assign(target, { [key]: source[key] });
+        target[key] = source[key];
       }
     }
   } else if (Array.isArray(target) && Array.isArray(source)) {

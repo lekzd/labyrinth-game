@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon';
 import { DynamicObject } from "../../types/DynamicObject";
 import { physicWorld } from '../../cannon';
+import {assign} from "../../utils/assign.ts";
 
 export const Box = (props: DynamicObject) => {
   const physicY = 0
@@ -20,8 +21,8 @@ export const Box = (props: DynamicObject) => {
   const boxBody = new CANNON.Body({ mass: 10 });
   boxBody.addShape(boxShape);
 
-  Object.assign(mesh.position, props.position)
-  Object.assign(mesh.quaternion, props.rotation)
+  assign(mesh.position, props.position)
+  assign(mesh.quaternion, props.rotation)
 
   mesh.receiveShadow = true
   mesh.castShadow = true

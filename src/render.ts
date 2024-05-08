@@ -18,6 +18,7 @@ import { Box } from './objects/box/index.ts';
 import { createGroundBody, createPhysicBox, physicWorld } from './cannon.ts';
 import {KeyboardCharacterController} from "./objects/hero/controller.ts";
 import {currentPlayer} from "./main.ts";
+import {assign} from "./utils/assign.ts";
 
 const scale = 10;
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1.0, 1000.0)
@@ -165,7 +166,6 @@ export const items = {
     scene.add(cube)
   },
   trees: (state: State) => {
-    console.log('trees')
     for (let i = 0; i < state.staticGrid.length; i++) {
       const x = i % state.colls + frandom(-0.5, 0.5)
       const y = Math.floor(i / state.colls) + frandom(-0.5, 0.5)
@@ -173,7 +173,7 @@ export const items = {
       if (state.staticGrid[i] === Tiles.Wall) {
         const cube = items[Tiles.Tree]();
 
-        Object.assign(cube.position, { x: x * scale, z: y * scale })
+        assign(cube.position, { x: x * scale, z: y * scale })
 
         const physicY = 10
         const physicBody = createPhysicBox({ x: 5, y: physicY, z: 5 }, { mass: 0 });
@@ -184,7 +184,7 @@ export const items = {
           y * scale,
         )
 
-        physicWorld.addBody(physicBody)
+        // physicWorld.addBody(physicBody)
 
         scene.add(cube)
       }
@@ -204,8 +204,8 @@ export const items = {
     const x = rows * scale >> 1
     const z = colls * scale >> 1
 
-    Object.assign(mesh.position, { x, z })
-    Object.assign(grassMesh.position, { x, z })
+    assign(mesh.position, { x, z })
+    assign(grassMesh.position, { x, z })
 
     mesh.rotation.x = - Math.PI / 2;
     mesh.receiveShadow = true;

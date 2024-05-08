@@ -7,6 +7,25 @@ import {throttle} from "../../utils/throttle.ts";
 
 const sendThrottle = state.setState
 
+const isEqualParams = (prev, { rotation, position, ...other }) => {
+  for (const key in other) {
+    if (other[key] !== prev[key])
+      return false
+  }
+
+  const points = { rotation, position }
+
+  for (const name in points) {
+    for (const key in points[name]) {
+      if (Math.floor(points[name][key]) !==  Math.floor(prev[name][key])) {
+        return false
+      }
+    }
+  }
+
+  return true
+}
+
 const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler]: [string, (event: any) => void]) => void) => {
   const input = {
     forward: false,
@@ -152,13 +171,13 @@ const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler
       controlObject.position.add(forward);
       controlObject.position.add(sideways);
 
-      // Object.assign(physicBody.position, controlObject.position);
+      // assign(physicBody.position, controlObject.position);
       person.setPosition(controlObject.position)
 
       next.position = pickBy(controlObject.position, ['x', 'y', 'z']);
       next.rotation = pickBy(controlObject.rotation, ['x', 'y', 'z', 'w']);
 
-      if (!isEqual(prev, next)) {
+      if (!isEqualParams(prev, next)) {
         sendThrottle({ objects: { [person.id]: next } })
       }
       state.objects[person.id] = next;

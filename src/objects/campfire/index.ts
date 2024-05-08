@@ -3,6 +3,7 @@ import vertexShader from './shader.vert'
 import fragmentShader from './shader.frag'
 import { frandom } from '../../utils/random';
 import { DynamicObject } from '../../types/DynamicObject';
+import {assign} from "../../utils/assign.ts";
 
 export const Campfire = (props: DynamicObject) => {
   const base = new THREE.Object3D()
@@ -65,7 +66,7 @@ export const Campfire = (props: DynamicObject) => {
 
   base.add(torch);
 
-  Object.assign(base.position, props.position);
+  assign(base.position, props.position);
 
   return {
     mesh: base,
