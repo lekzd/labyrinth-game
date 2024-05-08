@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import {state} from "../state.ts";
-import {isEqual} from "../utils.ts";
-import {send} from "../socket.ts";
+import {state} from "../../state.ts";
+import {isEqual} from "../../utils.ts";
+import {send} from "../../socket.ts";
 
 const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler]: [string, (event: any) => void]) => void) => {
   const input = {
@@ -147,7 +147,7 @@ const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler
       person.position.add(sideways);
 
       position.copy(person.position);
-      Object.assign(next, position);
+      next.position = position;
 
       if (!isEqual(prev, next)) {
         send({ objects: { [person.id]: next } })

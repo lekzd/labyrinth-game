@@ -18,7 +18,7 @@ import { Box } from './objects/box/index.ts';
 import { createGroundBody, createPhysicBox, physicWorld } from './cannon.ts';
 import {player} from "./main.ts";
 import {onUpdate} from "./socket.ts";
-import {KeyboardCharacterController} from "./player/controller.ts";
+import {KeyboardCharacterController} from "./objects/hero/controller.ts";
 
 const scale = 10;
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1.0, 1000.0)
@@ -52,23 +52,14 @@ export const addObject = (objectConfig) => {
   const object = ObjectConstructor({ ...objectConfig })
 
   const controllable = player.id === object.id
-  const person = Player({ controllable, scene, ...object })
 
-  subscribers[person.id] = person;
+  subscribers[object.id] = object;
 
   if (controllable) {
-    subscribers[person.id + 'cam'] = Camera({ camera, target: person })
-    subscribers[person.id + 'control'] = KeyboardCharacterController(person);
+    subscribers[object.id + 'cam'] = Camera({ camera, target: object })
+    subscribers[object.id + 'control'] = KeyboardCharacterController(object);
   }
 }
-
-onUpdate(({ objects = {} } = {}) => {
-  for (const id in objects) {
-    if (id in subscribers) continue;
-
-    addObject(objects[id])
-  }
-})
 
 onUpdate(({ objects = {} } = {}) => {
   for (const id in objects) {

@@ -3,12 +3,12 @@ import { render, items } from './render.ts';
 
 import { generateRooms } from './generators/generateRooms'
 import { loadModels, loadTextures, loadWorld } from './loader.ts';
-import {createPersonObject, state} from './state.ts';
+import {createHeroObject, state} from './state.ts';
 import {onUpdate, send} from "./socket.ts";
 
 const ROOM_SIZE = 13
 
-export const player = createPersonObject()
+export const player = createHeroObject()
 
 // Слушаем обновление с сокета
 onUpdate((message) => {

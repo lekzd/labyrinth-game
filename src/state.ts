@@ -6,6 +6,7 @@ import { Tiles } from "./types/Tiles"
 import { something } from "./utils/something"
 import {mergeDeep, throttle} from "./utils.ts";
 import { frandom } from './utils/random';
+import {NpcAnimationStates} from "./objects/hero/NpcAnimationStates.ts";
 
 type setState = (state: Partial<State>, params?: { permoment?: boolean, server?: boolean, throttle?: string }) => void
 
@@ -88,8 +89,8 @@ const createObject = (data: Partial<DynamicObject>): DynamicObject => {
   }
 }
 
-const createHeroObject = (data: Partial<DynamicObject>): DynamicObject => {
-  return createObject({ ...data, type: something(Object.values(modelType)) })
+export const createHeroObject = (data: Partial<DynamicObject>): DynamicObject => {
+  return createObject({ ...data, state: NpcAnimationStates.idle, type: something(Object.values(modelType)) })
 }
 
 const createPlayerObject = (activeObjectId: number): Player => {
@@ -134,8 +135,6 @@ for (let i = 0; i < personsCount; i++) {
   }))
 }
 
-const firstHero = heroes[0]
-const firstPlayer = createPlayerObject(firstHero.id)
 
 export const state = initState({
   rows: ROWS,
@@ -160,8 +159,7 @@ export const state = initState({
         z: frandom(-20, 20) + (ROWS * scale) >> 1,
       }
     }))
-  ].reduce((acc, it) => ({ ...acc, [it.id]: id }), {}),
-  activePlayerId: firstPlayer.id
+  ].reduce((acc, it) => ({ ...acc, [it.id]: it }), {}),
 })
 
 window.state = state

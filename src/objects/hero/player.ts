@@ -10,7 +10,7 @@ import { createPhysicBox, physicWorld } from '../../cannon.ts';
 
 interface Props extends DynamicObject {}
 
-export const Player = ({ id, type, position, rotation }: Props) => {
+export const Player = ({ id, type, position: positionProps, state: personState, rotation }: Props) => {
   const model = models[type];
 
   if (!model) {
@@ -25,7 +25,7 @@ export const Player = ({ id, type, position, rotation }: Props) => {
   const velocity = new THREE.Vector3(0, 0, 0)
   const position = new THREE.Vector3()
 
-  Object.assign(target.position, position)
+  Object.assign(target.position, positionProps)
   Object.assign(target.quaternion, rotation)
 
   const physicY = 5
@@ -36,9 +36,9 @@ export const Player = ({ id, type, position, rotation }: Props) => {
   );
 
   physicBody.position.set(
-    position.x,
-    position.y + physicY,
-    position.z,
+    positionProps.x,
+    positionProps.y + physicY,
+    positionProps.z,
   )
   physicBody.quaternion.copy(rotation)
 
@@ -134,20 +134,16 @@ export const Player = ({ id, type, position, rotation }: Props) => {
 
       stateMachine.setState(S);
 
-      // target.position.x = x;
-      // target.position.z = z;
-      // target.position.y = y;
-      // root.setRotation(angle);
-
       physicBody.position.set(
-        controlObject.position.x,
-        controlObject.position.y + physicY,
-        controlObject.position.z,
+        x,
+        y + physicY,
+        z,
       )
 
-      state.objects[index].position.x = controlObject.position.x
-      state.objects[index].position.y = controlObject.position.y
-      state.objects[index].position.z = controlObject.position.z
+      target.position.x = x;
+      target.position.z = z;
+      target.position.y = y;
+      root.setRotation(angle);
 
 
       if (mixer) mixer.update(timeInSeconds);

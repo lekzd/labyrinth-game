@@ -15,6 +15,8 @@ let lightsCtx: CanvasRenderingContext2D;
 /////////
 
 export const update = (time: number) => {
+  if (!lightsCtx) return;
+
   leavesMaterial.uniforms.time.value += time;
   leavesMaterial.uniformsNeedUpdate = true;
 
@@ -23,8 +25,8 @@ export const update = (time: number) => {
   for (const id in state.objects) {
     const object = state.objects[id]
 
-    const x = object.x / 10
-    const y = object.z / 10
+    const x = object.position.x / 10
+    const y = object.position.z / 10
 
     if (['Box', 'Campfire'].includes(object.type)) {
       return
