@@ -184,7 +184,7 @@ export const items = {
           y * scale,
         )
 
-        // physicWorld.addBody(physicBody)
+        physicWorld.addBody(physicBody)
 
         scene.add(cube)
       }
