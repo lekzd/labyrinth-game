@@ -3,24 +3,52 @@ import { render, items } from './render.ts';
 
 import { generateRooms } from './generators/generateRooms'
 import { loadModels, loadTextures, loadWorld } from './loader.ts';
-import { state } from './state.ts';
-import {send} from "./socket.ts";
+import {createPersonObject, state} from './state.ts';
+import {onUpdate, send} from "./socket.ts";
 
 const ROOM_SIZE = 13
 
-generateRooms({
-  state,
-  ROOM_SIZE,
+export const player = createPersonObject()
+
+// Слушаем обновление с сокета
+onUpdate((message) => {
+  if (!message.init) {
+    state.setState(message, { server: true })
+    return;
+  }
+
+  // TODO: меню с выбором персонажей,
+  //  генерация мира на основе количества персов
+
+  // Стартуем мир
+  state.setState(
+    generateRooms({
+      state,
+      ROOM_SIZE,
+    })
+  )
 })
 
-Promise.all([
-  loadTextures(),
-  loadModels(),
-  loadWorld()
-]).then(() => {
-  render(state)
-  send();
+state.listen((next, params) => {
+  if (next.rooms || next.staticGrid) {
+    items.trees({ ...state, ...next })
+    items.ground({ ...state, ...next })
+  }
+  if (!params?.server)
+    send(next)
+})
 
-  items.trees(state)
-  items.ground(state)
+// Входим с готовым персонажем
+
+state.setState({
+  objects: {
+    [player.id]: player
+  }
+});
+
+Promise.all(
+  [loadWorld, loadModels, loadTextures]
+    .map(func => func())
+).then(() => {
+  render(state)
 })

@@ -1,5 +1,10 @@
-const BasicCharacterControllerInput = (watcherCallback: ([event, handler]: [string, (event: any) => void]) => void) => {
-  const keys = {
+import * as THREE from 'three';
+import {state} from "../state.ts";
+import {isEqual} from "../utils.ts";
+import {send} from "../socket.ts";
+
+const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler]: [string, (event: any) => void]) => void) => {
+  const input = {
     forward: false,
     backward: false,
     left: false,
@@ -14,74 +19,74 @@ const BasicCharacterControllerInput = (watcherCallback: ([event, handler]: [stri
 
     },
     keydown: (event) => {
-      keys.speed = event.shiftKey;
+      input.speed = event.shiftKey;
 
       switch (event.keyCode) {
         case 87: // w
-          keys.forward = true;
+          input.forward = true;
           break;
         case 38: // arrow up
-          keys.forward = true;
+          input.forward = true;
           break;
 
         case 65: // a
-          keys.left = true;
+          input.left = true;
           break;
         case 37: // arrow left
-          keys.left = true;
+          input.left = true;
           break;
 
         case 83: // s
-          keys.backward = true;
+          input.backward = true;
           break;
         case 40: // arrow down
-          keys.backward = true;
+          input.backward = true;
           break;
 
         case 68: // d
-          keys.right = true;
+          input.right = true;
           break;
         case 39: // arrow right
-          keys.right = true;
+          input.right = true;
           break;
 
         case 13: // ENTER
-          keys.enter = true;
+          input.enter = true;
           break;
       }
     },
     keyup: (event) => {
       switch(event.keyCode) {
         case 87: // w
-          keys.forward = false;
+          input.forward = false;
           break;
         case 38: // arrow up
-          keys.forward = false;
+          input.forward = false;
           break;
 
         case 65: // a
-          keys.left = false;
+          input.left = false;
           break;
         case 37: // arrow left
-          keys.left = false;
+          input.left = false;
           break;
 
         case 83: // s
-          keys.backward = false;
+          input.backward = false;
           break;
         case 40: // arrow down
-          keys.backward = false;
+          input.backward = false;
           break;
 
         case 68: // d
-          keys.right = false;
+          input.right = false;
           break;
         case 39: // arrow right
-          keys.right = false;
+          input.right = false;
           break;
 
         case 13: // ENTER
-          keys.enter = false;
+          input.enter = false;
           break;
       }
     }
@@ -89,13 +94,73 @@ const BasicCharacterControllerInput = (watcherCallback: ([event, handler]: [stri
 
   // TODO listerns for btn events
   
-  return keys;
+  return {
+    ...input,
+    update: (timeInSeconds) => {
+      const { id, velocity, decceleration, position, acceleration } = person;
+      const prev = state.objects[id];
+      const next = { ...prev, angle: 0, state: 'idle', }
+
+      const acc = acceleration.clone();
+
+      //set user speed here
+      if (input.forward) {
+        next.state = input.speed ? 'run' : 'walk';
+        acc.multiplyScalar(input.speed ? 6.0 : 3.0);
+        velocity.z += acc.z * timeInSeconds;
+      }
+      if (input.backward) {
+        next.state = input.speed ? 'run' : 'walk';
+        acc.multiplyScalar(input.speed ? 6.0 : 3.0);
+        velocity.z -= acc.z * timeInSeconds;
+      }
+      if (input.left) {
+        next.angle = 4.0 * Math.PI * timeInSeconds * acceleration.y;
+      }
+      if (input.right) {
+        next.angle = 4.0 * -Math.PI * timeInSeconds * acceleration.y;
+      }
+
+      const frameDecceleration = new THREE.Vector3(
+        velocity.x * decceleration.x,
+        velocity.y * decceleration.y,
+        velocity.z * decceleration.z
+      );
+      frameDecceleration.multiplyScalar(timeInSeconds);
+      frameDecceleration.z = Math.sign(frameDecceleration.z) * Math.min(
+        Math.abs(frameDecceleration.z), Math.abs(velocity.z));
+
+      velocity.add(frameDecceleration);
+
+      const forward = new THREE.Vector3(0, 0, 1);
+      forward.applyQuaternion(person.quaternion);
+      forward.normalize();
+
+      const sideways = new THREE.Vector3(1, 0, 0);
+      sideways.applyQuaternion(person.quaternion);
+      sideways.normalize();
+
+      sideways.multiplyScalar(velocity.x * timeInSeconds);
+      forward.multiplyScalar(velocity.z * timeInSeconds);
+
+      person.position.add(forward);
+      person.position.add(sideways);
+
+      position.copy(person.position);
+      Object.assign(next, position);
+
+      if (!isEqual(prev, next)) {
+        send({ objects: { [person.id]: next } })
+      }
+
+      Object.assign(state.objects[person.id], next)
+    }
+  };
 };
 
-export const KeyboardCharacterController = () => {
-  return BasicCharacterControllerInput(args => document.addEventListener(...args, false))
-}
-
-export const SocketCharacterController = () => {
-  return BasicCharacterControllerInput(args => null)
-}
+export const KeyboardCharacterController = (person) => (
+  BasicCharacterControllerInput(
+    person,
+      args => document.addEventListener(...args, false)
+  )
+)

@@ -217,9 +217,8 @@ export const generateRooms = ({
     addSequence(parentRoom, action, length, 0)
   }
 
-  state.setState({
+  return {
     staticGrid,
     rooms,
-  })
-  
+  }
 }

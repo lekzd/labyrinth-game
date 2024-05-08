@@ -16,13 +16,16 @@ import { frandom } from './utils/random.ts';
 import { ObjectType } from './types/ObjectType.ts';
 import { Box } from './objects/box/index.ts';
 import { createGroundBody, createPhysicBox, physicWorld } from './cannon.ts';
+import {player} from "./main.ts";
+import {onUpdate} from "./socket.ts";
+import {KeyboardCharacterController} from "./player/controller.ts";
 
 const scale = 10;
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1.0, 1000.0)
 const renderer = new THREE.WebGLRenderer({ antialias: true })
 const stats = new Stats()
 
-const subscribers: { update: (time: number) => void }[] = [grass]
+const subscribers: Record<string, { update: (time: number) => void }> = { grass }
 
 type MapObject = {
   update: (time: number) => void,
@@ -44,22 +47,42 @@ const getObjectClass = (type: ObjectType) => {
   }
 }
 
+export const addObject = (objectConfig) => {
+  const ObjectConstructor = getObjectClass(objectConfig.type)
+  const object = ObjectConstructor({ ...objectConfig })
+
+  const controllable = player.id === object.id
+  const person = Player({ controllable, scene, ...object })
+
+  subscribers[person.id] = person;
+
+  if (controllable) {
+    subscribers[person.id + 'cam'] = Camera({ camera, target: person })
+    subscribers[person.id + 'control'] = KeyboardCharacterController(person);
+  }
+}
+
+onUpdate(({ objects = {} } = {}) => {
+  for (const id in objects) {
+    if (id in subscribers) continue;
+
+    addObject(objects[id])
+  }
+})
+
+onUpdate(({ objects = {} } = {}) => {
+  for (const id in objects) {
+    if (id in subscribers) continue;
+
+    addObject(objects[id])
+  }
+})
+
 export const render = (state: State) => {
-  const activePlayer = state.players.find(player => player.id = state.activePlayerId)
+  const { objects } = state;
 
-  state.objects.forEach((objectConfig) => {
-    const controllable = activePlayer?.activeObjectId === objectConfig.id
-    const ObjectConstructor = getObjectClass(objectConfig.type)
-    const object = ObjectConstructor({ ...objectConfig })
-
-    objects.push(object)
-    subscribers.push(object)
-    scene.add(object.mesh)
-
-    if (controllable) {
-      subscribers.push(Camera({ camera, target: object }))
-    }
-  })
+  for (const id in objects)
+    addObject(objects[id])
 
   const container = document.getElementById('app')!;
 
@@ -93,17 +116,19 @@ export const render = (state: State) => {
       const timeElapsedS = (t - prevTime) * 0.001;
 
       // Updates
-      for (const item of subscribers) {
-        const upd = item.update;
+      for (const key in subscribers) {
+        const { update } = subscribers[key] || {};
 
-        upd(timeElapsedS);
+        update(timeElapsedS);
       }
 
       const fixedTimeStep = 1.0 / 60.0; // seconds
 
       physicWorld.step(fixedTimeStep);
 
-      objects.forEach(object => {
+      for (const id in objects) {
+        const object = objects[id]
+
         if (object.physicBody) {
           object.mesh.position.set(
             object.physicBody.position.x,
@@ -112,7 +137,7 @@ export const render = (state: State) => {
           )
           object.mesh.quaternion.copy(object.physicBody.quaternion)
         }
-      })
+      }
 
       prevTime = t;
     });

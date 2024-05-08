@@ -20,9 +20,11 @@ export const update = (time: number) => {
 
   lightsCtx.clearRect(0, 0, lightsCtx.canvas.width, lightsCtx.canvas.height)
 
-  state.objects.forEach(object => {
-    const x = object.position.x / 10
-    const y = object.position.z / 10
+  for (const id in state.objects) {
+    const object = state.objects[id]
+
+    const x = object.x / 10
+    const y = object.z / 10
 
     if (['Box', 'Campfire'].includes(object.type)) {
       return
@@ -40,7 +42,7 @@ export const update = (time: number) => {
 
     lightsCtx.fillStyle = gradient;
     lightsCtx.fill();
-  })
+  }
 
   leavesMaterial.uniforms.lightsImage.value = new THREE.CanvasTexture(lightsCtx.canvas)
 

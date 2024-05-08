@@ -26,10 +26,13 @@ const PreviewCanvas = ({ rows, colls }) => {
 
   useEffect(() => {
     const state = initState({ rows, colls })
-    generateRooms({
-      state,
-      ROOM_SIZE,
-    })
+
+    state.setState(
+      generateRooms({
+        state,
+        ROOM_SIZE,
+      })
+    )
 
     const canvas = ref.current!
     const ctx = canvas.getContext('2d')!

@@ -17,16 +17,13 @@ export const Player = ({ id, type, position, rotation }: Props) => {
     throw Error(`No model with type "${type}"`)
   }
 
-  const index = state.objects.findIndex(object => object.id === id)
-  const activePlayer = state.players.find(player => player.id = state.activePlayerId)
-  const controllable = activePlayer?.activeObjectId === id
   const target = clone(model);
   const animations = model.animations.map(animation => animation.clone());
 
   const decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0)
   const acceleration = new THREE.Vector3(1, 0.25, 50.0)
   const velocity = new THREE.Vector3(0, 0, 0)
-  const input = controllable ? KeyboardCharacterController() : SocketCharacterController()
+  const position = new THREE.Vector3()
 
   Object.assign(target.position, position)
   Object.assign(target.quaternion, rotation)
@@ -76,7 +73,7 @@ export const Player = ({ id, type, position, rotation }: Props) => {
     };
   }
   const stateMachine = CharacterFSM({ animations })
-  stateMachine.setState('idle');
+  stateMachine.setState(state.objects[id]?.state || personState);
 
   const root = {
     id,
@@ -84,8 +81,24 @@ export const Player = ({ id, type, position, rotation }: Props) => {
     physicBody,
     physicY,
 
-    get Position() {
-      return target.position;
+    get acceleration() {
+      return acceleration;
+    },
+    get quaternion() {
+      return target.quaternion;
+    },
+    get decceleration() {
+      return decceleration;
+    },
+    get velocity() {
+      return velocity;
+    },
+    get target() {
+      return target;
+    },
+
+    get position() {
+      return position;
     },
 
     get Rotation() {
@@ -117,53 +130,15 @@ export const Player = ({ id, type, position, rotation }: Props) => {
         return;
       }
 
-      stateMachine.update(timeInSeconds, input);
+      const { state: S, x, y, z, angle } = state.objects[id];
 
-      const frameDecceleration = new THREE.Vector3(
-        velocity.x * decceleration.x,
-        velocity.y * decceleration.y,
-        velocity.z * decceleration.z
-      );
-      frameDecceleration.multiplyScalar(timeInSeconds);
-      frameDecceleration.z = Math.sign(frameDecceleration.z) * Math.min(
-        Math.abs(frameDecceleration.z), Math.abs(velocity.z));
+      stateMachine.setState(S);
 
-      velocity.add(frameDecceleration);
+      // target.position.x = x;
+      // target.position.z = z;
+      // target.position.y = y;
+      // root.setRotation(angle);
 
-      const controlObject = target;
-      const acc = acceleration.clone();
-
-      //set user speed here
-      if (input.forward) {
-        acc.multiplyScalar(input.speed ? 6.0 : 3.0);
-        velocity.z += acc.z * timeInSeconds;
-      }
-      if (input.backward) {
-        acc.multiplyScalar(input.speed ? 6.0 : 3.0);
-        velocity.z -= acc.z * timeInSeconds;
-      }
-      if (input.left) {
-        root.setRotation(4.0 * Math.PI * timeInSeconds * acceleration.y);
-      }
-      if (input.right) {
-        root.setRotation(4.0 * -Math.PI * timeInSeconds * acceleration.y);
-      }
-
-      const forward = new THREE.Vector3(0, 0, 1);
-      forward.applyQuaternion(controlObject.quaternion);
-      forward.normalize();
-
-      const sideways = new THREE.Vector3(1, 0, 0);
-      sideways.applyQuaternion(controlObject.quaternion);
-      sideways.normalize();
-
-      sideways.multiplyScalar(velocity.x * timeInSeconds);
-      forward.multiplyScalar(velocity.z * timeInSeconds);
-
-      controlObject.position.add(forward);
-      controlObject.position.add(sideways);
-
-      // Object.assign(physicBody.position, controlObject.position);
       physicBody.position.set(
         controlObject.position.x,
         controlObject.position.y + physicY,
@@ -173,6 +148,7 @@ export const Player = ({ id, type, position, rotation }: Props) => {
       state.objects[index].position.x = controlObject.position.x
       state.objects[index].position.y = controlObject.position.y
       state.objects[index].position.z = controlObject.position.z
+
 
       if (mixer) mixer.update(timeInSeconds);
 
@@ -214,10 +190,10 @@ const CharacterFSM = ({ animations }) => {
       return currentState;
     },
     setState,
-    update(timeElapsed, input) {
+    update(timeElapsed, nextState) {
       if (currentState) {
         //calling update method from State
-        currentState.update(timeElapsed, input);
+        currentState.update(timeElapsed, nextState);
       }
     },
   }
@@ -240,13 +216,6 @@ const initStates = ({ animations, setState }) => ({
         curAction.play();
       }
     },
-    update(timeElapsed, input) {
-      if (input.forward) {
-        return;
-      }
-
-      setState(NpcAnimationStates.idle);
-    },
   },
   [NpcAnimationStates.walkBack]: {
     Name: NpcAnimationStates.walk,
@@ -262,13 +231,6 @@ const initStates = ({ animations, setState }) => ({
       } else {
         curAction.play();
       }
-    },
-    update(timeElapsed, input) {
-      if (input.backward) {
-        return;
-      }
-
-      setState(NpcAnimationStates.idle);
     },
   },
   [NpcAnimationStates.run]: {
@@ -287,13 +249,6 @@ const initStates = ({ animations, setState }) => ({
         curAction.play();
       }
     },
-    update(timeElapsed, input) {
-      if (input.forward) {
-        return;
-      }
-
-      setState(NpcAnimationStates.idle);
-    },
   },
   [NpcAnimationStates.idle]: {
     Name: NpcAnimationStates.idle,
@@ -311,12 +266,5 @@ const initStates = ({ animations, setState }) => ({
         idleAction.play();
       }
     },
-    update(_, input) {
-      if (input.forward) {
-        setState(input.speed ? NpcAnimationStates.run : NpcAnimationStates.walk);
-      } else if (input.backward) {
-        setState(NpcAnimationStates.walkBack);
-      }
-    }
   }
 })

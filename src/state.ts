@@ -4,7 +4,10 @@ import { modelType } from "./loader"
 import { DynamicObject } from "./types/DynamicObject"
 import { Tiles } from "./types/Tiles"
 import { something } from "./utils/something"
+import {mergeDeep, throttle} from "./utils.ts";
 import { frandom } from './utils/random';
+
+type setState = (state: Partial<State>, params?: { permoment?: boolean, server?: boolean, throttle?: string }) => void
 
 // TODO: засунуть сюда какой-нибудь стейт-менеджер
 export type State = {
@@ -12,10 +15,9 @@ export type State = {
   colls: number
   staticGrid: Tiles[]
   rooms: RoomConfig[]
-  objects: DynamicObject[]
-  players: Player[]
-  activePlayerId: number
-  setState: (state: Partial<State>) => void
+  objects: Record<string, DynamicObject | Player>
+  setState: setState
+  listen(handler: setState): void;
 }
 
 export const initState = (initialState: Partial<State>): State => {
@@ -24,14 +26,25 @@ export const initState = (initialState: Partial<State>): State => {
     colls = 100,
     objects = [],
     rooms = [],
-    players = [],
-    activePlayerId = -1,
+    staticGrid = Array.from<number>({ length: rows * colls }).fill(Tiles.Floor),
   } = initialState
 
-  const staticGrid = Array.from<number>({ length: rows * colls }).fill(Tiles.Floor)
+  const subscribers = new Set();
 
-  const setState = (newState: Partial<State>) => {
-    Object.assign(state, newState)
+  const listen = (handle: setState) => {
+    subscribers.add(handle);
+
+    return () => {
+      subscribers.delete(handle);
+    }
+  }
+
+  const setState = (newState: Partial<State> = {}, params) => {
+    mergeDeep(state, newState);
+
+    subscribers.forEach(handle => {
+      handle(newState, params)
+    })
   }
 
   const state = {
@@ -40,10 +53,9 @@ export const initState = (initialState: Partial<State>): State => {
     colls,
     staticGrid,
     objects,
-    players,
-    activePlayerId,
     rooms,
-    setState
+    setState,
+    listen
   }
 
   return state
@@ -148,9 +160,8 @@ export const state = initState({
         z: frandom(-20, 20) + (ROWS * scale) >> 1,
       }
     }))
-  ],
-  players: [
-    createPlayerObject(firstHero.id)
-  ],
+  ].reduce((acc, it) => ({ ...acc, [it.id]: id }), {}),
   activePlayerId: firstPlayer.id
 })
+
+window.state = state

@@ -28,7 +28,7 @@ const connect = () => {
   ws.onopen = () => {
     if (timeout) clearTimeout(timeout);
 
-    for (const req of requests) onSend(req);
+    for (const req of requests) send(req);
 
     requests = [];
   };
@@ -38,6 +38,7 @@ const connect = () => {
   };
 
   ws.onmessage = async evt => {
+    console.log('evt', evt.data.toString())
     const item = JSON.parse(evt.data);
 
     for (const handler of handlers.keys()) {
