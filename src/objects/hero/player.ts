@@ -18,6 +18,13 @@ export const Player = ({ id, type, position, rotation }: Props) => {
   const target = clone(model);
   const animations = model.animations.map(animation => animation.clone());
 
+  for (const name in loads.animation) {
+    for (const animation of loads.animation[name].animations) {
+      animation.name = name;
+      animations.push(animation.clone())
+    }
+  }
+
   const decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0)
   const acceleration = new THREE.Vector3(1, 0.25, 50.0)
   const velocity = new THREE.Vector3(0, 0, 0)
@@ -148,7 +155,6 @@ export const Player = ({ id, type, position, rotation }: Props) => {
 
 const CharacterFSM = ({ animations }) => {
   let
-    states = {},
     currentState = null;
 
   const setState = (name) => {
@@ -186,6 +192,7 @@ const action = (animations, Name) => ({
     if (prevState) {
       const prevAction = animations[prevState.Name]?.action;
 
+      curAction.time = 0.0;
       curAction.setEffectiveTimeScale(1.0);
       curAction.enabled = true;
 

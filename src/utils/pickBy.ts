@@ -1,4 +1,4 @@
-export const pickBy = (obj, keys) => {
+export const pickBy = <T>(obj, keys) => {
   const next = {};
 
   if (!obj) return next;
@@ -8,5 +8,5 @@ export const pickBy = (obj, keys) => {
       next[key] = obj[key];
   }
 
-  return next;
+  return next as T;
 }

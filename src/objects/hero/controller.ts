@@ -28,6 +28,7 @@ const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler
   const input = {
     forward: false,
     backward: false,
+    jumping: false,
     left: false,
     right: false,
     enter: false,
@@ -37,26 +38,33 @@ const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler
 
   let timeout = null
 
+  const animate = (anim) => {
+    state.setState({ objects: { [person.id]: { state: anim } } })
+
+    timeout = setTimeout(() => {
+      state.setState({ objects: { [person.id]: { state: NpcAnimationStates.idle } } })
+      timeout = null;
+    }, 1000)
+  }
+
   Object.entries({
     mousedown: (event) => {
       if (timeout) clearTimeout(timeout);
 
       for (const anim of [NpcAnimationStates.attack, NpcAnimationStates.attack2, NpcAnimationStates.sword_attackfast, NpcAnimationStates.dagger_attack2, NpcAnimationStates.spell1]) {
         if (anim in person.animations) {
-          state.setState({ objects: { [person.id]: { state: anim } } })
+          animate(anim)
           break;
         }
       }
-
-      timeout = setTimeout(() => {
-        state.setState({ objects: { [person.id]: { state: NpcAnimationStates.idle } } })
-        timeout = null;
-      }, 1000)
     },
     keydown: (event) => {
       input.speed = event.shiftKey;
 
       switch (event.keyCode) {
+        case 32:
+          animate(NpcAnimationStates.jumping)
+          break;
         case 87: // w
           input.forward = true;
           break;

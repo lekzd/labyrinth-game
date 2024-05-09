@@ -83,3 +83,5 @@ export const loaders = [
   load(loader, modelType, 'model', '.fbx'),
   load(loader, animationType, 'animation', '.fbx'),
 ];
+
+window.loads = loads

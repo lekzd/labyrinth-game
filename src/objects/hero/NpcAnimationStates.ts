@@ -3,6 +3,7 @@ export enum NpcAnimationStates {
   idle = 'idle',
   walk = 'walk',
   run = 'run',
+  jumping = 'jumping',
 
   'dagger_attack' = 'dagger_attack',
   'dagger_attack2' = 'dagger_attack2',

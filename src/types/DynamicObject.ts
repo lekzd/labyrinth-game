@@ -1,13 +1,13 @@
 import { ObjectType } from "./ObjectType"
 import {NpcAnimationStates} from "../objects/hero/NpcAnimationStates.ts";
 
-type ObjectVector3 = {
+export type ObjectVector3 = {
   x: number
   y: number
   z: number
 }
 
-type ObjectQuaternion = {
+export type ObjectQuaternion = {
   x: number
   y: number
   z: number
