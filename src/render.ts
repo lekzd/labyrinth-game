@@ -248,8 +248,8 @@ export const items = {
       }
     });
 
-    target.castShadow = true;
-    target.receiveShadow = true;
+    // target.castShadow = true;
+    // target.receiveShadow = true;
 
     return target;
   }

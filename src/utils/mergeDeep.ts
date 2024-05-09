@@ -12,8 +12,6 @@ export const mergeDeep = (target, ...sources) => {
       if (isObject(source[key])) {
         if (!target[key]) target[key] = {}
         mergeDeep(target[key], source[key]);
-      } else if (Array.isArray(target[key]) && Array.isArray(source[key])) {
-        target[key].push(...source[key]);
       } else {
         target[key] = source[key];
       }
