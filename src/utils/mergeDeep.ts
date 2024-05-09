@@ -12,7 +12,7 @@ export const mergeDeep = (target, ...sources) => {
       if (isObject(source[key])) {
         if (!target[key]) target[key] = {}
         mergeDeep(target[key], source[key]);
-      } else {
+      }  else {
         target[key] = source[key];
       }
     }

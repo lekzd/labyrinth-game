@@ -65,7 +65,7 @@ export const Player = ({ id, type, position, rotation }: Props) => {
   const mixer = new THREE.AnimationMixer(target);
 
   for (const clip of animations) {
-    animations[clip.name.replace('CharacterArmature|', '').toLowerCase()] = {
+    animations[clip.name.toLowerCase().replace('characterarmature|', '')] = {
       clip: clip,
       action: mixer.clipAction(clip),
     };
@@ -78,6 +78,7 @@ export const Player = ({ id, type, position, rotation }: Props) => {
     mesh: target,
     physicBody,
     physicY,
+    animations,
 
     get position() {
       return target.position;
@@ -157,7 +158,7 @@ const CharacterFSM = ({ animations }) => {
       if (prevState.Exit) prevState.Exit();
     }
     //creating new instance of a state class
-    currentState = states[name];
+    currentState = states[name] || states.default(name);
 
     //calling the Enter method from State
     currentState.Enter(prevState);
@@ -194,31 +195,15 @@ const initStates = ({ animations, setState }) => ({
       }
     },
   },
-  [NpcAnimationStates.walkBack]: {
-    Name: NpcAnimationStates.walk,
+  default: (Name) => ({
+    Name,
     Enter(prevState) {
-      const curAction = animations[NpcAnimationStates.walk]?.action || { play: () => {} };
-      if (prevState) {
-        const prevAction = animations[prevState.Name].action;
-
-        curAction.enabled = true;
-
-        curAction.crossFadeFrom(prevAction, 0.5, true);
-        curAction.play();
-      } else {
-        curAction.play();
-      }
-    },
-  },
-  [NpcAnimationStates.run]: {
-    Name: NpcAnimationStates.run,
-    Enter(prevState) {
-      const curAction = animations[NpcAnimationStates.run]?.action || { play: () => {} };
+      const curAction = animations[Name]?.action || { play: () => {} };
       if (prevState) {
         const prevAction = animations[prevState.Name]?.action;
 
+        curAction.setEffectiveTimeScale(1.0);
         curAction.enabled = true;
-
 
         curAction.crossFadeFrom(prevAction, 0.5, true);
         curAction.play();
@@ -226,7 +211,7 @@ const initStates = ({ animations, setState }) => ({
         curAction.play();
       }
     },
-  },
+  }),
   [NpcAnimationStates.idle]: {
     Name: NpcAnimationStates.idle,
     Enter(prevState) {

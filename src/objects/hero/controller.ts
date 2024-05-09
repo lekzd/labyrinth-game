@@ -1,9 +1,7 @@
 import * as THREE from 'three';
 import {state} from "../../state.ts";
-import {send} from "../../socket.ts";
-import {isEqual} from "../../utils/isEqual.ts";
 import {pickBy} from "../../utils/pickBy.ts";
-import {throttle} from "../../utils/throttle.ts";
+import {NpcAnimationStates} from "./NpcAnimationStates.ts";
 
 const sendThrottle = state.setState
 
@@ -37,9 +35,23 @@ const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler
     attack: false,
   };
 
+  let timeout = null
+
   Object.entries({
     mousedown: (event) => {
+      if (timeout) clearTimeout(timeout);
 
+      for (const anim of [NpcAnimationStates.attack, NpcAnimationStates.attack2, NpcAnimationStates.sword_attackfast, NpcAnimationStates.dagger_attack2, NpcAnimationStates.spell1]) {
+        if (anim in person.animations) {
+          state.setState({ objects: { [person.id]: { state: anim } } })
+          break;
+        }
+      }
+
+      timeout = setTimeout(() => {
+        state.setState({ objects: { [person.id]: { state: NpcAnimationStates.idle } } })
+        timeout = null;
+      }, 1000)
     },
     keydown: (event) => {
       input.speed = event.shiftKey;
@@ -122,7 +134,7 @@ const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler
     update: (timeInSeconds) => {
       const { id, velocity, decceleration, position, physicY, physicBody, acceleration } = person;
       const prev = state.objects[id];
-      const next = { ...prev, state: 'idle', }
+      const next = { ...prev }
 
       const acc = acceleration.clone();
 
@@ -141,15 +153,21 @@ const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler
 
       //set user speed here
       if (input.forward) {
-        next.state = input.speed ? 'run' : 'walk';
+        if (!timeout)
+          next.state = input.speed ? NpcAnimationStates.run : NpcAnimationStates.walk;
+
         acc.multiplyScalar(input.speed ? 6.0 : 3);
         velocity.z += acc.z * timeInSeconds;
-      }
-      if (input.backward) {
-        next.state = input.speed ? 'run' : 'walk';
+      } else if (input.backward) {
+        if (!timeout)
+          next.state = input.speed ? NpcAnimationStates.run : NpcAnimationStates.walk;
+
         acc.multiplyScalar(input.speed ? 6.0 : 3);
         velocity.z -= acc.z * timeInSeconds;
+      } else if ([NpcAnimationStates.run, NpcAnimationStates.walk].includes(next.state)) {
+        next.state = NpcAnimationStates.idle;
       }
+
       if (input.left) {
         person.setRotation(4.0 * Math.PI * timeInSeconds * acceleration.y);
       }
