@@ -21,7 +21,7 @@ void main() {
 
     vYFactor = (mod(time + values.y + (vIndex * 10.0), 10.0)) * 3.0;
 
-    gl_PointSize = size + (20.0 - vYFactor); // Установка размера частицы
+    gl_PointSize = max(size + (20.0 - vYFactor), 1.0); // Установка размера частицы
 
     vec4 basePosition = projectionMatrix * modelViewPosition;
 
