@@ -4,32 +4,14 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 const textureLoader = new THREE.TextureLoader()
 const loader = new FBXLoader();
 
-const texturesMap = {
-  stone_wall: '/assets/stone_wall.jpg',
-  wood_floor: '/assets/wood_floor.jpg',
-  tree: '/world/Tree.png',
+export enum texturesType {
+  stone_wall = 'stone_wall.jpg',
+  wood_floor = 'wood_floor.jpg',
+  tree = 'Tree.png',
 }
 
-export const textures: LoaderResourcesMap = {}
-
-type LoaderResourcesMap = Partial<Record<keyof typeof texturesMap, THREE.Texture>>
-
-export const loadTextures = async (): Promise<LoaderResourcesMap> => {
-  let loaded = 0
-  const entries = Object.entries(texturesMap)
-
-  return new Promise(resolve => {
-    entries.forEach(([textureName, path], index) => {
-      textureLoader.load(path, (texture) => {
-        textures[textureName as keyof typeof texturesMap] = texture
-        loaded++
-
-        if (loaded === entries.length) {
-          resolve(textures)
-        }
-      });
-    });
-  })
+export enum animationType {
+  jumping = 'jumping',
 }
 
 export enum modelType {
@@ -38,29 +20,6 @@ export enum modelType {
   Rogue = 'Rogue',
   Warrior = 'Warrior',
   Wizard = 'Wizard',
-}
-
-type LoaderModelsMap = Partial<Record<modelType, THREE.Group<THREE.Object3DEventMap>>>
-
-export const models: LoaderModelsMap = {}
-
-export const loadModels = async (): Promise<LoaderModelsMap> => {
-  let loaded = 0
-  const entries = Object.entries(modelType)
-
-  return new Promise(resolve => {
-    entries.forEach(([_, name], index) => {
-      loader.load(`/model/${name}.fbx`, obj => {
-        obj.name = name;
-        models[name] = obj;
-        loaded++
-
-        if (loaded === entries.length) {
-          resolve(models)
-        }
-      });
-    })
-  })
 }
 
 export enum worldType {
@@ -87,25 +46,40 @@ export enum worldType {
   Tree_021 = 'Tree_021',
 }
 
-type LoaderWorldsMap = Partial<Record<worldType, any>>
+type ItemsType = {
+  world: Partial<Record<worldType, THREE.Group<THREE.Object3DEventMap>>>
+  model: Partial<Record<modelType, THREE.Group<THREE.Object3DEventMap>>>
+  animation: Partial<Record<animationType, THREE.Group<THREE.Object3DEventMap>>>
+  texture: Partial<Record<texturesType, THREE.Texture>>
+}
 
-export const worlds: LoaderWorldsMap = {}
+export const loads = {} as ItemsType
 
-export const loadWorld = async (): Promise<LoaderWorldsMap> => {
+const load = (loader, types, dir = 'world', ext = '') => {
   let loaded = 0
-  const entries = Object.entries(worldType)
+  const entries = Object.entries(types)
+  loads[dir] = {};
 
   return new Promise(resolve => {
     entries.forEach(([_, name], index) => {
-      loader.load(`/world/${name}.fbx`, obj => {
+      const path = `/${dir}/${name}${ext}`;
+
+      loader.load(path, obj => {
         obj.name = name;
-        worlds[name] = obj;
+        loads[dir][name] = obj;
         loaded++
 
         if (loaded === entries.length) {
-          resolve(worlds)
+          resolve()
         }
       });
     })
   })
 }
+
+export const loaders = [
+  load(textureLoader, texturesType, 'texture'),
+  load(loader, worldType, 'world', '.fbx'),
+  load(loader, modelType, 'model', '.fbx'),
+  load(loader, animationType, 'animation', '.fbx'),
+];

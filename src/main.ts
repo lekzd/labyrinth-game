@@ -3,7 +3,7 @@ import {render, items, addObjects} from './render.ts';
 import * as THREE from 'three';
 
 import { generateRooms } from './generators/generateRooms'
-import { loadModels, loadTextures, loadWorld } from './loader.ts';
+import {loaders} from './loader.ts';
 import {
   COLLS,
   createCampfireObject,
@@ -106,11 +106,8 @@ const objectHero = createHeroObject({
 
 export const currentPlayer = createPlayerObject(objectHero.id)
 
-Promise.all([
-  loadTextures(),
-  loadModels(),
-  loadWorld()
-]).then(() => {
+Promise.all(loaders).then(() => {
+  console.log('end')
   render(state)
 
   state.setState({

@@ -6,7 +6,7 @@ import {Tiles} from "./types/Tiles.ts";
 import {Camera} from "./objects/hero/camera.ts";
 import {Player} from "./objects/hero/player.ts";
 import * as grass from "./grass.ts";
-import {textures, worlds} from './loader.ts';
+import {loads, texturesType} from './loader.ts';
 import {State} from './state.ts';
 import {scene} from './scene.ts';
 import { Campfire } from './objects/campfire/index.ts';
@@ -135,7 +135,7 @@ export const render = (state: State) => {
 // TODO: стандартизировать
 export const items = {
   wallsMerged: (state: State) => {
-    const texture = textures.stone_wall.clone()
+    const texture = loads.texture[texturesType.stone_wall].clone()
     const blocks: THREE.BoxGeometry[] = []
 
     texture.wrapS = THREE.RepeatWrapping;
@@ -216,7 +216,7 @@ export const items = {
     scene.add(grassMesh);
   },
   [Tiles.Wall]: () => {
-    const texture = textures.stone_wall.clone()
+    const texture = loads.texture[texturesType.stone_wall].clone()
 
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
@@ -232,7 +232,7 @@ export const items = {
     return cube;
   },
   [Tiles.Tree]: () => {
-    const model = something(Object.values(worlds));
+    const model = something(Object.values(loads.world));
 
     const target = model.clone();
 
@@ -240,7 +240,7 @@ export const items = {
 
     target.traverse(o => {
       if (o.isMesh) {
-        o.material.map = textures.tree;
+        o.material.map = loads.texture[texturesType.tree];
         o.material.needsUpdate = true
 
         // o.castShadow = true;

@@ -1,16 +1,15 @@
 import * as THREE from 'three';
-import { modelType, models } from '../../loader.ts';
+import { modelType, loads } from '../../loader.ts';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { createTorch } from '../torch/index.ts';
 import { DynamicObject } from '../../types/DynamicObject.ts';
-import { NpcAnimationStates } from './NpcAnimationStates.ts';
 import { state } from '../../state.ts';
 import { createPhysicBox, physicWorld } from '../../cannon.ts';
 
 interface Props extends DynamicObject {}
 
 export const Player = ({ id, type, position, rotation }: Props) => {
-  const model = models[type];
+  const model = loads.model[type];
 
   if (!model) {
     throw Error(`No model with type "${type}"`)
@@ -65,7 +64,12 @@ export const Player = ({ id, type, position, rotation }: Props) => {
   const mixer = new THREE.AnimationMixer(target);
 
   for (const clip of animations) {
-    animations[clip.name.toLowerCase().replace('characterarmature|', '')] = {
+    const name = clip.name.toLowerCase().replace('characterarmature|', '');
+
+    // if (![NpcAnimationStates.run, NpcAnimationStates.idle, NpcAnimationStates.walk].includes(name))
+    //   clip.timeScale = 5.5;
+
+    animations[name] = {
       clip: clip,
       action: mixer.clipAction(clip),
     };
@@ -158,13 +162,11 @@ const CharacterFSM = ({ animations }) => {
       if (prevState.Exit) prevState.Exit();
     }
     //creating new instance of a state class
-    currentState = states[name] || states.default(name);
+    currentState = action(animations, name);
 
     //calling the Enter method from State
     currentState.Enter(prevState);
   }
-
-  states = initStates({ animations, setState });
 
   return {
     get currentState() {
@@ -177,56 +179,20 @@ const CharacterFSM = ({ animations }) => {
   }
 };
 
-const initStates = ({ animations, setState }) => ({
-  [NpcAnimationStates.walk]: {
-    Name: NpcAnimationStates.walk,
-    Enter(prevState) {
-      const curAction = animations[NpcAnimationStates.walk]?.action || { play: () => {} };
-      if (prevState) {
-        const prevAction = animations[prevState.Name]?.action;
+const action = (animations, Name) => ({
+  Name,
+  Enter(prevState) {
+    const curAction = animations[Name]?.action || { play: () => {} };
+    if (prevState) {
+      const prevAction = animations[prevState.Name]?.action;
 
-        curAction.enabled = true;
+      curAction.setEffectiveTimeScale(1.0);
+      curAction.enabled = true;
 
-
-        curAction.crossFadeFrom(prevAction, 0.5, true);
-        curAction.play();
-      } else {
-        curAction.play();
-      }
-    },
+      curAction.crossFadeFrom(prevAction, 0.5, true);
+      curAction.play();
+    } else {
+      curAction.play();
+    }
   },
-  default: (Name) => ({
-    Name,
-    Enter(prevState) {
-      const curAction = animations[Name]?.action || { play: () => {} };
-      if (prevState) {
-        const prevAction = animations[prevState.Name]?.action;
-
-        curAction.setEffectiveTimeScale(1.0);
-        curAction.enabled = true;
-
-        curAction.crossFadeFrom(prevAction, 0.5, true);
-        curAction.play();
-      } else {
-        curAction.play();
-      }
-    },
-  }),
-  [NpcAnimationStates.idle]: {
-    Name: NpcAnimationStates.idle,
-    Enter(prevState) {
-      const idleAction = animations[NpcAnimationStates.idle]?.action || { play: () => {} };
-      if (prevState) {
-        const prevAction = animations[prevState.Name]?.action;
-        idleAction.time = 0.0;
-        idleAction.enabled = true;
-        idleAction.setEffectiveTimeScale(1.0);
-        idleAction.setEffectiveWeight(1.0);
-        idleAction.crossFadeFrom(prevAction, 0.5, true);
-        idleAction.play();
-      } else {
-        idleAction.play();
-      }
-    },
-  }
 })
