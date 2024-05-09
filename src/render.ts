@@ -243,8 +243,8 @@ export const items = {
         o.material.map = loads.texture[texturesType.tree];
         o.material.needsUpdate = true
 
-        // o.castShadow = true;
-        // o.receiveShadow = true;
+        o.castShadow = true;
+        o.receiveShadow = true;
       }
     });
 
