@@ -1,8 +1,8 @@
-import { textures, worlds } from "../../loader";
+import { loads } from "../../loader";
 import { something } from "../../utils/something";
 
 export const createTree = () => {
-  const model = something(Object.values(worlds));
+  const model = something(Object.values(loads.world));
 
   const target = model.clone();
 
@@ -10,7 +10,7 @@ export const createTree = () => {
 
   target.traverse(o => {
     if (o.isMesh) {
-      o.material.map = textures.tree;
+      o.material.map = loads.texture["Tree.png"];
       o.material.needsUpdate = true
 
       // o.castShadow = true;

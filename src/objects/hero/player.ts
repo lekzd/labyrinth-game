@@ -6,7 +6,9 @@ import { DynamicObject } from '../../types/DynamicObject.ts';
 import { state } from '../../state.ts';
 import { createPhysicBox, physicWorld } from '../../cannon.ts';
 
-interface Props extends DynamicObject {}
+interface Props extends DynamicObject {
+  type: modelType
+}
 
 export const Player = ({ id, type, position, rotation }: Props) => {
   const model = loads.model[type];
