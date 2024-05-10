@@ -71,8 +71,6 @@ export const render = (state: State) => {
   renderer.shadowMap.enabled = true;
   container.appendChild(renderer.domElement);
 
-  const frustum = new THREE.Frustum();
-
   /*
   * Рендерит рекурсивно сцену, пробрасывая в подписчиков (персонаж, камера)
   * тайминг для апдейта сцены
