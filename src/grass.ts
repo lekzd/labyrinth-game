@@ -18,7 +18,23 @@ export const update = (time: number) => {
   leavesMaterial.uniforms.time.value += time;
   leavesMaterial.uniformsNeedUpdate = true;
 
+  const innerRadius = 1
+  const outerRadius = 5
+
   lightsCtx.clearRect(0, 0, lightsCtx.canvas.width, lightsCtx.canvas.height)
+
+  //todo: генерировать статический свет в зависимости от источников света
+  const c = Math.round(lightsCtx.canvas.width / 2)
+
+  const gradient = lightsCtx.createRadialGradient(c, c, 3, c, c, outerRadius);
+  gradient.addColorStop(0, 'rgba(255, 50, 0, 0.5)');
+  gradient.addColorStop(1, 'rgba(0, 0, 50, 0.1)');
+
+  lightsCtx.beginPath()
+  lightsCtx.arc(c, c, outerRadius, 0, 2 * Math.PI);
+
+  lightsCtx.fillStyle = gradient;
+  lightsCtx.fill();
 
   for (const id in state.objects) {
     const object = state.objects[id];
@@ -29,9 +45,6 @@ export const update = (time: number) => {
     if (['Box', 'Campfire'].includes(object.type)) {
       continue
     }
-
-    const innerRadius = 1
-    const outerRadius = 5
 
     const gradient = lightsCtx.createRadialGradient(x, y, innerRadius, x, y, outerRadius);
     gradient.addColorStop(0, 'rgba(200, 150, 0, 0.3)');

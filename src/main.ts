@@ -80,8 +80,8 @@ onUpdate((next) => {
 
 state.listen((next, params) => {
   if (next.rooms || next.staticGrid) {
-    items.trees({ ...state, ...next })
     items.ground({ ...state, ...next })
+    items.roomChunks({ ...state, ...next })
   }
 
   if (next.objects) addObjects(next.objects)

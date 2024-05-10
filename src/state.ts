@@ -1,10 +1,8 @@
-import * as THREE from 'three';
 import { Player, RoomConfig } from "./generators/types"
 import { modelType } from "./loader"
 import { DynamicObject } from "./types/DynamicObject"
 import { Tiles } from "./types/Tiles"
 import { something } from "./utils/something"
-import { frandom } from './utils/random';
 import {NpcAnimationStates} from "./objects/hero/NpcAnimationStates.ts";
 import {mergeDeep} from "./utils/mergeDeep.ts";
 
