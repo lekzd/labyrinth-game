@@ -12,6 +12,8 @@ export enum texturesType {
 
 export enum animationType {
   jumping = 'jumping',
+  punch = 'punch',
+  sword = 'sword',
 }
 
 export enum modelType {

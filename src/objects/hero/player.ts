@@ -193,7 +193,6 @@ const action = (animations, Name) => ({
       const prevAction = animations[prevState.Name]?.action;
 
       curAction.time = 0.0;
-      curAction.setEffectiveTimeScale(1.0);
       curAction.enabled = true;
 
       curAction.crossFadeFrom(prevAction, 0.5, true);

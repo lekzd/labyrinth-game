@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {state} from "../../state.ts";
 import {pickBy} from "../../utils/pickBy.ts";
 import {NpcAnimationStates} from "./NpcAnimationStates.ts";
+import {animationType} from "../../loader.ts";
 
 const sendThrottle = state.setState
 
@@ -63,7 +64,7 @@ const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler
 
       switch (event.keyCode) {
         case 32:
-          animate(NpcAnimationStates.jumping)
+          animate(animationType.jumping)
           break;
         case 87: // w
           input.forward = true;
