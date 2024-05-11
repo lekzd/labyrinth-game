@@ -30,7 +30,7 @@ export const initState = (initialState: Partial<State>): State => {
     players = {},
   } = initialState
 
-  const staticGrid = Array.from<number>({ length: rows * colls }).fill(Tiles.Floor)
+  const staticGrid = Array.from<number>({ length: rows * colls }).fill(-1)
 
   const subscribers = new Set();
 
@@ -65,8 +65,8 @@ export const initState = (initialState: Partial<State>): State => {
   return state
 }
 
-export const ROWS = 100
-export const COLLS = 100
+export const ROWS = 150
+export const COLLS = 150
 
 const getId = () => `${Math.floor(Math.random() * 100)}`
 

@@ -6,7 +6,12 @@ export const CullingSystem = () => {
   const frustum = new THREE.Frustum();
 
   return {
-    update: (camera: THREE.Camera, rooms: ReturnType<typeof Room>[], objects:  Record<string, MapObject>) => {
+    update: (
+      camera: THREE.Camera,
+      rooms: ReturnType<typeof Room>[],
+      objects:  Record<string, MapObject>,
+      decorationObjects: THREE.Mesh[],
+    ) => {
       const cameraViewProjectionMatrix = new THREE.Matrix4()
 
       camera.updateMatrixWorld(); // make sure the camera matrix is updated
@@ -50,6 +55,16 @@ export const CullingSystem = () => {
           }
         }
       }
+
+      decorationObjects.forEach(mesh => {
+        const distance = mesh.position.distanceTo(camera.position)
+
+        if (distance > 200) {
+          mesh.visible = false
+        } else {
+          mesh.visible = frustum.intersectsObject(mesh)
+        }
+      })
 
     },
   }

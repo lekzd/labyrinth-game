@@ -26,7 +26,6 @@ export const Room = (config: RoomConfig) => {
 
   const floorMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(config.width * scale, config.height * scale),
-    // new THREE.MeshPhongMaterial({ color: 0x005500 })
     createFloorMaterial(config),
   );
 
@@ -52,7 +51,7 @@ export const Room = (config: RoomConfig) => {
       const cube = createTree();
 
       assign(cube.position, { x: x * scale, z: y * scale })
-
+      
       const physicY = 10
       const physicBody = createPhysicBox({ x: 5, y: physicY, z: 5 }, { mass: 0 });
 
