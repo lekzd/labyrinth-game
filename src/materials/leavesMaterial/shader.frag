@@ -12,7 +12,6 @@ varying vec3 vFogColor;
 varying vec3 vInstanceColor;
 
 void main() {
-  // vec3 baseColor = vec3(0.04, 0.24, 0.1);
   vec4 baseColor = texture2D(textureImage, vUv);
 
   if (baseColor.a < 0.1) {

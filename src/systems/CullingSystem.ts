@@ -43,7 +43,11 @@ export const CullingSystem = () => {
         if (distance > 400) {
           mesh.visible = false
         } else {
-          mesh.visible = frustum.intersectsObject(g)
+          if (!frustum.intersectsObject(g)) {
+            mesh.visible = distance < 50
+          } else {
+            mesh.visible = true
+          }
         }
       }
 
