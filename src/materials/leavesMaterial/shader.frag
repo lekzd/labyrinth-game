@@ -6,9 +6,7 @@ uniform sampler2D textureImage; // Цвет текстуры
 
 varying float vNoise;
 varying vec2 vUv;
-varying vec4 vViewPosition;
 varying float vFogFactor;
-varying vec3 vFogColor;
 varying vec3 vInstanceColor;
 
 void main() {
