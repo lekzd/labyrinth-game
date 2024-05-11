@@ -6,7 +6,7 @@ import { RoomConfig } from '../../generators/types';
 
 const BACKGROUND_COLOR = `rgb(255,0,0)`;
 
-export const createTerrainCanvas = (room: RoomConfig, noiseFactor: number, tileSize: number) => {
+export const createRoomTerrainCanvas = (room: RoomConfig, noiseFactor: number, tileSize: number) => {
   const r = (v: number) => frandom(-noiseFactor, noiseFactor)
 
   const getColor = (tile: Tiles) => {
@@ -46,7 +46,7 @@ export const createTerrainCanvas = (room: RoomConfig, noiseFactor: number, tileS
 }
 
 export const createFloorMaterial = (room: RoomConfig) => {
-  const canvas = createTerrainCanvas(room, 5, 3);
+  const canvas = createRoomTerrainCanvas(room, 5, 3);
   const texture = new THREE.CanvasTexture(canvas);
 
   return new THREE.MeshPhongMaterial({ map: texture, color: 0xffffff, fog: true });

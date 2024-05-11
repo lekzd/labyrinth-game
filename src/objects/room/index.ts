@@ -6,6 +6,7 @@ import { createPhysicBox, physicWorld } from '../../cannon';
 import { assign } from '../../utils/assign';
 import { createTree } from './tree';
 import { createFloorMaterial } from './floorMaterial';
+import { systems } from '../../systems/index.ts';
 
 const scale = 10
 
@@ -20,6 +21,8 @@ export const Room = (config: RoomConfig) => {
     0,
     config.y * scale,
   );
+
+  const grassMesh = systems.grassSystem.createRoomMesh(config);
 
   const floorMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(config.width * scale, config.height * scale),
@@ -37,6 +40,7 @@ export const Room = (config: RoomConfig) => {
   floorMesh.receiveShadow = true;
 
   mesh.add(floorMesh);
+  mesh.add(grassMesh);
 
   const treesPhysicBodies: CANNON.Body[] = []
 

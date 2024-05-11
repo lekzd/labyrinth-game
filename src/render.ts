@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
 import {Camera} from "./objects/hero/camera.ts";
 import {Player} from "./objects/hero/player.ts";
-import * as grass from "./grass.ts";
 import {State} from './state.ts';
 import {scene} from './scene.ts';
 import { Campfire } from './objects/campfire/index.ts';
@@ -11,17 +10,15 @@ import { Box } from './objects/box/index.ts';
 import { createGroundBody, physicWorld } from './cannon.ts';
 import {KeyboardCharacterController} from "./objects/hero/controller.ts";
 import {currentPlayer} from "./main.ts";
-import {assign} from "./utils/assign.ts";
 import { Room } from './objects/room/index.ts';
 import { MapObject } from './types/MapObject.ts';
 import { systems } from './systems/index.ts';
 
-const scale = 10;
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1.0, 1000.0)
 const renderer = new THREE.WebGLRenderer({ antialias: true })
 const stats = new Stats()
 
-const subscribers: { update: (time: number) => void }[] = [grass]
+const subscribers: { update: (time: number) => void }[] = [stats, systems.grassSystem]
 const objects: Record<string, MapObject> = {}
 const rooms: ReturnType<typeof Room>[] = []
 
@@ -83,16 +80,14 @@ export const render = (state: State) => {
 
       renderLoop();
 
-      stats.update();
+      // stats.update();
       renderer.render(scene, camera);
 
       const timeElapsedS = (t - prevTime) * 0.001;
 
       // Updates
       for (const item of subscribers) {
-        const upd = item.update;
-
-        upd(timeElapsedS);
+        item.update(timeElapsedS);
       }
 
       systems.cullingSystem.update(camera, rooms, objects);
@@ -134,14 +129,5 @@ export const items = {
     })
 
     physicWorld.addBody(createGroundBody());
-  },
-  ground: (state: State) => {
-    const { rows, colls } = state
-    const grassMesh = grass.render(state);
-    const x = rows * scale >> 1
-    const z = colls * scale >> 1
-
-    assign(grassMesh.position, { x, z })
-    scene.add(grassMesh);
   },
 }

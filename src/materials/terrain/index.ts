@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import { Tiles } from "../../types/Tiles";
 import { State } from "../../state";
 import { frandom } from '../../utils/random';
@@ -43,11 +42,4 @@ export const createTerrainCanvas = (state: State, noiseFactor: number, tileSize:
   })
 
   return ctx.canvas
-}
-
-export const createTerrainMaterial = (state: State) => {
-  const canvas = createTerrainCanvas(state, .4, 4);
-  const texture = new THREE.CanvasTexture(canvas);
-
-  return new THREE.MeshPhongMaterial({ map: texture, color: 0xffffff, fog: true });
 }
