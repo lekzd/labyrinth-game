@@ -8,6 +8,7 @@ export enum texturesType {
   stone_wall = 'stone_wall.jpg',
   wood_floor = 'wood_floor.jpg',
   tree = 'Tree.png',
+  grass = 'grass.webp',
 }
 
 export enum animationType {

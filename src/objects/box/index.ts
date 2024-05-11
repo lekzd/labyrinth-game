@@ -33,6 +33,8 @@ export const Box = (props: DynamicObject) => {
     props.position.z,
   )
 
+  boxBody.inertia = new CANNON.Vec3(50, 50, 50);
+
   // boxBody.quaternion.copy(props.rotation)
 
   physicWorld.addBody(boxBody);

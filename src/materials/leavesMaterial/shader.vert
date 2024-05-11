@@ -1,14 +1,10 @@
 uniform float time;
-uniform vec3 directionalLightColor;
-uniform vec3 fogColor; // Цвет тумана
 uniform float fogNear; // Начальная дистанция тумана
 uniform float fogFar; // Конечная дистанция тумана
 
 varying float vNoise;
 varying vec2 vUv;
-varying vec4 vViewPosition;
 varying float vFogFactor;
-varying vec3 vFogColor;
 varying vec3 vInstanceColor;
 
 float N(vec2 st) { // https://thebookofshaders.com/10/
@@ -61,9 +57,7 @@ void main() {
   //
 
   vec4 modelViewPosition = modelViewMatrix * mvPosition;
-  vViewPosition = modelViewPosition;
   vFogFactor = smoothstep(fogNear, fogFar, length(modelViewPosition));
-  vFogColor = mix(directionalLightColor, fogColor, vFogFactor);
 
   gl_Position = projectionMatrix * modelViewPosition;
 }

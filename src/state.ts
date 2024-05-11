@@ -1,10 +1,8 @@
-import * as THREE from 'three';
 import { Player, RoomConfig } from "./generators/types"
 import { modelType } from "./loader"
 import { DynamicObject } from "./types/DynamicObject"
 import { Tiles } from "./types/Tiles"
 import { something } from "./utils/something"
-import { frandom } from './utils/random';
 import {NpcAnimationStates} from "./objects/hero/NpcAnimationStates.ts";
 import {mergeDeep} from "./utils/mergeDeep.ts";
 import {settings} from "./objects/hero/settings.ts";
@@ -33,7 +31,7 @@ export const initState = (initialState: Partial<State>): State => {
     players = {},
   } = initialState
 
-  const staticGrid = Array.from<number>({ length: rows * colls }).fill(Tiles.Floor)
+  const staticGrid = Array.from<number>({ length: rows * colls }).fill(-1)
 
   const subscribers = new Set();
 
@@ -68,8 +66,8 @@ export const initState = (initialState: Partial<State>): State => {
   return state
 }
 
-export const ROWS = 100
-export const COLLS = 100
+export const ROWS = 150
+export const COLLS = 150
 
 const getId = () => `${Math.floor(Math.random() * 100)}`
 

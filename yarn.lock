@@ -5996,6 +5996,7 @@ __metadata:
     "@types/three": "npm:^0"
     "@types/ws": "npm:^8"
     cannon: "npm:^0.6.2"
+    polygon-clipping: "npm:^0.15.7"
     react: "npm:^18.3.1"
     storybook: "npm:^8.0.10"
     three: "npm:^0.164.1"
@@ -6978,6 +6979,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"polygon-clipping@npm:^0.15.7":
+  version: 0.15.7
+  resolution: "polygon-clipping@npm:0.15.7"
+  dependencies:
+    robust-predicates: "npm:^3.0.2"
+    splaytree: "npm:^3.1.0"
+  checksum: 10/0210e6f6621510a1e216a39db0c72c5886782244ddf6149417ae54ce3efc4b3d27cad43f9f53224b85c08881255749477e2337c483a957329a29a87d6e79b306
+  languageName: node
+  linkType: hard
+
 "possible-typed-array-names@npm:^1.0.0":
   version: 1.0.0
   resolution: "possible-typed-array-names@npm:1.0.0"
@@ -7552,6 +7563,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"robust-predicates@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "robust-predicates@npm:3.0.2"
+  checksum: 10/88bd7d45a6b89e88da2631d4c111aaaf0443de4d7078e9ab7f732245790a3645cf79bf91882a9740dbc959cf56ba75d5dced5bf2259410f8b6de19fd240cd08c
+  languageName: node
+  linkType: hard
+
 "rollup@npm:^4.13.0":
   version: 4.17.2
   resolution: "rollup@npm:4.17.2"
@@ -7904,6 +7922,13 @@ __metadata:
   version: 3.0.17
   resolution: "spdx-license-ids@npm:3.0.17"
   checksum: 10/8f6c6ae02ebb25b4ca658b8990d9e8a8f8d8a95e1d8b9fd84d87eed80a7dc8f8073d6a8d50b8a0295c0e8399e1f8814f5c00e2985e6bf3731540a16f7241cbf1
+  languageName: node
+  linkType: hard
+
+"splaytree@npm:^3.1.0":
+  version: 3.1.2
+  resolution: "splaytree@npm:3.1.2"
+  checksum: 10/ac4aa428e413cf8ad3f3aa489a3f8d380f8d7a2bd6f12b119e6f870d410929eb865e71d6a163e0d1a9d6e85dbdecba51a167201080545cf74b66414f1ed4f433
   languageName: node
   linkType: hard
 

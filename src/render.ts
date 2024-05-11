@@ -1,40 +1,30 @@
 import * as THREE from 'three';
-import * as CANNON from 'cannon';
 import Stats from 'three/addons/libs/stats.module.js';
-import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
-import {Tiles} from "./types/Tiles.ts";
-import {Camera} from "./objects/hero/camera.ts";
-import {Player} from "./objects/hero/player.ts";
-import * as grass from "./grass.ts";
-import {loads, texturesType} from './loader.ts';
-import {State} from './state.ts';
-import {scene} from './scene.ts';
+import { Camera } from "./objects/hero/camera.ts";
+import { Player } from "./objects/hero/player.ts";
+import { State, scale } from './state.ts';
+import { scene } from './scene.ts';
 import { Campfire } from './objects/campfire/index.ts';
-import { createTerrainMaterial } from './materials/terrain/index.ts';
-import { something } from './utils/something.ts';
-import { frandom } from './utils/random.ts';
 import { ObjectType } from './types/ObjectType.ts';
 import { Box } from './objects/box/index.ts';
-import { createGroundBody, createPhysicBox, physicWorld } from './cannon.ts';
-import {KeyboardCharacterController} from "./objects/hero/controller.ts";
-import {currentPlayer} from "./main.ts";
-import {assign} from "./utils/assign.ts";
+import { createGroundBody, physicWorld } from './cannon.ts';
+import { KeyboardCharacterController } from "./objects/hero/controller.ts";
+import { currentPlayer } from "./main.ts";
+import { Room } from './objects/room/index.ts';
+import { MapObject } from './types/MapObject.ts';
+import { systems } from './systems/index.ts';
+import { RoomConfig } from './generators/types.ts';
+import PolygonClipping from 'polygon-clipping';
+import { frandom } from './utils/random.ts';
 
-const scale = 10;
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1.0, 1000.0)
 const renderer = new THREE.WebGLRenderer({ antialias: true })
 const stats = new Stats()
 
-const subscribers: { update: (time: number) => void }[] = [grass]
-
-type MapObject = {
-  update: (time: number) => void,
-  mesh: THREE.Object3D<THREE.Object3DEventMap>,
-  physicBody?: CANNON.Body
-  physicY?: number
-}
-
+const subscribers: { update: (time: number) => void }[] = [stats, systems.grassSystem]
 const objects: Record<string, MapObject> = {}
+const rooms: ReturnType<typeof Room>[] = []
+const decorationObjects: THREE.Mesh[] = []
 
 const getObjectClass = (type: ObjectType) => {
   switch (type) {
@@ -68,7 +58,6 @@ export const addObjects = (items = {}) => {
 }
 
 export const render = (state: State) => {
-
   const container = document.getElementById('app')!;
 
   const hemiLight = new THREE.HemisphereLight(0xffffff, 0x8d8d8d, 0.1);
@@ -95,17 +84,17 @@ export const render = (state: State) => {
 
       renderLoop();
 
-      stats.update();
+      // stats.update();
       renderer.render(scene, camera);
 
       const timeElapsedS = (t - prevTime) * 0.001;
 
       // Updates
       for (const item of subscribers) {
-        const upd = item.update;
-
-        upd(timeElapsedS);
+        item.update(timeElapsedS);
       }
+
+      systems.cullingSystem.update(camera, rooms, objects, decorationObjects);
 
       const fixedTimeStep = 1.0 / 60.0; // seconds
 
@@ -132,125 +121,113 @@ export const render = (state: State) => {
 
 }
 
+function findLineCoordinates(rooms: RoomConfig[]) {
+
+  const roomPoints = (room: RoomConfig) => {
+    const p = 1
+    return [
+      [room.x - p, room.y - p],
+      [room.x + room.width + p, room.y - p],
+      [room.x + room.width + p, room.y + room.height + p],
+      [room.x - p, room.y + room.height + p],
+    ]
+  }
+
+  const polygons = rooms.map(room => {
+    return [roomPoints(room)]
+  })
+
+  const polygon = PolygonClipping.union(...polygons)
+  const lineCoordinates = polygon[0][0].map(coords => ({ x: coords[0], y: coords[1] }))
+
+  return lineCoordinates;
+}
+
 // TODO: стандартизировать
 export const items = {
-  wallsMerged: (state: State) => {
-    const texture = loads.texture[texturesType.stone_wall].clone()
-    const blocks: THREE.BoxGeometry[] = []
+  roomChunks: (state: State) => {
+    state.rooms.forEach(room => {
+      const roomObject = Room(room)
 
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(1, 4);
+      rooms.push(roomObject)
 
-    for (let i = 0; i < state.staticGrid.length; i++) {
-      const x = i % state.colls
-      const y = Math.floor(i / state.colls)
+      scene.add(roomObject.mesh);
+    })
+ 
+    const line = findLineCoordinates(state.rooms)
+    const shape = new THREE.Shape();
 
-      if (state.staticGrid[i] === Tiles.Wall) {
-        const blockGeometry = new THREE.BoxGeometry(1 * scale, 4 * scale, 1 * scale)
-        blockGeometry.translate(x * scale, 2, y * scale);
+    shape.moveTo(line[0].x * scale, line[0].y * scale);
+    line.slice(1).forEach(({ x, y }) => {
+      shape.lineTo(x * scale, y * scale);
+    })
+    shape.closePath()
 
-        blocks.push(blockGeometry);
-      }
-    }
+    const wallHeight = 50
 
-    const material = new THREE.MeshLambertMaterial({ color: 'white', map: texture });
-    const cube = new THREE.Mesh(
-      BufferGeometryUtils.mergeGeometries(blocks, false),
-      material
-    );
-
-    cube.castShadow = true;
-    cube.receiveShadow = true;
-
-    scene.add(cube)
-  },
-  trees: (state: State) => {
-    for (let i = 0; i < state.staticGrid.length; i++) {
-      const x = i % state.colls + frandom(-0.5, 0.5)
-      const y = Math.floor(i / state.colls) + frandom(-0.5, 0.5)
-
-      if (state.staticGrid[i] === Tiles.Wall) {
-        const cube = items[Tiles.Tree]();
-
-        assign(cube.position, { x: x * scale, z: y * scale })
-
-        const physicY = 10
-        const physicBody = createPhysicBox({ x: 5, y: physicY, z: 5 }, { mass: 0 });
-
-        physicBody.position.set(
-          x * scale,
-          physicY,
-          y * scale,
-        )
-
-        physicWorld.addBody(physicBody)
-
-        scene.add(cube)
-      }
-    }
-  },
-  ground: (state: State) => {
-    const { rows, colls } = state
-    const geometry = new THREE.PlaneGeometry(rows * scale, colls * scale);
-
-    const mesh = new THREE.Mesh(
-      geometry,
-      createTerrainMaterial(state),
-    );
-
-    const grassMesh = grass.render(state);
-
-    const x = rows * scale >> 1
-    const z = colls * scale >> 1
-
-    assign(mesh.position, { x, z })
-    assign(grassMesh.position, { x, z })
-
-    mesh.rotation.x = - Math.PI / 2;
-    mesh.receiveShadow = true;
-
-    physicWorld.addBody(createGroundBody());
-
-    scene.add(mesh);
-    scene.add(grassMesh);
-  },
-  [Tiles.Wall]: () => {
-    const texture = loads.texture[texturesType.stone_wall].clone()
-
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(1, 4);
-
-    const geometry = new THREE.BoxGeometry(1 * scale, 4 * scale, 1 * scale);
-    const material = new THREE.MeshLambertMaterial({ map: texture });
-    const cube = new THREE.Mesh(geometry, material);
-
-    cube.castShadow = true;
-    cube.receiveShadow = true;
-
-    return cube;
-  },
-  [Tiles.Tree]: () => {
-    const model = something(Object.values(loads.world));
-
-    const target = model.clone();
-
-    target.scale.multiplyScalar(.05);
-
-    target.traverse(o => {
-      if (o.isMesh) {
-        o.material.map = loads.texture[texturesType.tree];
-        o.material.needsUpdate = true
-
-        o.castShadow = true;
-        o.receiveShadow = true;
-      }
+    const geometry = new THREE.ExtrudeGeometry(shape, {
+      steps: 2,
+      depth: wallHeight,
     });
 
-    // target.castShadow = true;
-    // target.receiveShadow = true;
+    const wallMesh = new THREE.Mesh(
+      geometry,
+      new THREE.MeshBasicMaterial({ color: 0x000000, side: 2, fog: true })
+    );
 
-    return target;
-  }
+    wallMesh.receiveShadow = false
+
+    wallMesh.position.set(
+      0,
+      wallHeight,
+      0,
+    )
+
+    wallMesh.rotation.x = Math.PI / 2
+
+    // scene.add(wallMesh);
+
+    let prevPoint = line[0]
+
+    const trees: {x: number, y: number}[] = []
+
+    line.slice(1).forEach(point => {
+      const prevVector = new THREE.Vector2(prevPoint.x, prevPoint.y)
+      const curVector = new THREE.Vector2(point.x, point.y)
+      const distance = prevVector.distanceTo(curVector)
+
+      const steps = Math.floor(distance / 1)
+
+      for (let i = 0; i < 1; i += 1 / steps) {
+        const newPosition = {
+          x: frandom(-0.3, 0.3) + prevVector.x + (curVector.x - prevVector.x) * i,
+          y: frandom(-0.3, 0.3) + prevVector.y + (curVector.y - prevVector.y) * i,
+        };
+
+        trees.push(newPosition)
+      }
+
+      prevPoint = point
+    })
+
+    trees.forEach(point => {
+      const height = 40
+      const mesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(3, 5, height, 4, 1),
+        new THREE.MeshPhongMaterial({ color: 0x36281a })
+      );
+
+      decorationObjects.push(mesh)
+
+      mesh.position.set(
+        point.x * scale,
+        height * 0.35,
+        point.y * scale,
+      )
+
+      scene.add(mesh)
+    })
+
+    physicWorld.addBody(createGroundBody());
+  },
 }

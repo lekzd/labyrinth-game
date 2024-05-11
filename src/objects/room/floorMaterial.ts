@@ -1,11 +1,12 @@
+import * as THREE from 'three';
 import { Tiles } from "../../types/Tiles";
-import { State } from "../../state";
 import { frandom } from '../../utils/random';
 import { makeCtx } from '../../utils/makeCtx';
+import { RoomConfig } from '../../generators/types';
 
-const BACKGROUND_COLOR = `rgb(1,2,0)`;
+const BACKGROUND_COLOR = `rgb(255,0,0)`;
 
-export const createTerrainCanvas = (state: State, noiseFactor: number, tileSize: number) => {
+export const createRoomTerrainCanvas = (room: RoomConfig, noiseFactor: number, tileSize: number) => {
   const r = (v: number) => frandom(-noiseFactor, noiseFactor)
 
   const getColor = (tile: Tiles) => {
@@ -24,22 +25,29 @@ export const createTerrainCanvas = (state: State, noiseFactor: number, tileSize:
     }
   }
 
-  const ctx = makeCtx(state.colls * tileSize, state.rows * tileSize)
+  const ctx = makeCtx(room.width * tileSize, room.height * tileSize)
 
   ctx.fillStyle = BACKGROUND_COLOR
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
-  state.staticGrid.forEach((tile, i) => {
-    const x = (i % state.colls) * tileSize
-    const y = Math.floor(i / state.colls) * tileSize
+  room.tiles.forEach((tile, i) => {
+    const x = (i % room.width) * tileSize
+    const y = Math.floor(i / room.width) * tileSize
 
     ctx.fillStyle = getColor(tile)
     ctx.fillRect(
-      x - Math.round(tileSize / 2),
-      y - Math.round(tileSize / 2),
+      x,
+      y,
       tileSize, tileSize
     )
   })
 
   return ctx.canvas
+}
+
+export const createFloorMaterial = (room: RoomConfig) => {
+  const canvas = createRoomTerrainCanvas(room, 5, 3);
+  const texture = new THREE.CanvasTexture(canvas);
+
+  return new THREE.MeshPhongMaterial({ map: texture, color: 0xffffff, fog: true });
 }
