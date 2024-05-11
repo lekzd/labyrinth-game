@@ -1,5 +1,6 @@
 import { ObjectType } from "./ObjectType"
 import {NpcAnimationStates} from "../objects/hero/NpcAnimationStates.ts";
+import {SettingObject} from "../objects/hero/settings.ts";
 
 export type ObjectVector3 = {
   x: number
@@ -21,4 +22,4 @@ export type DynamicObject = {
 
   position: ObjectVector3,
   rotation: ObjectQuaternion,
-}
+} & Partial<SettingObject>

@@ -8,7 +8,7 @@ import { createPhysicBox, physicWorld } from '../../cannon.ts';
 
 interface Props extends DynamicObject {}
 
-export const Player = ({ id, type, position, rotation }: Props) => {
+export const Player = ({ id, mass, type, position, rotation }: Props) => {
   const model = loads.model[type];
 
   if (!model) {
@@ -36,8 +36,11 @@ export const Player = ({ id, type, position, rotation }: Props) => {
 
   const physicBody = createPhysicBox(
     { x: 2, y: physicY, z: 2 },
-    { mass: type === modelType.Monk ? 50 : 25, fixedRotation: true }
+    { mass, fixedRotation: true }
   );
+
+  physicBody.threejs = target;
+  target.threejs = physicBody;
 
   physicBody.position.set(
     position.x,

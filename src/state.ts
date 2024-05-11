@@ -7,6 +7,7 @@ import { something } from "./utils/something"
 import { frandom } from './utils/random';
 import {NpcAnimationStates} from "./objects/hero/NpcAnimationStates.ts";
 import {mergeDeep} from "./utils/mergeDeep.ts";
+import {settings} from "./objects/hero/settings.ts";
 
 type setState = (state: Partial<State>, params?: { permoment?: boolean, server?: boolean, throttle?: string }) => void
 
@@ -94,7 +95,14 @@ export const createObject = (data: Partial<DynamicObject>): DynamicObject => {
 }
 
 export const createHeroObject = (data: Partial<DynamicObject>): DynamicObject => {
-  return createObject({ ...data, state: NpcAnimationStates.idle, type: something(Object.values(modelType)) })
+  const type = something(Object.values(modelType));
+
+  return createObject({
+    ...data,
+    state: NpcAnimationStates.idle,
+    type,
+    ...settings[type],
+  })
 }
 
 export const createPlayerObject = (activeObjectId: string): Player => {
