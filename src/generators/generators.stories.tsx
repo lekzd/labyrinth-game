@@ -1,7 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { initState } from '../state';
-import { generateRooms } from './generateRooms';
+import { generateRooms } from './generateRoomsNew';
 import { Tiles } from '../types/Tiles';
 
 const ROOM_SIZE = 13
@@ -16,8 +16,10 @@ const getColor = (tile: Tiles) => {
       return `rgb(${20},${10},0)`
     case Tiles.Wall:
       return `rgb(0,0,0)`
-    default:
+    case Tiles.Floor: 
       return `rgb(${10},${20},0)`
+    default:
+      return 'transparent'
   }
 } 
 
@@ -43,16 +45,34 @@ const PreviewCanvas = ({ rows, colls }) => {
     canvas.style.width = `${canvas.width}px`
     canvas.style.height = `${canvas.height}px`
 
-    ctx.fillStyle = '#000000'
+    ctx.fillStyle = '#333333'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
+    
+    const chunk = 12.5
 
-    state.staticGrid.forEach((tile, i) => {
-      const x = (i % colls) * tileSize
-      const y = Math.floor(i / colls) * tileSize
-      ctx.fillStyle = getColor(tile)
-      ctx.fillRect(x, y, tileSize, tileSize)
+    for (let y = 0; y < colls / chunk; y++) {
+      ctx.fillStyle = 'blue'
+      ctx.fillRect(0, (y * (chunk) + (chunk >> 1)) * tileSize, canvas.width * tileSize, 1 * tileSize)
+    }
+
+    for (let x = 0; x < rows / chunk; x++) {
+      ctx.fillStyle = 'blue'
+      ctx.fillRect((x * chunk  + (chunk >> 1)) * tileSize, 0, 1 * tileSize, canvas.height * tileSize)
+    }
+
+    state.rooms.forEach(room => {
+      room.tiles.forEach((tile, i) => {
+        const x = room.x + (i % room.width)
+        const y = room.y + Math.floor(i / room.width)
+
+        ctx.fillStyle = room.connection ? 'red' : getColor(tile)
+        ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize)
+      })
+
+      ctx.fillStyle = 'white'
+      ctx.textAlign = 'center'
+      ctx.fillText(room.id.toString(), (room.x + (room.width >> 1)) * tileSize, (room.y + (room.height >> 1)) * tileSize)
     })
-
   }, [rows, colls, ref])
 
   return (
@@ -72,7 +92,7 @@ type Story = StoryObj<typeof meta>;
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
 export const Primary: Story = {
   args: {
-    rows: 100,
-    colls: 100,
+    rows: 150,
+    colls: 150,
   },
 };
