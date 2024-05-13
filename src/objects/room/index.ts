@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import { RoomConfig } from "../../generators/types";
-import { frandom } from '../../utils/random';
+import { frandom, random } from '../../utils/random';
 import { Tiles } from '../../types/Tiles';
 import { createPhysicBox, physicWorld } from '../../cannon';
 import { assign } from '../../utils/assign';
 import { createTree } from './tree';
 import { createFloorMaterial } from './floorMaterial';
 import { systems } from '../../systems/index.ts';
+import { createStone } from './stone.ts';
 
 const scale = 10
 
@@ -51,7 +52,7 @@ export const Room = (config: RoomConfig) => {
 
     if (config.tiles[i] === Tiles.Wall) {
       const cube = createTree();
-
+      
       assign(cube.position, { x: x * scale, z: y * scale })
       
       const physicY = 20
@@ -67,6 +68,15 @@ export const Room = (config: RoomConfig) => {
       treesPhysicBodies.push(physicBody)
 
       mesh.add(cube)
+
+      if (random(0, 2) === 0) {
+        const stone = createStone();
+        assign(stone.position, { 
+          x: (baseX + frandom(-0.5, 0.5)) * scale,
+          z: (baseY + frandom(-0.5, 0.5)) * scale,
+        })
+        mesh.add(stone)
+      }
     }
   }
 
