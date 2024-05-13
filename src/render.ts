@@ -17,7 +17,7 @@ import { RoomConfig } from './generators/types.ts';
 import PolygonClipping from 'polygon-clipping';
 import { frandom } from './utils/random.ts';
 
-const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1.0, 1000.0)
+const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1.0, 500.0)
 const renderer = new THREE.WebGLRenderer({ antialias: true })
 const stats = new Stats()
 
@@ -153,7 +153,7 @@ export const items = {
 
       scene.add(roomObject.mesh);
     })
- 
+
     const line = findLineCoordinates(state.rooms)
     const shape = new THREE.Shape();
 
@@ -189,7 +189,7 @@ export const items = {
 
     let prevPoint = line[0]
 
-    const trees: {x: number, y: number}[] = []
+    const trees: { x: number, y: number }[] = []
 
     line.slice(1).forEach(point => {
       const prevVector = new THREE.Vector2(prevPoint.x, prevPoint.y)
@@ -210,23 +210,24 @@ export const items = {
       prevPoint = point
     })
 
-    trees.forEach(point => {
-      const height = 40
-      const mesh = new THREE.Mesh(
-        new THREE.CylinderGeometry(3, 5, height, 4, 1),
-        new THREE.MeshPhongMaterial({ color: 0x36281a })
-      );
+    const matrix = new THREE.Matrix4();
+    const height = 40
+    const instanceNumber = trees.length
+    const threeGeometry = new THREE.CylinderGeometry(1, 10, height, 4, 1);
+    const material = new THREE.MeshToonMaterial({ color: 0x143728 })
+    const instancedMesh = new THREE.InstancedMesh(threeGeometry, material, instanceNumber);
 
-      decorationObjects.push(mesh)
-
-      mesh.position.set(
-        point.x * scale,
+    trees.forEach((point, instanceIndex) => {
+      matrix.setPosition(
+        (point.x * scale),
         height * 0.35,
-        point.y * scale,
+        (point.y * scale),
       )
-
-      scene.add(mesh)
+  
+      instancedMesh.setMatrixAt( instanceIndex, matrix );
     })
+
+    scene.add(instancedMesh);
 
     physicWorld.addBody(createGroundBody());
   },
