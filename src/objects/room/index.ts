@@ -44,21 +44,24 @@ export const Room = (config: RoomConfig) => {
   const treesPhysicBodies: CANNON.Body[] = []
 
   for (let i = 0; i < config.tiles.length; i++) {
-    const x = i % config.width + frandom(-0.5, 0.5)
-    const y = Math.floor(i / config.width) + frandom(-0.5, 0.5)
+    const baseX = i % config.width
+    const x = baseX + frandom(-0.5, 0.5)
+    const baseY = Math.floor(i / config.width)
+    const y = baseY + frandom(-0.5, 0.5)
 
     if (config.tiles[i] === Tiles.Wall) {
       const cube = createTree();
 
       assign(cube.position, { x: x * scale, z: y * scale })
       
-      const physicY = 10
-      const physicBody = createPhysicBox({ x: 5, y: physicY, z: 5 }, { mass: 0 });
+      const physicY = 20
+      const physicRadius = 5
+      const physicBody = createPhysicBox({ x: physicRadius, y: physicY, z: physicRadius }, { mass: 0 });
 
       physicBody.position.set(
-        (config.x + x) * scale,
+        (config.x + baseX) * scale,
         physicY,
-        (config.y + y) * scale,
+        (config.y + baseY) * scale,
       )
 
       treesPhysicBodies.push(physicBody)
