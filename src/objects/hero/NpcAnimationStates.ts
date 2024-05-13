@@ -1,9 +1,13 @@
 
-export enum NpcAnimationStates {
+export enum NpcBaseAnimations {
   idle = 'idle',
   walk = 'walk',
   run = 'run',
+  death = 'death',
+  pickup = 'pickup',
+}
 
+export enum NpcAdditionalAnimations {
   'dagger_attack' = 'dagger_attack',
   'dagger_attack2' = 'dagger_attack2',
 
@@ -14,9 +18,12 @@ export enum NpcAnimationStates {
 
   'spell1' = 'spell1',
   'spell2' = 'spell2',
-  'pickup' = 'pickup',
 
   attack = 'attack',
   attack2 = 'attack2',
-  death = 'death',
+}
+
+export const NpcAnimationStates = {
+  ...NpcBaseAnimations,
+  ...NpcAdditionalAnimations
 }

@@ -5,6 +5,17 @@ import { createTorch } from '../torch/index.ts';
 import { DynamicObject } from '../../types/DynamicObject.ts';
 import { state } from '../../state.ts';
 import { createPhysicBox, physicWorld } from '../../cannon.ts';
+import { NpcAnimationStates } from './NpcAnimationStates.ts';
+
+type AnimationName = keyof typeof NpcAnimationStates
+type AnimationControllers = Record<AnimationName, {
+  action: THREE.AnimationAction,
+  clip: THREE.AnimationClip,
+}>
+
+interface StateAction extends ReturnType<typeof action>  {
+  Exit?: () => void;
+}
 
 interface Props extends DynamicObject {
   type: modelType
@@ -21,6 +32,7 @@ export const Player = ({ id, mass, type, position, rotation }: Props) => {
   const animations = model.animations.map(animation => animation.clone());
 
   for (const name in loads.animation) {
+    // @ts-expect-error
     for (const animation of loads.animation[name].animations) {
       animation.name = name;
       animations.push(animation.clone())
@@ -41,7 +53,9 @@ export const Player = ({ id, mass, type, position, rotation }: Props) => {
     { mass, fixedRotation: true }
   );
 
+  // @ts-expect-error
   physicBody.threejs = target;
+  // @ts-expect-error
   target.threejs = physicBody;
 
   physicBody.position.set(
@@ -76,7 +90,7 @@ export const Player = ({ id, mass, type, position, rotation }: Props) => {
   const mixer = new THREE.AnimationMixer(target);
 
   for (const clip of animations) {
-    const name = clip.name.toLowerCase().replace('characterarmature|', '');
+    const name = clip.name.toLowerCase().replace('characterarmature|', '') as AnimationName;
 
     // if (![NpcAnimationStates.run, NpcAnimationStates.idle, NpcAnimationStates.walk].includes(name))
     //   clip.timeScale = 5.5;
@@ -158,11 +172,10 @@ export const Player = ({ id, mass, type, position, rotation }: Props) => {
   return root;
 };
 
-const CharacterFSM = ({ animations }) => {
-  let
-    currentState = null;
+const CharacterFSM = ({ animations }: { animations: AnimationControllers }) => {
+  let currentState: StateAction;
 
-  const setState = (name) => {
+  const setState = (name: AnimationName) => {
     const prevState = currentState;
 
     if (prevState) {
@@ -184,16 +197,20 @@ const CharacterFSM = ({ animations }) => {
       return currentState;
     },
     setState,
-    update(timeElapsed, next) {
+    update(_timeElapsed: number, next: AnimationName) {
      setState(next)
     },
   }
 };
 
-const action = (animations, Name) => ({
+const action = (animations: AnimationControllers, Name: AnimationName) => ({
   Name,
-  Enter(prevState) {
+  Enter(prevState: StateAction) {
     const curAction = animations[Name]?.action || { play: () => {} };
+
+    // TODO: разделить анимации на базовые из NpcBaseAnimations и дополнительные из NpcAdditionalAnimations
+    // допольнительные анимации не должны вызывать crossFadeFrom
+    // пример тут: https://threejs.org/examples/#webgl_animation_skinning_additive_blending
     if (prevState) {
       const prevAction = animations[prevState.Name]?.action;
 

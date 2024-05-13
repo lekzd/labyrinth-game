@@ -56,19 +56,34 @@ type ItemsType = {
   texture: Partial<Record<texturesType, THREE.Texture>>
 }
 
-export const loads = {} as ItemsType
+export const loads: ItemsType = {
+  world: {},
+  model: {},
+  animation: {},
+  texture: {},
+}
 
-const load = (loader, types, dir = 'world', ext = '') => {
+type AbstractLoader = {
+  load: (path: string, callback: (obj: any) => void) => void
+}
+
+const load = (
+  loader: AbstractLoader,
+  types: Record<string, string>,
+  dir: keyof ItemsType = 'world',
+  ext = ''
+) => {
   let loaded = 0
   const entries = Object.entries(types)
   loads[dir] = {};
 
-  return new Promise(resolve => {
-    entries.forEach(([_, name], index) => {
+  return new Promise<void>(resolve => {
+    entries.forEach(([, name], index) => {
       const path = `/${dir}/${name}${ext}`;
 
       loader.load(path, obj => {
         obj.name = name;
+        // @ts-expect-error
         loads[dir][name] = obj;
         loaded++
 
@@ -87,4 +102,5 @@ export const loaders = [
   load(loader, animationType, 'animation', '.fbx'),
 ];
 
+// @ts-expect-error
 window.loads = loads
