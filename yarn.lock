@@ -2915,6 +2915,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/dat.gui@npm:^0":
+  version: 0.7.13
+  resolution: "@types/dat.gui@npm:0.7.13"
+  checksum: 10/78cea4c7d583ffccabf896f029844153ad1c9669c2455b80de8c2e4ab15dbf3e1df0a253f82a68244187a3e0d60c7f37514325f5c25a9754b6f792db5f939664
+  languageName: node
+  linkType: hard
+
 "@types/detect-port@npm:^1.3.0":
   version: 1.3.5
   resolution: "@types/detect-port@npm:1.3.5"
@@ -4116,6 +4123,13 @@ __metadata:
   version: 3.1.3
   resolution: "csstype@npm:3.1.3"
   checksum: 10/f593cce41ff5ade23f44e77521e3a1bcc2c64107041e1bf6c3c32adc5187d0d60983292fda326154d20b01079e24931aa5b08e4467cc488b60bb1e7f6d478ade
+  languageName: node
+  linkType: hard
+
+"dat.gui@npm:^0.7.9":
+  version: 0.7.9
+  resolution: "dat.gui@npm:0.7.9"
+  checksum: 10/9e3ba992da4a22c965d07ecebcd7e121922a8b5af5d47e78a9bd0333044aa73e2a289090c16bf09ee8415d0f998f83da5e72f69c60e2129606429959a60cc0c7
   languageName: node
   linkType: hard
 
@@ -5992,10 +6006,12 @@ __metadata:
     "@storybook/react-vite": "npm:^8.0.10"
     "@storybook/test": "npm:^8.0.10"
     "@types/cannon": "npm:^0"
+    "@types/dat.gui": "npm:^0"
     "@types/react": "npm:^18"
     "@types/three": "npm:^0"
     "@types/ws": "npm:^8"
     cannon: "npm:^0.6.2"
+    dat.gui: "npm:^0.7.9"
     polygon-clipping: "npm:^0.15.7"
     react: "npm:^18.3.1"
     storybook: "npm:^8.0.10"

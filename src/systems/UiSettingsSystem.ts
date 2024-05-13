@@ -1,0 +1,164 @@
+import * as THREE from 'three';
+import * as dat from 'dat.gui';
+import { mergeDeep } from '../utils/mergeDeep';
+import { scene } from '../scene';
+
+const DEFAULTS = {
+  renderer: {
+    antialias: true,
+    alpha: false,
+    precision: 'highp',
+    pixelRatio: window.devicePixelRatio,
+    toneMapping: THREE.NoToneMapping,
+    toneMappingExposure: 1.0,
+    shadows: true
+  },
+  camera: {
+    fov: 40,
+    aspect: window.innerWidth / window.innerHeight,
+    near: 1.0,
+    far: 500.0,
+  },
+  game: {
+    physics: true,
+  }
+}
+
+export const UiSettingsSystem = () => {
+  const gui = new dat.GUI({
+    closed: true,
+    autoPlace: false,
+  });
+
+  gui.useLocalStorage = true
+  gui.domElement.style.position = 'fixed'
+  gui.domElement.style.right = '0'
+  gui.domElement.style.top = '0'
+
+  const loadSettings = (): typeof DEFAULTS => {
+    try {
+      if (localStorage.getItem('savedSettings')) {
+        return mergeDeep({}, DEFAULTS, JSON.parse(localStorage.getItem('savedSettings')!))
+      }
+      return structuredClone(DEFAULTS)
+    } catch (e) {
+      return structuredClone(DEFAULTS)
+    }
+  }
+
+  const store = loadSettings()
+  const renderer = new THREE.WebGLRenderer(store.renderer)
+  const camera = new THREE.PerspectiveCamera(
+    store.camera.fov,
+    store.camera.aspect,
+    store.camera.near,
+    store.camera.far,
+  )
+
+  type ApplyFn = (attr: string, value: any) => void
+
+  const addParam = (gui: dat.GUI, dir: string, applyFunction: ApplyFn, label: string, name: string, ...rest: any[]) => {
+    return gui.add(store[dir], name, ...rest).name(label).onChange(applyChange.bind(0, name, applyFunction));
+  }
+
+  const applyChange = (attr: string, applyFunction: ApplyFn, value: any) => {
+    localStorage.setItem('savedSettings', JSON.stringify(store))
+
+    applyFunction(attr, value)
+  }
+
+  const addRenderingControlls = () => {
+    const toneMappingTypes = {
+      off: THREE.NoToneMapping,
+      Linear: THREE.LinearToneMapping,
+      Reinhard: THREE.ReinhardToneMapping,
+      Custom: THREE.CustomToneMapping,
+      Cineon: THREE.CineonToneMapping,
+      ACESFilmic: THREE.ACESFilmicToneMapping,
+      AgX: THREE.AgXToneMapping,
+      Neutral: THREE.NeutralToneMapping,
+    };
+
+    const rederingGui = gui.addFolder('Рендеринг')
+
+    const applyRenderingChange = (attr: string, value: any) => {
+      switch (attr) {
+        case 'antialias':
+        case 'alpha':
+        case 'precision':
+          location.reload()
+          break
+        case 'toneMapping':
+          renderer[attr] = toneMappingTypes[value]
+          break
+        case 'shadows':
+          renderer.shadowMap.enabled = value
+          scene.traverse(function (node) {
+            if (node instanceof THREE.Light) {
+              node.castShadow = value;
+            }
+          });
+          break
+        default:
+          renderer[attr] = value
+      }
+    }
+
+    const addRenderingParam = addParam.bind(0, rederingGui, 'renderer', applyRenderingChange)
+
+    // Добавляем на панель управления параметры рендерера
+    addRenderingParam('Антиалиасинг', 'antialias')
+    addRenderingParam('Pixel ratio', 'pixelRatio', 0.5, window.devicePixelRatio)
+    addRenderingParam('Прозрачность', 'alpha')
+    addRenderingParam('Точность', 'precision', ['highp', 'mediump', 'lowp'])
+    addRenderingParam('Tone mapping', 'toneMapping', Object.keys(toneMappingTypes))
+    addRenderingParam('Яркость', 'toneMappingExposure', 0, 5)
+    addRenderingParam('Тени', 'shadows')
+  }
+
+  const addCameraControlls = () => {
+    const rederingGui = gui.addFolder('Камера')
+
+    const applyCameraChange = (attr: string, value: any) => {
+      switch (attr) {
+        default:
+          camera[attr] = value
+      }
+      camera.updateProjectionMatrix();
+    }
+
+    const addRenderingParam = addParam.bind(0, rederingGui, 'camera', applyCameraChange)
+
+    // Добавляем на панель управления параметры рендерера
+    addRenderingParam('Поле зрения', 'fov', 1, 180)
+    addRenderingParam('Соотношение сторон', 'aspect')
+    addRenderingParam('Ближняя границв', 'near', 0.1, 100)
+    addRenderingParam('Дальность отрисовки', 'far', 100, 1000)
+  }
+
+  const addGameControlls = () => {
+    const rederingGui = gui.addFolder('Игра')
+
+    const applyCameraChange = (attr: string, value: any) => {
+      // switch (attr) {
+      //   default:
+      //     camera[attr] = value
+      // }
+    }
+
+    const addRenderingParam = addParam.bind(0, rederingGui, 'game', applyCameraChange)
+
+    addRenderingParam('Физика', 'physics')
+  }
+
+  addRenderingControlls()
+  addCameraControlls()
+  addGameControlls()
+
+  return {
+    settings: store,
+    renderer,
+    camera,
+    dom: gui.domElement,
+  }
+}

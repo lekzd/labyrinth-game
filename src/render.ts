@@ -17,8 +17,6 @@ import { RoomConfig } from './generators/types.ts';
 import PolygonClipping from 'polygon-clipping';
 import { frandom } from './utils/random.ts';
 
-const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1.0, 500.0)
-const renderer = new THREE.WebGLRenderer({ antialias: true })
 const stats = new Stats()
 
 const subscribers: { update: (time: number) => void }[] = [stats, systems.grassSystem]
@@ -51,6 +49,7 @@ export const addObjects = (items = {}) => {
     scene.add(object.mesh)
 
     if (controllable) {
+      const { camera } = systems.uiSettingsSystem
       subscribers.push(Camera({ camera, target: object }))
       subscribers.push(KeyboardCharacterController(object))
     }
@@ -64,13 +63,23 @@ export const render = (state: State) => {
   hemiLight.position.set(0, 20, 0);
   scene.add(hemiLight);
 
+  const { renderer, camera, settings } = systems.uiSettingsSystem
+
   // Stats
   container.appendChild(stats.dom);
 
-  renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
   container.appendChild(renderer.domElement);
+  container.appendChild(systems.uiSettingsSystem.dom);
+
+  const onWindowResize = () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  window.addEventListener('resize', onWindowResize, false);
 
   /*
   * Рендерит рекурсивно сцену, пробрасывая в подписчиков (персонаж, камера)
@@ -95,21 +104,24 @@ export const render = (state: State) => {
 
       systems.cullingSystem.update(camera, rooms, objects, decorationObjects);
 
-      const fixedTimeStep = 1.0 / 60.0; // seconds
+      if (settings.game.physics) {
+        const fixedTimeStep = 1.0 / 60.0; // seconds
 
-      physicWorld.step(fixedTimeStep, timeElapsedS);
+        physicWorld.step(fixedTimeStep, timeElapsedS);
 
-      for (const id in objects) {
-        const object = objects[id];
+        for (const id in objects) {
+          const object = objects[id];
 
-        if (object.physicBody) {
-          object.mesh.position.set(
-            object.physicBody.position.x,
-            object.physicBody.position.y - (object.physicY ?? 0),
-            object.physicBody.position.z,
-          )
-          object.mesh.quaternion.copy(object.physicBody.quaternion)
+          if (object.physicBody) {
+            object.mesh.position.set(
+              object.physicBody.position.x,
+              object.physicBody.position.y - (object.physicY ?? 0),
+              object.physicBody.position.z,
+            )
+            object.mesh.quaternion.copy(object.physicBody.quaternion)
+          }
         }
+
       }
 
       prevTime = t;
@@ -222,8 +234,8 @@ export const items = {
         height * 0.35,
         (point.y * scale),
       )
-  
-      instancedMesh.setMatrixAt( instanceIndex, matrix );
+
+      instancedMesh.setMatrixAt(instanceIndex, matrix);
     })
 
     scene.add(instancedMesh);
