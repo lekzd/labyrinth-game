@@ -8,6 +8,7 @@ import { createTree } from './tree';
 import { createFloorMaterial } from './floorMaterial';
 import { systems } from '../../systems/index.ts';
 import { createStone } from './stone.ts';
+import { createStem } from './stem.ts';
 
 const scale = 10
 
@@ -76,6 +77,24 @@ export const Room = (config: RoomConfig) => {
           z: (baseY + frandom(-0.5, 0.5)) * scale,
         })
         mesh.add(stone)
+      }
+
+      if (random(0, 10) === 0) {
+        const count = random(1, 5)
+
+        for (let i = 0; i < count; i++) {
+          const stem = createStem();
+          const radians = ((Math.PI * 2) / count) * i;
+
+          assign(stem.position, { 
+            x: (x + Math.cos(radians) * 0.5) * scale,
+            z: (y + Math.sin(radians) * 0.5) * scale,
+          })
+          stem.rotation.y = radians
+          stem.rotation.z = Math.PI / 16
+          mesh.add(stem)
+        }
+
       }
     }
   }
