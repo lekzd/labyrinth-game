@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import Stats from 'three/addons/libs/stats.module.js';
+import Stats from './utils/Stats.ts';
 import { Camera } from "./objects/hero/camera.ts";
 import { Player } from "./objects/hero/player.ts";
 import { State, scale } from './state.ts';
@@ -84,7 +84,6 @@ export const render = (state: State) => {
 
       renderLoop();
 
-      // stats.update();
       renderer.render(scene, camera);
 
       const timeElapsedS = (t - prevTime) * 0.001;
@@ -98,7 +97,7 @@ export const render = (state: State) => {
 
       const fixedTimeStep = 1.0 / 60.0; // seconds
 
-      physicWorld.step(fixedTimeStep);
+      physicWorld.step(fixedTimeStep, timeElapsedS);
 
       for (const id in objects) {
         const object = objects[id];
