@@ -3,6 +3,7 @@ import * as TWEEN from '@tweenjs/tween.js'
 import { MapObject } from "../../types/MapObject";
 import { systems } from "../../systems";
 import { loads } from "../../loader";
+import { createInteractivitySign } from "./interactivitySign";
 
 export const createPuzzleHandler = () => {
   const target = new THREE.Object3D()
@@ -60,15 +61,35 @@ export const createPuzzleHandler = () => {
   base.position.y = -3
   cube.position.y = 0.5
 
+  const sign = createInteractivitySign()
+
+  sign.mesh.position.y = 7.5
+
+  target.add(sign.mesh)
   target.add(base)
   target.add(cube)
 
   let busyOnInteraction = false
+  let focusAnimation = false
+  let focusInterval = 0;
 
   return {
     mesh: target,
     interactWith: (mapObject: MapObject) => {
       const { input } = systems.inputSystem
+      
+      clearInterval(focusInterval)
+
+      if (!focusAnimation) {
+        sign.setFocused(true)
+        focusAnimation = true
+      }
+      if (focusAnimation) {
+        focusInterval = setTimeout(() => {
+          sign.setFocused(false)
+          focusAnimation = false
+        }, 100)
+      }
 
       if (!busyOnInteraction && input.interact) {
         new TWEEN.Tween(cube.rotation)
