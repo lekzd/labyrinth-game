@@ -12,6 +12,8 @@ import { createStem } from './stem.ts';
 import { MapObject } from '../../types/MapObject.ts';
 import { createPuzzleHandler } from './puzzleHandler.ts';
 
+type InteractiveRoomObject = ReturnType<typeof createPuzzleHandler>
+
 const scale = 10
 
 export const Room = (config: RoomConfig) => {
@@ -46,7 +48,7 @@ export const Room = (config: RoomConfig) => {
   mesh.add(grassMesh);
 
   const treesPhysicBodies: CANNON.Body[] = []
-  const intractiveObjects: ReturnType<typeof createPuzzleHandler>[] = []
+  const intractiveObjects: InteractiveRoomObject[] = []
 
   for (let i = 0; i < config.tiles.length; i++) {
     const baseX = i % config.width
@@ -56,9 +58,9 @@ export const Room = (config: RoomConfig) => {
 
     if (config.tiles[i] === Tiles.Wall) {
       const cube = createTree();
-      
+
       assign(cube.position, { x: x * scale, z: y * scale })
-      
+
       const physicY = 20
       const physicRadius = 5
       const physicBody = createPhysicBox({ x: physicRadius, y: physicY, z: physicRadius }, { mass: 0 });
@@ -75,7 +77,7 @@ export const Room = (config: RoomConfig) => {
 
       if (random(0, 2) === 0) {
         const stone = createStone();
-        assign(stone.position, { 
+        assign(stone.position, {
           x: (baseX + frandom(-0.5, 0.5)) * scale,
           z: (baseY + frandom(-0.5, 0.5)) * scale,
         })
@@ -89,7 +91,7 @@ export const Room = (config: RoomConfig) => {
           const stem = createStem();
           const radians = ((Math.PI * 2) / count) * i;
 
-          assign(stem.position, { 
+          assign(stem.position, {
             x: (x + Math.cos(radians) * 0.5) * scale,
             z: (y + Math.sin(radians) * 0.5) * scale,
           })
@@ -108,7 +110,7 @@ export const Room = (config: RoomConfig) => {
       const puzzleHandler = createPuzzleHandler()
 
       assign(puzzleHandler.mesh.position, { x: x * scale, y: 4, z: y * scale })
-      
+
       const physicY = 4
       const physicRadius = 5
       const physicBody = createPhysicBox({ x: physicRadius, y: physicY, z: physicRadius }, { mass: 0 });
@@ -144,12 +146,13 @@ export const Room = (config: RoomConfig) => {
 
     },
     update: (objectsInside: MapObject[]) => {
-      // console.log('_debug room', config.id, objectsInside)
-      const {activeObjectRef: { current: activeObject }} = systems.activeRoomSystem
+      const { activeObjectRef: { current: activeObject } } = systems.activeRoomSystem
 
       if (!activeObject) {
         return
       }
+
+      const { camera } = systems.uiSettingsSystem
 
       const getDistance = (mesh: THREE.Object3D) => {
         const worldVector = new THREE.Vector3();
@@ -157,14 +160,40 @@ export const Room = (config: RoomConfig) => {
         return worldVector.distanceTo(activeObject.mesh.position)
       }
 
-      const object = intractiveObjects
-        .slice(0)
-        .sort((a, b) => {
-          return getDistance(a.mesh) - getDistance(b.mesh)
-        })
-        .find(object => {
+      const nearestObjects = intractiveObjects
+        .filter(object => {
           return getDistance(object.mesh) < 2 * scale
         })
+
+        const cameraDirection = new THREE.Vector3();
+      camera.getWorldDirection(cameraDirection);
+
+      // Получить позицию камеры и объекта
+      const cameraPosition = new THREE.Vector3();
+      camera.getWorldPosition(cameraPosition);
+
+      const objectsDotProducts: [InteractiveRoomObject, number][] = []
+      const fieldOfView = Math.cos(Math.PI / 4);
+
+      nearestObjects.forEach(object => {
+        const objectPosition = new THREE.Vector3();
+        object.mesh.getWorldPosition(objectPosition);
+
+        // Вычислить вектор направления к объекту
+        const directionToObject = new THREE.Vector3();
+        directionToObject.subVectors(objectPosition, cameraPosition).normalize();
+        const dotProduct = cameraDirection.dot(directionToObject)
+
+        if (dotProduct > fieldOfView) {
+          objectsDotProducts.push([object, fieldOfView - dotProduct])
+        }
+      })
+
+      if (!objectsDotProducts.length) {
+        return
+      }
+
+      const [[object]] = objectsDotProducts.sort((a, b) => a[1] - b[1])
 
       if (object) {
         object.interactWith(activeObject)
