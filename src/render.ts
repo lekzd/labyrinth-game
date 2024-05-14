@@ -103,6 +103,7 @@ export const render = (state: State) => {
       }
 
       systems.cullingSystem.update(camera, rooms, objects, decorationObjects);
+      systems.activeRoomSystem.update(rooms, objects);
 
       if (settings.game.physics) {
         const fixedTimeStep = 1.0 / 60.0; // seconds

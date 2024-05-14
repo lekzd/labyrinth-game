@@ -9,6 +9,7 @@ import { createFloorMaterial } from './floorMaterial';
 import { systems } from '../../systems/index.ts';
 import { createStone } from './stone.ts';
 import { createStem } from './stem.ts';
+import { MapObject } from '../../types/MapObject.ts';
 
 const scale = 10
 
@@ -100,6 +101,7 @@ export const Room = (config: RoomConfig) => {
   }
 
   return {
+    config,
     offline: () => {
       isOnline = false
 
@@ -114,6 +116,9 @@ export const Room = (config: RoomConfig) => {
         physicWorld.addBody(body)
       })
 
+    },
+    update: (objectsInside: MapObject[]) => {
+      // console.log('_debug room', config.id, objectsInside)
     },
     mesh,
     floorMesh

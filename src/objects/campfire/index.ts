@@ -69,6 +69,7 @@ export const Campfire = (props: DynamicObject) => {
   assign(base.position, props.position);
 
   return {
+    props,
     mesh: base,
     update: (timeDelta: number) => {
       particleMaterial.uniforms.time.value += timeDelta * 2;
