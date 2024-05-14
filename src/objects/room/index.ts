@@ -10,6 +10,7 @@ import { systems } from '../../systems/index.ts';
 import { createStone } from './stone.ts';
 import { createStem } from './stem.ts';
 import { MapObject } from '../../types/MapObject.ts';
+import { createPuzzleHandler } from './puzzleHandler.ts';
 
 const scale = 10
 
@@ -45,6 +46,7 @@ export const Room = (config: RoomConfig) => {
   mesh.add(grassMesh);
 
   const treesPhysicBodies: CANNON.Body[] = []
+  const intractiveObjects: ReturnType<typeof createPuzzleHandler>[] = []
 
   for (let i = 0; i < config.tiles.length; i++) {
     const baseX = i % config.width
@@ -98,6 +100,30 @@ export const Room = (config: RoomConfig) => {
 
       }
     }
+
+    if (config.tiles[i] === Tiles.PuzzleHandler) {
+      const x = i % config.width
+      const y = Math.floor(i / config.width)
+
+      const puzzleHandler = createPuzzleHandler()
+
+      assign(puzzleHandler.mesh.position, { x: x * scale, y: 4, z: y * scale })
+      
+      const physicY = 4
+      const physicRadius = 5
+      const physicBody = createPhysicBox({ x: physicRadius, y: physicY, z: physicRadius }, { mass: 0 });
+
+      physicBody.position.set(
+        (config.x + x) * scale,
+        physicY,
+        (config.y + y) * scale,
+      )
+
+      treesPhysicBodies.push(physicBody)
+      intractiveObjects.push(puzzleHandler)
+
+      mesh.add(puzzleHandler.mesh)
+    }
   }
 
   return {
@@ -119,6 +145,30 @@ export const Room = (config: RoomConfig) => {
     },
     update: (objectsInside: MapObject[]) => {
       // console.log('_debug room', config.id, objectsInside)
+      const {activeObjectRef: { current: activeObject }} = systems.activeRoomSystem
+
+      if (!activeObject) {
+        return
+      }
+
+      const getDistance = (mesh: THREE.Object3D) => {
+        const worldVector = new THREE.Vector3();
+        mesh.getWorldPosition(worldVector);
+        return worldVector.distanceTo(activeObject.mesh.position)
+      }
+
+      const object = intractiveObjects
+        .slice(0)
+        .sort(object => {
+          return getDistance(object.mesh)
+        })
+        .find(object => {
+          return getDistance(object.mesh) < 2 * scale
+        })
+
+      if (object) {
+        object.interactWith(activeObject)
+      }
     },
     mesh,
     floorMesh

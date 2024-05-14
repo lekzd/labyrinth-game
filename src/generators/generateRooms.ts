@@ -66,6 +66,21 @@ const generateRoom = ({
     tiles[getIndex(width - 1, vc)] = Tiles.EastExit
   }
 
+  if (actions.includes(Tiles.PuzzleHandler)) {
+    let handlersNum = 3
+    
+    while (handlersNum) {
+      const tileX = random(0, width)
+      const tileY = random(0, height)
+      const tileIndex = tileY * width + tileX
+
+      if (tiles[tileIndex] === Tiles.Floor) {
+        tiles[tileIndex] = Tiles.PuzzleHandler
+        handlersNum--
+      }
+    }
+  }
+
   return {
     id: getId(),
     width,
@@ -178,6 +193,10 @@ export const generateRooms = ({
         if (!isLast) {
           actions.push(Tiles.EastExit)
         }
+      }
+
+      if (random(0, 3) === 0) {
+        actions.push(Tiles.PuzzleHandler)
       }
 
       const perpendicularExits = getPerpendicularExits(action)

@@ -9,4 +9,6 @@ export enum Tiles {
   WestExit,
   SouthExit,
   EastExit,
+
+  PuzzleHandler,
 }
