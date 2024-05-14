@@ -50,7 +50,7 @@ export const UiSettingsSystem = () => {
   const renderer = new THREE.WebGLRenderer(store.renderer)
   const camera = new THREE.PerspectiveCamera(
     store.camera.fov,
-    store.camera.aspect,
+    window.innerWidth / window.innerHeight,
     store.camera.near,
     store.camera.far,
   )
