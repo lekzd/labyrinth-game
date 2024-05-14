@@ -2825,6 +2825,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tweenjs/tween.js@npm:^23.1.2":
+  version: 23.1.2
+  resolution: "@tweenjs/tween.js@npm:23.1.2"
+  checksum: 10/ca7f62b1059917ebddf1e7e9d7361b87e945bfc21b3c840dd34b1ebfe7d90d87d0dd10ebfa88e2233fe4887cf260b9e1a45134573b599c905af45853b39ae0b8
+  languageName: node
+  linkType: hard
+
 "@tweenjs/tween.js@npm:~23.1.1":
   version: 23.1.1
   resolution: "@tweenjs/tween.js@npm:23.1.1"
@@ -6005,6 +6012,7 @@ __metadata:
     "@storybook/react": "npm:^8.0.10"
     "@storybook/react-vite": "npm:^8.0.10"
     "@storybook/test": "npm:^8.0.10"
+    "@tweenjs/tween.js": "npm:^23.1.2"
     "@types/cannon": "npm:^0"
     "@types/dat.gui": "npm:^0"
     "@types/react": "npm:^18"

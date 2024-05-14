@@ -1,6 +1,6 @@
 import * as THREE from "three";
+import * as TWEEN from '@tweenjs/tween.js'
 import { MapObject } from "../../types/MapObject";
-import { random } from "../../utils/random";
 import { systems } from "../../systems";
 
 export const createPuzzleHandler = () => {
@@ -41,7 +41,9 @@ export const createPuzzleHandler = () => {
       const { input } = systems.inputSystem
 
       if (!busyOnInteraction && input.interact) {
-        cube.rotateY(random(0, 180))
+        new TWEEN.Tween(cube.rotation)
+          .to( { y: cube.rotation.y + (Math.PI / 2) }, 700)
+          .start()
 
         setTimeout(() => {
           busyOnInteraction = false

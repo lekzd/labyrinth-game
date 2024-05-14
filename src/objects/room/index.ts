@@ -159,8 +159,8 @@ export const Room = (config: RoomConfig) => {
 
       const object = intractiveObjects
         .slice(0)
-        .sort(object => {
-          return getDistance(object.mesh)
+        .sort((a, b) => {
+          return getDistance(a.mesh) - getDistance(b.mesh)
         })
         .find(object => {
           return getDistance(object.mesh) < 2 * scale

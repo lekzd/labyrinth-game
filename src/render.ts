@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as TWEEN from '@tweenjs/tween.js'
 import Stats from './utils/Stats.ts';
 import { Camera } from "./objects/hero/camera.ts";
 import { Player } from "./objects/hero/player.ts";
@@ -104,6 +105,7 @@ export const render = (state: State) => {
 
       systems.cullingSystem.update(camera, rooms, objects, decorationObjects);
       systems.activeRoomSystem.update(rooms, objects);
+      TWEEN.update();
 
       if (settings.game.physics) {
         const fixedTimeStep = 1.0 / 60.0; // seconds
