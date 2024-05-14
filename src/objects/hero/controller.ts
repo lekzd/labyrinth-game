@@ -1,8 +1,9 @@
 import * as THREE from 'three';
-import {state} from "../../state.ts";
-import {pickBy} from "../../utils/pickBy.ts";
-import {NpcAnimationStates} from "./NpcAnimationStates.ts";
-import {animationType} from "../../loader.ts";
+import { state } from "../../state.ts";
+import { pickBy } from "../../utils/pickBy.ts";
+import { NpcAnimationStates } from "./NpcAnimationStates.ts";
+import { animationType } from "../../loader.ts";
+import { systems } from '../../systems/index.ts';
 
 const sendThrottle = state.setState
 
@@ -16,7 +17,7 @@ const isEqualParams = (prev, { rotation, position, ...other }) => {
 
   for (const name in points) {
     for (const key in points[name]) {
-      if (Math.floor(points[name][key]) !==  Math.floor(prev[name][key])) {
+      if (Math.floor(points[name][key]) !== Math.floor(prev[name][key])) {
         return false
       }
     }
@@ -25,18 +26,7 @@ const isEqualParams = (prev, { rotation, position, ...other }) => {
   return true
 }
 
-const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler]: [string, (event: any) => void]) => void) => {
-  const input = {
-    forward: false,
-    backward: false,
-    jumping: false,
-    left: false,
-    right: false,
-    enter: false,
-    speed: false,
-    attack: false,
-  };
-
+const BasicCharacterControllerInput = (person) => {
   let timeout = null
 
   const animate = (anim) => {
@@ -48,99 +38,26 @@ const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler
     }, 1000)
   }
 
-  Object.entries({
-    mousedown: (event) => {
+  systems.inputSystem.onKeyDown(input => {
+    if (input.attack) {
       if (timeout) clearTimeout(timeout);
-
+  
       for (const anim of [NpcAnimationStates.attack, NpcAnimationStates.attack2, NpcAnimationStates.sword_attackfast, NpcAnimationStates.dagger_attack2, NpcAnimationStates.spell1]) {
         if (anim in person.animations) {
           animate(anim)
           break;
         }
       }
-    },
-    keydown: (event) => {
-      input.speed = event.shiftKey;
-
-      switch (event.keyCode) {
-        case 32:
-          animate(animationType.jumping)
-          break;
-        case 87: // w
-          input.forward = true;
-          break;
-        case 38: // arrow up
-          input.forward = true;
-          break;
-
-        case 65: // a
-          input.left = true;
-          break;
-        case 37: // arrow left
-          input.left = true;
-          break;
-
-        case 83: // s
-          input.backward = true;
-          break;
-        case 40: // arrow down
-          input.backward = true;
-          break;
-
-        case 68: // d
-          input.right = true;
-          break;
-        case 39: // arrow right
-          input.right = true;
-          break;
-
-        case 13: // ENTER
-          input.enter = true;
-          break;
-      }
-    },
-    keyup: (event) => {
-      switch(event.keyCode) {
-        case 87: // w
-          input.forward = false;
-          break;
-        case 38: // arrow up
-          input.forward = false;
-          break;
-
-        case 65: // a
-          input.left = false;
-          break;
-        case 37: // arrow left
-          input.left = false;
-          break;
-
-        case 83: // s
-          input.backward = false;
-          break;
-        case 40: // arrow down
-          input.backward = false;
-          break;
-
-        case 68: // d
-          input.right = false;
-          break;
-        case 39: // arrow right
-          input.right = false;
-          break;
-
-        case 13: // ENTER
-          input.enter = false;
-          break;
-      }
     }
-  }).forEach(watcherCallback)
 
-  // TODO listerns for btn events
+    if (input.jumping) {
+      animate(animationType.jumping)
+    }
+  })
 
   return {
-    ...input,
     update: (timeInSeconds) => {
+      const { input } = systems.inputSystem
       const { id, velocity, decceleration, position, physicY, physicBody, acceleration } = person;
       const prev = state.objects[id];
       const next = { ...prev }
@@ -213,8 +130,5 @@ const BasicCharacterControllerInput = (person, watcherCallback: ([event, handler
 };
 
 export const KeyboardCharacterController = (person) => (
-  BasicCharacterControllerInput(
-    person,
-    args => document.addEventListener(...args, false)
-  )
+  BasicCharacterControllerInput(person)
 )

@@ -40,6 +40,7 @@ export const Box = (props: DynamicObject) => {
   physicWorld.addBody(boxBody);
 
   return {
+    props,
     mesh,
     update: (time: number) => {},
     physicBody: boxBody,

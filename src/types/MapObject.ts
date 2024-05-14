@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon';
+import { DynamicObject } from './DynamicObject';
 
 export type MapObject = {
+  props: DynamicObject,
   update: (time: number) => void,
   mesh: THREE.Object3D<THREE.Object3DEventMap>,
   physicBody?: CANNON.Body

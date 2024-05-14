@@ -18,7 +18,7 @@ export type ObjectQuaternion = {
 export type DynamicObject = {
   id: string,
   type: ObjectType,
-  state?: NpcAnimationStates,
+  state?: keyof typeof NpcAnimationStates,
 
   position: ObjectVector3,
   rotation: ObjectQuaternion,

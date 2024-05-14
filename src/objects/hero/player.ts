@@ -21,7 +21,8 @@ interface Props extends DynamicObject {
   type: modelType
 }
 
-export const Player = ({ id, mass, type, position, rotation }: Props) => {
+export const Player = (props: Props) => {
+  const { id, mass, type, position, rotation } = props
   const model = loads.model[type];
 
   if (!model) {
@@ -104,6 +105,7 @@ export const Player = ({ id, mass, type, position, rotation }: Props) => {
   stateMachine.setState('idle');
 
   const root = {
+    props,
     id,
     mesh: target,
     physicBody,
