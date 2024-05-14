@@ -19,7 +19,7 @@ import { frandom } from './utils/random.ts';
 
 const stats = new Stats()
 
-const subscribers: { update: (time: number) => void }[] = [stats, systems.grassSystem]
+const subscribers: { update: (time: number) => void }[] = [stats, systems.grassSystem, systems.inputSystem]
 const objects: Record<string, MapObject> = {}
 const rooms: ReturnType<typeof Room>[] = []
 const decorationObjects: THREE.Mesh[] = []

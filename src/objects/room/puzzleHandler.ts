@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import { MapObject } from "../../types/MapObject";
+import { random } from "../../utils/random";
+import { systems } from "../../systems";
 
 export const createPuzzleHandler = () => {
   const target = new THREE.Object3D()
@@ -31,10 +33,22 @@ export const createPuzzleHandler = () => {
   target.add(base)
   target.add(cube)
 
+  let busyOnInteraction = false
+
   return {
     mesh: target,
     interactWith: (mapObject: MapObject) => {
-      console.log('_debug mapObject', mapObject)
+      const { input } = systems.inputSystem
+
+      if (!busyOnInteraction && input.interact) {
+        cube.rotateY(random(0, 180))
+
+        setTimeout(() => {
+          busyOnInteraction = false
+        }, 1000)
+        busyOnInteraction = true
+      }
+      
     }
   };
 }
