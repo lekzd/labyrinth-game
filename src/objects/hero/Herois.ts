@@ -21,6 +21,7 @@ import { createPhysicBox, physicWorld } from "../../cannon";
 import { createTorch } from "../torch";
 import { NpcAnimationStates } from "./NpcAnimationStates";
 import { state } from "../../state.ts";
+import { HealthBar } from "./healthbar.ts";
 
 interface HeroisProps extends DynamicObject {
   type: modelType;
@@ -53,6 +54,7 @@ export class Herois {
   private elementsHerois: ElementsHerois;
   private stateMachine: any;
   private mixer: AnimationMixer;
+  private healthBar;
 
   readonly animations: AnimationClip[];
   readonly physicBody: CANNON.Body;
@@ -75,7 +77,13 @@ export class Herois {
     this.physicBody = initPhysicBody(props.mass);
     this.elementsHerois = initElementsHerois(this.target);
     this.stateMachine = initStateMashine(this.animations);
-
+    this.healthBar = HealthBar(
+      {
+        health: 1000,
+        mana: 1000,
+      },
+      this.target
+    );
     correctionPhysicBody(this.physicBody, this.target);
     physicWorld.addBody(this.physicBody);
   }
@@ -130,7 +138,7 @@ export class Herois {
       return;
     }
     const obj = state.objects[this.id];
-
+    this.healthBar.update(obj);
     this.stateMachine.update(timeInSeconds, obj.state);
 
     this.setPosition(obj.position);
@@ -192,7 +200,10 @@ function initStateMashine(animations: AnimationClip[]) {
   stateMachine.setState("idle");
   return stateMachine;
 }
-function initAnimations(target: Object3D<Object3DEventMap>, mixer: AnimationMixer) {
+function initAnimations(
+  target: Object3D<Object3DEventMap>,
+  mixer: AnimationMixer
+) {
   const animations = [
     ...target.animations.map((animation) => animation.clone()),
     ...pullAnimations(loads.animation),
