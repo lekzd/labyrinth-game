@@ -16,8 +16,10 @@ const getColor = (tile: Tiles) => {
       return `rgb(${20},${10},0)`
     case Tiles.Wall:
       return `rgb(0,0,0)`
+    case Tiles.Floor:
+      return `#555555`
     default:
-      return `rgb(${10},${20},0)`
+      return `#777777`
   }
 } 
 
@@ -72,7 +74,7 @@ type Story = StoryObj<typeof meta>;
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
 export const Primary: Story = {
   args: {
-    rows: 100,
-    colls: 100,
+    rows: 150,
+    colls: 150,
   },
 };

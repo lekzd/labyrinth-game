@@ -2,7 +2,7 @@ import { State } from "../state"
 import { Tiles } from "../types/Tiles"
 import { random } from "../utils/random"
 import { shuffle } from "../utils/shuffle"
-import { something } from "../utils/something"
+import { some } from "../utils/some"
 import { RoomConfig } from "./types"
 import { drawRect, drawTiles, range } from "./utils"
 
@@ -15,6 +15,15 @@ const EXITS = [
 
 let id = 0
 const getId = () => id++
+
+const intersectRect = (r1: RoomConfig, r2: RoomConfig) => {
+  return !(
+    r2.x > (r1.x + r1.width) ||
+    (r2.x + r2.width) < r1.x ||
+    r2.y > (r1.y + r1.height) ||
+    (r2.y + r2.height) < r1.y
+  );
+}
 
 const generateRoom = ({
   width,
@@ -104,6 +113,9 @@ type GeneratorConfig = {
   ROOM_SIZE: number
 }
 
+const MAX_SEQUENCE = 5
+const MAX_DEEP = 1
+
 export const generateRooms = ({
   state,
   ROOM_SIZE,
@@ -132,9 +144,11 @@ export const generateRooms = ({
   rooms.push(centralRoom)
 
   // draw branches
-  const branches = shuffle(range(2, 6))
+  const branches = shuffle(range(4, 8))
 
   const addSequence = (parentRoom: RoomConfig, action: Tiles, length: number, deep: number) => {
+    const result: RoomConfig[] = []
+
     for (let i = 0; i < length; i++) {
       let isLast = i === length - 1
       let x = parentRoom.x
@@ -201,20 +215,36 @@ export const generateRooms = ({
 
       const perpendicularExits = getPerpendicularExits(action)
 
-      if (deep < 1 && random(0, 3) === 0) {
-        actions.push(something(perpendicularExits))
+      if (deep < MAX_DEEP) {
+        actions.push(...some(perpendicularExits, random(0, 3)))
       }
   
-      const room = generateRoom({ id: getId(), width, height, actions, x, y })
-  
-      drawTiles(staticGrid, x, y, width, height, state.colls, room.tiles)
-      rooms.push(room)
+      const room = { id: getId(), width, height, actions, x, y, tiles: [] }
 
       perpendicularExits.forEach(exit => {
         if (actions.includes(exit)) {
-          addSequence(room, exit, random(1, 5), deep + 1)
+          const length = random(1, MAX_SEQUENCE)
+          let success = false
+
+          for (let i = length; i > 0; i--) {
+            const roomsSequence = addSequence(room, exit, i, deep + 1)
+            const hasIntersection = roomsSequence.some(newRoom => rooms.find(addedRoom => intersectRect(newRoom, addedRoom)))
+
+            if (hasIntersection) {
+              continue
+            }
+            result.push(...roomsSequence)
+            success = true
+            break
+          }
+
+          if (!success) {
+            room.actions = actions.filter(a => a !== exit)
+          }
         }
       })
+
+      result.push(generateRoom(room))
 
       parentRoom = room
 
@@ -222,6 +252,8 @@ export const generateRooms = ({
         break
       }
     }
+    
+    return result
   }
 
   for (let i = 0; i < centralRoom.actions.length; i++) {
@@ -233,8 +265,13 @@ export const generateRooms = ({
       continue
     }
 
-    addSequence(parentRoom, action, length, 0)
+    const roomsSequence = addSequence(parentRoom, action, length, 0)
+    rooms.push(...roomsSequence)
   }
+
+  rooms.forEach(room => {
+    drawTiles(staticGrid, room.x, room.y, room.width, room.height, state.colls, room.tiles)
+  })
 
   return {
     staticGrid,
