@@ -18,8 +18,7 @@ export const createInteractivitySign = () => {
       }
     `,
     side: THREE.FrontSide,
-    blending: THREE.AdditiveBlending,
-    transparent: true
+    // blending: THREE.AdditiveBlending,
   });
 
   const signMesh = new THREE.Mesh(new THREE.ConeGeometry( 1, 1, 3 ), glowMaterial);
