@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import * as TWEEN from '@tweenjs/tween.js'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
 import Stats from './utils/Stats.ts';
 import { Camera } from "./objects/hero/camera.ts";
 import { Player } from "./objects/hero/player.ts";
@@ -17,6 +19,7 @@ import { systems } from './systems/index.ts';
 import { RoomConfig } from './generators/types.ts';
 import PolygonClipping from 'polygon-clipping';
 import { frandom } from './utils/random.ts';
+import { App } from './ui/App.tsx';
 
 const stats = new Stats()
 
@@ -59,6 +62,8 @@ export const addObjects = (items = {}) => {
 
 export const render = (state: State) => {
   const container = document.getElementById('app')!;
+  const root = ReactDOM.createRoot(document.getElementById('react-root'));
+  root.render(React.createElement(App));
 
   const hemiLight = new THREE.HemisphereLight(0xffffff, 0x8d8d8d, 0.1);
   hemiLight.position.set(0, 20, 0);
