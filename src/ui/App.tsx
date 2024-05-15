@@ -6,7 +6,6 @@ const TopContainer = styled.div`
   display: flex;
   flex-direction: column;
   position: absolute;
-  background-color: #2b2b2b26;
   left: 0;
   top: 30px;
   width: 100vw;
@@ -15,7 +14,6 @@ const BottomContainer = styled.div`
   display: flex;
   flex-direction: column;
   position: absolute;
-  background-color: #2b2b2b26;
   left: 0;
   bottom: 0;
   width: 100vw;

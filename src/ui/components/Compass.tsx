@@ -3,14 +3,22 @@ import React, { FC, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { systems } from '../../systems'
 import { scale, state } from '../../state'
-import fireIcon from './assets/fire_icon_30x30.png' 
 
 const Container = styled.div`
   display: flex;
   width: 100vw;
 `
 
-const Icon = styled.img`
+const Line = styled.div`
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 100vw;
+  height: 2px;
+  background-image: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+`
+
+const Icon = styled.div`
   width: 30px;
   height: 30px;
   opacity: 0.5;
@@ -67,7 +75,13 @@ export const Compass: FC<IProps> = (props: IProps) => {
 
   return (
     <Container>
-      <Icon ref={ref} src={fireIcon} />
+      <Line />
+      <Icon ref={ref} >
+        <svg width="12.195" height="20" viewBox="0 0 259 410" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4.30176" y="367.5" width="252" height="42" fill="#D9D9D9"/>
+          <path d="M130.778 347C-55.1984 347 -11.1976 106 69.2785 106C12.2915 287 249.789 224.5 95.7784 0C295.803 31.5 316.755 347 130.778 347Z" fill="#D9D9D9"/>
+        </svg>
+      </Icon>
     </Container>
   )
 }
