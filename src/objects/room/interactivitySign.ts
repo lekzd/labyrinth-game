@@ -1,30 +1,20 @@
 import * as THREE from 'three'
-import { systems } from '../../systems';
 
 export const createInteractivitySign = () => {
-  const { camera } = systems.uiSettingsSystem
-
   const glowMaterial = new THREE.ShaderMaterial({
     uniforms: {
       glowColor: { value: new THREE.Color(0x333300) },
-      viewVector: { value: camera.position }
     },
     vertexShader: `
-      uniform vec3 viewVector;
-      varying float intensity;
       void main() {
         vec3 vNormal = normalize(normalMatrix * normal);
-        vec3 vNormel = normalize(normalMatrix * viewVector);
-        intensity = pow(0.7 - dot(vNormal, vNormel), 2.0);
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
     `,
     fragmentShader: `
       uniform vec3 glowColor;
-      varying float intensity;
       void main() {
-        vec3 glow = glowColor;
-        gl_FragColor = vec4(glow, 1.0);
+        gl_FragColor = vec4(glowColor, 1.0);
       }
     `,
     side: THREE.FrontSide,
