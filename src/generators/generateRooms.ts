@@ -77,7 +77,7 @@ const generateRoom = ({
 
   if (actions.includes(Tiles.PuzzleHandler)) {
     let handlersNum = 3
-    
+
     while (handlersNum) {
       const tileX = random(0, width)
       const tileY = random(0, height)
@@ -113,7 +113,7 @@ type GeneratorConfig = {
   ROOM_SIZE: number
 }
 
-const MAX_SEQUENCE = 5
+const MAX_SEQUENCE = 10
 const MAX_DEEP = 1
 
 export const generateRooms = ({
@@ -156,7 +156,7 @@ export const generateRooms = ({
       const width = random(3, 8) * 2 + 1
       const height = random(3, 8) * 2 + 1
       const actions: Tiles[] = []
-  
+
       if (action === Tiles.NorthExit) {
         x += (parentRoom.width - width) >> 1
         y -= height
@@ -169,7 +169,7 @@ export const generateRooms = ({
           actions.push(Tiles.NorthExit)
         }
       }
-  
+
       if (action === Tiles.SouthExit) {
         x += (parentRoom.width - width) >> 1
         y += parentRoom.height
@@ -182,7 +182,7 @@ export const generateRooms = ({
           actions.push(Tiles.SouthExit)
         }
       }
-  
+
       if (action === Tiles.WestExit) {
         y += (parentRoom.height - height) >> 1
         x -= width
@@ -195,7 +195,7 @@ export const generateRooms = ({
           actions.push(Tiles.WestExit)
         }
       }
-  
+
       if (action === Tiles.EastExit) {
         y += (parentRoom.height - height) >> 1
         x += parentRoom.width
@@ -218,7 +218,7 @@ export const generateRooms = ({
       if (deep < MAX_DEEP) {
         actions.push(...some(perpendicularExits, random(0, 3)))
       }
-  
+
       const room = { id: getId(), width, height, actions, x, y, tiles: [] }
 
       perpendicularExits.forEach(exit => {
@@ -229,8 +229,11 @@ export const generateRooms = ({
           for (let i = length; i > 0; i--) {
             const roomsSequence = addSequence(room, exit, i, deep + 1)
             const hasIntersection = roomsSequence.some(newRoom => rooms.find(addedRoom => intersectRect(newRoom, addedRoom)))
+            const hasOutOfBounds = roomsSequence.some(newRoom =>
+              newRoom.x < 0 || newRoom.y < 0 || newRoom.x + newRoom.width > state.colls || newRoom.y + newRoom.height > state.rows
+            )
 
-            if (hasIntersection) {
+            if (hasIntersection || hasOutOfBounds) {
               continue
             }
             result.push(...roomsSequence)
@@ -252,7 +255,7 @@ export const generateRooms = ({
         break
       }
     }
-    
+
     return result
   }
 
@@ -266,6 +269,9 @@ export const generateRooms = ({
     }
 
     const roomsSequence = addSequence(parentRoom, action, length, 0)
+      .filter(newRoom =>
+        !(newRoom.x < 0 || newRoom.y < 0 || newRoom.x + newRoom.width > state.colls || newRoom.y + newRoom.height > state.rows)
+      )
     rooms.push(...roomsSequence)
   }
 

@@ -8,7 +8,6 @@ const ROOM_SIZE = 13
 
 const getColor = (tile: Tiles) => {
   switch (tile) {
-    case Tiles.Empty:
     case Tiles.NorthExit:
     case Tiles.SouthExit:
     case Tiles.WestExit:
@@ -18,6 +17,8 @@ const getColor = (tile: Tiles) => {
       return `rgb(0,0,0)`
     case Tiles.Floor:
       return `#555555`
+    case Tiles.Empty:
+      return 'brown'
     default:
       return `#777777`
   }
