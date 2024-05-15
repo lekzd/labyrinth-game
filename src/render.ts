@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import * as TWEEN from '@tweenjs/tween.js'
 import Stats from './utils/Stats.ts';
 import { Camera } from "./objects/hero/camera.ts";
-import { Player } from "./objects/hero/player.ts";
 import { State, scale } from './state.ts';
 import { scene } from './scene.ts';
 import { Campfire } from './objects/campfire/index.ts';
@@ -17,6 +16,7 @@ import { systems } from './systems/index.ts';
 import { RoomConfig } from './generators/types.ts';
 import PolygonClipping from 'polygon-clipping';
 import { frandom } from './utils/random.ts';
+import { Herois } from './objects/hero/Herois.ts';
 
 const stats = new Stats()
 
@@ -32,7 +32,7 @@ const getObjectClass = (type: ObjectType) => {
     case 'Box':
       return Box;
     default:
-      return Player;
+      return Herois;
   }
 }
 
@@ -43,7 +43,13 @@ export const addObjects = (items = {}) => {
 
     const controllable = currentPlayer.activeObjectId === id;
     const ObjectConstructor = getObjectClass(objectConfig.type)
-    const object = ObjectConstructor({ ...objectConfig })
+
+    let object;
+    if(ObjectConstructor === Herois) {
+        object = new ObjectConstructor({ ...objectConfig })
+    } else {
+        object = ObjectConstructor({ ...objectConfig })
+    }
 
     objects[id] = object
     subscribers.push(object)

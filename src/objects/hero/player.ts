@@ -55,9 +55,9 @@ export const Player = (props: Props) => {
   );
 
   // @ts-expect-error
-  physicBody.threejs = target;
+  //physicBody.threejs = target;
   // @ts-expect-error
-  target.threejs = physicBody;
+  //target.threejs = physicBody;
 
   physicBody.position.set(
     position.x,
