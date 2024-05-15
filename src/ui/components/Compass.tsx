@@ -46,10 +46,9 @@ const getCampfireOffset = (camera: THREE.Camera, target: THREE.Vector3) => {
 
   // Определение знака угла поворота
   const crossProduct = cameraDirectionXZ.cross(toTargetXZ).y;
-  const sign = crossProduct < 0 ? -1 : 1;
   const width = window.innerWidth
 
-  return width - ((sign * angleInDegrees / 180) * (width / 2) + (width / 2));
+  return width - ((angleInDegrees > 90 ? 2 : crossProduct) * (width / 2) + (width / 2));
 };
 
 export const Compass: FC<IProps> = (props: IProps) => {
