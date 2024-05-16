@@ -44,7 +44,7 @@ export const HealthBar = ({ health, mana }, target) =>  {
   target.add(manaSprite);
 
   const root = {
-    update: ({ health, mana }) => {d
+    update: ({ health, mana }) => {
       updateTexture(healthCtx, health, '#ff0000');
       updateTexture(manaCtx, mana, '#3713dd');
     }
