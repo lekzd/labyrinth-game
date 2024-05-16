@@ -3,14 +3,12 @@ import { makeCtx } from '../../utils/makeCtx';
 
 const createTexture = () => {
   const context = makeCtx(64, 16);
-  const canvas = context.canvas 
 
-  return new THREE.CanvasTexture(canvas);
+  return new THREE.CanvasTexture(context.canvas);
 }
 
-const updateTexture = (texture: THREE.Texture, percent: number, color: string) => {
-  const canvas = texture.source.data;
-  const ctx = canvas.getContext('2d');
+const updateTexture = (ctx: CanvasRenderingContext2D, percent: number, color: string) => {
+  const canvas = ctx.canvas
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
@@ -28,20 +26,27 @@ function createSprite(texture = createTexture()) {
   return sprite;
 }
 
+const getCanvasCtx = (texture: THREE.Texture) => {
+  const canvas = texture.source.data;
+  return canvas.getContext('2d');
+}
+
 export const HealthBar = ({ health, mana }, target) =>  {
   const healthSprite = createSprite(); // 75% здоровья
+  const healthCtx = getCanvasCtx(healthSprite.material.map!)
   healthSprite.position.set(0, 310, 0);
 
   const manaSprite = createSprite();
+  const manaCtx = getCanvasCtx(manaSprite.material.map!)
   manaSprite.position.set(0, 305, 0);
 
   target.add(healthSprite);
   target.add(manaSprite);
 
   const root = {
-    update: ({ health, mana }) => {
-      updateTexture(healthSprite.material.map!, health, '#ff0000');
-      updateTexture(manaSprite.material.map!, mana, '#3713dd');
+    update: ({ health, mana }) => {d
+      updateTexture(healthCtx, health, '#ff0000');
+      updateTexture(manaCtx, mana, '#3713dd');
     }
   }
 

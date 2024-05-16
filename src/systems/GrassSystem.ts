@@ -103,7 +103,7 @@ export const GrassSystem = () => {
       }
 
       uniforms.time.value += time;
-      uniforms.lightsImage.value = new THREE.CanvasTexture(lightsCtx.canvas)
+      uniforms.lightsImage.value.needsUpdate = true
       uniforms.textureImage.value = loads.texture["grass.webp"]
       leavesMaterial.uniformsNeedUpdate = true;
     },
