@@ -47,6 +47,9 @@ export const Room = (config: RoomConfig) => {
   mesh.add(floorMesh);
   mesh.add(grassMesh);
 
+  mesh.updateMatrixWorld()
+  mesh.matrixAutoUpdate = false
+
   const treesPhysicBodies: CANNON.Body[] = []
   const intractiveObjects: InteractiveRoomObject[] = []
 

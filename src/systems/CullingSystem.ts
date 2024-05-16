@@ -54,6 +54,8 @@ export const CullingSystem = () => {
             mesh.visible = true
           }
         }
+
+        mesh.matrixAutoUpdate = mesh.visible
       }
 
       decorationObjects.forEach(mesh => {
@@ -64,6 +66,8 @@ export const CullingSystem = () => {
         } else {
           mesh.visible = frustum.intersectsObject(mesh)
         }
+
+        mesh.matrixAutoUpdate = mesh.visible
       })
 
     },
