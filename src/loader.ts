@@ -16,8 +16,8 @@ export enum animationType {
   jumping = 'jumping',
   punch = 'punch',
   // death = 'death',
-  run = 'run',
-  walk = 'walk',
+  // run = 'run',
+  // walk = 'walk',
 }
 
 export enum modelType {
