@@ -15,7 +15,9 @@ export enum texturesType {
 export enum animationType {
   jumping = 'jumping',
   punch = 'punch',
-  sword = 'sword',
+  // death = 'death',
+  run = 'run',
+  walk = 'walk',
 }
 
 export enum modelType {
@@ -24,6 +26,11 @@ export enum modelType {
   Rogue = 'Rogue',
   Warrior = 'Warrior',
   Wizard = 'Wizard',
+
+  // Skeleton_Mage = 'Skeleton_Mage',
+  // Skeleton_Minion = 'Skeleton_Minion',
+  // Skeleton_Rogue = 'Skeleton_Rogue',
+  // Skeleton_Warrior = 'Skeleton_Warrior',
 }
 
 export enum worldType {

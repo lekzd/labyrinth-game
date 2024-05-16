@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import {camera, objects} from "../../render.ts";
 import {state} from "../../state.ts";
+import {animationType} from "../../loader.ts";
+import {NpcBaseAnimations} from "./NpcAnimationStates.ts";
 
 export const checkHit = (attacker, distance = 8) => {
   const raycaster = new THREE.Raycaster();
@@ -20,7 +22,9 @@ export const checkHit = (attacker, distance = 8) => {
     if (intersect.distance <= distance) {
       // Так как удар попадает по скину, берем парента (таргет героя) и id из userData
       const { id } = intersect.object.parent.userData;
-      changes.objects[id] = { health: state.objects[id].health - 5 };
+      const health = state.objects[id].health - 5;
+      changes.objects[id] = { health };
+      if (health <= 0) changes.objects[id].state = NpcBaseAnimations.death;
     }
   }
 

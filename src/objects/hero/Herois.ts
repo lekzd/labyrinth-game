@@ -11,6 +11,7 @@ import {
   SphereGeometry,
   TextureLoader,
   Vector3,
+  LoopOnce,
   Vector3Like,
 } from "three";
 import { animationType, loads, modelType } from "../../loader";
@@ -19,7 +20,7 @@ import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import * as CANNON from "cannon";
 import { createPhysicBox, physicWorld } from "../../cannon";
 import { createTorch } from "../torch";
-import { NpcAnimationStates } from "./NpcAnimationStates";
+import {NpcAnimationStates, NpcBaseAnimations} from "./NpcAnimationStates";
 import { state } from "../../state.ts";
 import { HealthBar } from "./healthbar.ts";
 
@@ -150,7 +151,8 @@ export class Herois {
 
     // обновляем позицию руки с факелом,
     // чтобы она не зависела от текущей анимации
-    this.elementsHerois.leftArm.rotation.x = Math.PI * -0.3;
+    if (this.elementsHerois.leftArm)
+      this.elementsHerois.leftArm.rotation.x = Math.PI * -0.3;
   }
 }
 
@@ -160,6 +162,7 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroisProps) {
   Object.assign(target.position, props.position);
   Object.assign(target.quaternion, props.rotation);
 
+  // TODO: скелетоны scale.multiplyScalar(5);
   target.scale.multiplyScalar(0.05);
   target.updateMatrix();
 
@@ -183,7 +186,10 @@ function initElementsHerois(
   const leftHand = target.getObjectByName("Fist1L")!;
   const torch = createTorch();
   // Прикрепляем факел к руке персонажа
-  leftHand.add(torch);
+
+  if (leftHand)
+    leftHand.add(torch);
+
   return {
     leftArm,
     leftHand,
@@ -263,6 +269,8 @@ function CharacterFSM({ animations }: { animations: AnimationControllers }) {
     //creating new instance of a state class
     currentState = action(animations, name);
 
+    console.log(currentState)
+
     //calling the Enter method from State
     currentState.Enter(prevState);
   };
@@ -292,8 +300,13 @@ function action(animations: AnimationControllers, Name: AnimationName) {
 
         curAction.time = 0.0;
         curAction.enabled = true;
-
         curAction.crossFadeFrom(prevAction, 0.5, true);
+
+        if (Name === NpcBaseAnimations.death) {
+          curAction.clampWhenFinished = true;
+          curAction.loop = LoopOnce;
+        }
+
         curAction.play();
       } else {
         curAction.play();
