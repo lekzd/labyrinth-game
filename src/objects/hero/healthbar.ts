@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { makeCtx } from '../../utils/makeCtx';
+import {isEqual} from "../../utils/isEqual.ts";
 
 const createTexture = () => {
   const context = makeCtx(64, 16);
@@ -7,7 +8,8 @@ const createTexture = () => {
   return new THREE.CanvasTexture(context.canvas);
 }
 
-const updateTexture = (ctx: CanvasRenderingContext2D, percent: number, color: string) => {
+const updateTexture = (texture: THREE.Texture, percent: number, color: string) => {
+  const ctx = getCanvasCtx(texture.material.map!)
   const canvas = ctx.canvas
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -15,6 +17,8 @@ const updateTexture = (ctx: CanvasRenderingContext2D, percent: number, color: st
   ctx.fillRect(2, 2, canvas.width - 4, canvas.height - 4);
   ctx.fillStyle = color;
   ctx.fillRect(2, 2, (canvas.width - 4) * (percent / 100), canvas.height - 4);
+
+  texture.material.map = new THREE.CanvasTexture(canvas)
 }
 
 function createSprite(texture = createTexture()) {
@@ -32,12 +36,11 @@ const getCanvasCtx = (texture: THREE.Texture) => {
 }
 
 export const HealthBar = ({ health, mana }, target) =>  {
+  let state = {}
   const healthSprite = createSprite(); // 75% здоровья
-  const healthCtx = getCanvasCtx(healthSprite.material.map!)
   healthSprite.position.set(0, 310, 0);
 
   const manaSprite = createSprite();
-  const manaCtx = getCanvasCtx(manaSprite.material.map!)
   manaSprite.position.set(0, 305, 0);
 
   target.add(healthSprite);
@@ -45,8 +48,12 @@ export const HealthBar = ({ health, mana }, target) =>  {
 
   const root = {
     update: ({ health, mana }) => {
-      updateTexture(healthCtx, health, '#ff0000');
-      updateTexture(manaCtx, mana, '#3713dd');
+      if (isEqual(state, { health, mana })) return;
+
+      updateTexture(healthSprite, health, '#ff0000');
+      updateTexture(manaSprite, mana, '#3713dd');
+
+      state = { health, mana }
     }
   }
 

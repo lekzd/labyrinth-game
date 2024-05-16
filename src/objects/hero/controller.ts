@@ -4,6 +4,7 @@ import { pickBy } from "../../utils/pickBy.ts";
 import { NpcAnimationStates } from "./NpcAnimationStates.ts";
 import { animationType } from "../../loader.ts";
 import { systems } from '../../systems/index.ts';
+import {checkHit} from "./hit.ts";
 
 const sendThrottle = state.setState
 
@@ -45,6 +46,7 @@ const BasicCharacterControllerInput = (person) => {
       for (const anim of [NpcAnimationStates.attack, NpcAnimationStates.attack2, NpcAnimationStates.sword_attackfast, NpcAnimationStates.dagger_attack2, NpcAnimationStates.spell1]) {
         if (anim in person.animations) {
           animate(anim)
+          setTimeout(() => checkHit(person), 500);
           break;
         }
       }

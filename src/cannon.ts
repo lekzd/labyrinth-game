@@ -20,8 +20,3 @@ export const createGroundBody = () => {
 
   return groundBody
 }
-
-physicWorld.addEventListener('beginContact', (event) => {
-  const body1 = event.target;
-  const body2 = event.body;
-});

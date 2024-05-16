@@ -56,23 +56,23 @@ onUpdate((next) => {
     objects: [
       createCampfireObject(),
       ...heroes,
-      createObject({
-        type: 'Box',
-        position: {
-          x: 80 + (COLLS * scale) >> 1,
-          y: 0,
-          z: (ROWS * scale) >> 1,
-        }
-      }),
+      // createObject({
+      //   type: 'Box',
+      //   position: {
+      //     x: 80 + (COLLS * scale) >> 1,
+      //     y: 0,
+      //     z: (ROWS * scale) >> 1,
+      //   }
+      // }),
 
-      ...Array(10).fill(1).map((a, i) => createObject({
-        type: 'Box',
-        position: {
-          x: frandom(-100, -150) + (COLLS * scale) >> 1,
-          y: i * 10,
-          z: frandom(-20, 20) + (ROWS * scale) >> 1,
-        }
-      }))
+      // ...Array(10).fill(1).map((a, i) => createObject({
+      //   type: 'Box',
+      //   position: {
+      //     x: frandom(-100, -150) + (COLLS * scale) >> 1,
+      //     y: i * 10,
+      //     z: frandom(-20, 20) + (ROWS * scale) >> 1,
+      //   }
+      // }))
     ].reduce((acc, item) => ({ ...acc, [item.id]: item }), {}),
 
   })

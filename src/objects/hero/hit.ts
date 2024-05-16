@@ -1,0 +1,32 @@
+import * as THREE from 'three';
+import {camera, objects} from "../../render.ts";
+import {state} from "../../state.ts";
+
+export const checkHit = (attacker, distance = 8) => {
+  const raycaster = new THREE.Raycaster();
+  const direction = new THREE.Vector3(0, 0, 1);
+  direction.applyQuaternion(attacker.quaternion);
+  raycaster.set(attacker.position, direction);
+  raycaster.camera = camera
+
+  const items = Object.values(objects)
+    .filter(item => item.target)
+    .map(item => item.target)
+
+  const intersects = raycaster.intersectObjects(items, true);
+  const changes = { objects: {} };
+
+  for (const intersect of intersects) {
+    if (intersect.distance <= distance) {
+      // Так как удар попадает по скину, берем парента (таргет героя) и id из userData
+      const { id } = intersect.object.parent.userData;
+      changes.objects[id] = { health: state.objects[id].health - 5 };
+    }
+  }
+
+  delete changes.objects[attacker.id];
+
+  if (Object.keys(changes.objects).length) {
+    state.setState(changes)
+  }
+}

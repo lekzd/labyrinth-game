@@ -74,13 +74,13 @@ export class Herois {
     this.target = initTarget(model, props);
     this.mixer = new AnimationMixer(this.target);
     this.animations = initAnimations(this.target, this.mixer);
+    // console.log(this.target)
     this.physicBody = initPhysicBody(props.mass);
     this.elementsHerois = initElementsHerois(this.target);
     this.stateMachine = initStateMashine(this.animations);
-    this.healthBar = HealthBar(
-      {
-        health: 1000,
-        mana: 1000,
+    this.healthBar = HealthBar({
+        health: props.health,
+        mana: props.mana,
       },
       this.target
     );
@@ -156,6 +156,7 @@ export class Herois {
 
 function initTarget(model: Group<Object3DEventMap>, props: HeroisProps) {
   const target = clone(model);
+  target.userData.id = props.id;
   Object.assign(target.position, props.position);
   Object.assign(target.quaternion, props.rotation);
 

@@ -28,9 +28,10 @@ const subscribers: { update: (time: number) => void }[] = [
   systems.grassSystem,
   systems.inputSystem,
 ];
-const objects: Record<string, MapObject> = {};
-const rooms: ReturnType<typeof Room>[] = [];
-const decorationObjects: THREE.Mesh[] = [];
+export const objects: Record<string, MapObject> = {}
+const rooms: ReturnType<typeof Room>[] = []
+const decorationObjects: THREE.Mesh[] = []
+export let camera
 
 const getObjectClass = (type: ObjectType) => {
   switch (type) {
@@ -58,7 +59,8 @@ export const addObjects = (items = {}) => {
     scene.add(object.mesh);
 
     if (controllable) {
-      const { camera } = systems.uiSettingsSystem;
+      const { camera: cameraUi } = systems.uiSettingsSystem;
+      camera = cameraUi
       subscribers.push(Camera({ camera, target: object }));
       subscribers.push(KeyboardCharacterController(object));
     }
