@@ -143,6 +143,10 @@ export const Room = (config: RoomConfig) => {
     online: () => {
       isOnline = true
 
+      mesh.children.forEach(mesh => {
+        mesh.updateMatrixWorld()
+      })
+
       treesPhysicBodies.forEach(body => {
         physicWorld.addBody(body)
       })

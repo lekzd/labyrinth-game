@@ -1,15 +1,15 @@
 import * as THREE from 'three';
-import {camera, objects} from "../../render.ts";
+import {objects} from "../../render.ts";
 import {state} from "../../state.ts";
-import {animationType} from "../../loader.ts";
 import {NpcBaseAnimations} from "./NpcAnimationStates.ts";
+import { systems } from '../../systems/index.ts';
 
 export const checkHit = (attacker, distance = 8) => {
   const raycaster = new THREE.Raycaster();
   const direction = new THREE.Vector3(0, 0, 1);
   direction.applyQuaternion(attacker.quaternion);
   raycaster.set(attacker.position, direction);
-  raycaster.camera = camera
+  raycaster.camera = systems.uiSettingsSystem.camera
 
   const items = Object.values(objects)
     .filter(item => item.target)

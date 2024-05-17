@@ -18,8 +18,8 @@ import PolygonClipping from "polygon-clipping";
 import { frandom } from "./utils/random.ts";
 import { Herois } from "./objects/hero/Herois.ts";
 import { App } from "./ui/App.tsx";
-import { Box } from "./objects/Box/index.ts";
-import { Campfire } from "./objects/Campfire/index.ts";
+import { Box } from "./objects/box/index.ts";
+import { Campfire } from "./objects/campfire/index.ts";
 
 const stats = new Stats();
 
@@ -31,7 +31,7 @@ const subscribers: { update: (time: number) => void }[] = [
 export const objects: Record<string, MapObject> = {}
 const rooms: ReturnType<typeof Room>[] = []
 const decorationObjects: THREE.Mesh[] = []
-export let camera
+
 
 const getObjectClass = (type: ObjectType) => {
   switch (type) {
@@ -59,8 +59,7 @@ export const addObjects = (items = {}) => {
     scene.add(object.mesh);
 
     if (controllable) {
-      const { camera: cameraUi } = systems.uiSettingsSystem;
-      camera = cameraUi
+      const { camera } = systems.uiSettingsSystem;
       subscribers.push(Camera({ camera, target: object }));
       subscribers.push(KeyboardCharacterController(object));
     }
@@ -69,11 +68,14 @@ export const addObjects = (items = {}) => {
 
 export const render = (state: State) => {
   const container = document.getElementById("app")!;
-  const root = ReactDOM.createRoot(document.getElementById("react-root"));
+  const root = ReactDOM.createRoot(document.getElementById("react-root")!);
   root.render(React.createElement(App));
 
   const hemiLight = new THREE.HemisphereLight(0xffffff, 0x8d8d8d, 0.1);
   hemiLight.position.set(0, 20, 0);
+  hemiLight.updateMatrix();
+  hemiLight.matrixAutoUpdate = false;
+
   scene.add(hemiLight);
 
   const { renderer, camera, settings } = systems.uiSettingsSystem;
@@ -254,6 +256,8 @@ export const items = {
 
       instancedMesh.setMatrixAt(instanceIndex, matrix);
     });
+
+    instancedMesh.name = 'Scene Border Pines'
 
     scene.add(instancedMesh);
 
