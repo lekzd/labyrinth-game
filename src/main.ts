@@ -1,6 +1,7 @@
 import './style.css'
 import {render, items, addObjects} from './render.ts';
 import * as THREE from 'three';
+import './utils/threejsPatches.ts';
 
 import { generateRooms } from './generators/generateRooms'
 import {loaders} from './loader.ts';
@@ -8,14 +9,12 @@ import {
   COLLS,
   createCampfireObject,
   createHeroObject,
-  createObject,
   createPlayerObject,
   ROWS,
   scale,
   state
 } from './state.ts';
 import {onUpdate, send} from "./socket.ts";
-import {frandom} from "./utils/random.ts";
 import {pickBy} from "./utils/pickBy.ts";
 
 const ROOM_SIZE = 13
@@ -56,23 +55,6 @@ onUpdate((next) => {
     objects: [
       createCampfireObject(),
       ...heroes,
-      // createObject({
-      //   type: 'Box',
-      //   position: {
-      //     x: 80 + (COLLS * scale) >> 1,
-      //     y: 0,
-      //     z: (ROWS * scale) >> 1,
-      //   }
-      // }),
-
-      // ...Array(10).fill(1).map((a, i) => createObject({
-      //   type: 'Box',
-      //   position: {
-      //     x: frandom(-100, -150) + (COLLS * scale) >> 1,
-      //     y: i * 10,
-      //     z: frandom(-20, 20) + (ROWS * scale) >> 1,
-      //   }
-      // }))
     ].reduce((acc, item) => ({ ...acc, [item.id]: item }), {}),
 
   })

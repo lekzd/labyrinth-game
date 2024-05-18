@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { Room } from '../objects/room/index.ts';
 import { MapObject } from '../types/MapObject.ts';
+import { scale } from '../state.ts';
+import { systems } from './index.ts';
 
 export const CullingSystem = () => {
   const frustum = new THREE.Frustum();
@@ -13,6 +15,7 @@ export const CullingSystem = () => {
       decorationObjects: THREE.Mesh[],
     ) => {
       const cameraViewProjectionMatrix = new THREE.Matrix4()
+      const { settings } = systems.uiSettingsSystem
 
       camera.updateMatrixWorld(); // make sure the camera matrix is updated
       camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
@@ -21,9 +24,14 @@ export const CullingSystem = () => {
       frustum.setFromProjectionMatrix(cameraViewProjectionMatrix)
 
       rooms.forEach(room => {
-        const distance = room.mesh.position.distanceTo(camera.position)
+        const position = new THREE.Vector3(
+          room.mesh.position.x + (room.config.width >> 1) * scale,
+          room.mesh.position.y,
+          room.mesh.position.z + (room.config.height >> 1) * scale,
+        )
+        const distance = position.distanceTo(camera.position)
 
-        if (distance > 400) {
+        if (distance > settings.camera.far) {
           room.mesh.visible = false
         } else {
           room.mesh.visible = frustum.intersectsObject(room.floorMesh)
@@ -45,7 +53,7 @@ export const CullingSystem = () => {
           continue
         }
 
-        if (distance > 400) {
+        if (distance > settings.camera.far) {
           mesh.visible = false
         } else {
           if (!frustum.intersectsObject(g)) {
@@ -61,7 +69,7 @@ export const CullingSystem = () => {
       decorationObjects.forEach(mesh => {
         const distance = mesh.position.distanceTo(camera.position)
 
-        if (distance > 200) {
+        if (distance > settings.camera.far >> 1) {
           mesh.visible = false
         } else {
           mesh.visible = frustum.intersectsObject(mesh)
