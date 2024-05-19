@@ -1,4 +1,3 @@
-import { ActiveRoomSystem } from "./ActiveRoomSystem"
 import { CullingSystem } from "./CullingSystem"
 import { GrassSystem } from "./GrassSystem"
 import { InputSystem } from "./InputSystem"
@@ -9,7 +8,6 @@ export const systems = {
   cullingSystem: CullingSystem(),
   grassSystem: GrassSystem(),
   uiSettingsSystem: UiSettingsSystem(),
-  activeRoomSystem: ActiveRoomSystem(),
   inputSystem: InputSystem(),
   objectsSystem: ObjectsSystem(),
 }

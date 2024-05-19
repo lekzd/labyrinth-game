@@ -127,59 +127,8 @@ export const Room = (config: RoomConfig) => {
       })
 
     },
-    update: (objectsInside: MapObject[]) => {
-      const { activeObjectRef: { current: activeObject } } = systems.activeRoomSystem
-
-      if (!activeObject) {
-        return
-      }
-
-      const { camera } = systems.uiSettingsSystem
-
-      const getDistance = (mesh: THREE.Object3D) => {
-        const worldVector = new THREE.Vector3();
-        mesh.getWorldPosition(worldVector);
-        return worldVector.distanceTo(activeObject.mesh.position)
-      }
-
-      const nearestObjects = intractiveObjects
-        .filter(object => {
-          return getDistance(object.mesh) < 2 * scale
-        })
-
-        const cameraDirection = new THREE.Vector3();
-      camera.getWorldDirection(cameraDirection);
-
-      // Получить позицию камеры и объекта
-      const cameraPosition = new THREE.Vector3();
-      camera.getWorldPosition(cameraPosition);
-
-      const objectsDotProducts: [InteractiveRoomObject, number][] = []
-      const fieldOfView = Math.cos(Math.PI / 4);
-
-      nearestObjects.forEach(object => {
-        const objectPosition = new THREE.Vector3();
-        object.mesh.getWorldPosition(objectPosition);
-
-        // Вычислить вектор направления к объекту
-        const directionToObject = new THREE.Vector3();
-        directionToObject.subVectors(objectPosition, cameraPosition).normalize();
-        const dotProduct = cameraDirection.dot(directionToObject)
-
-        if (dotProduct > fieldOfView) {
-          objectsDotProducts.push([object, fieldOfView - dotProduct])
-        }
-      })
-
-      if (!objectsDotProducts.length) {
-        return
-      }
-
-      const [[object]] = objectsDotProducts.sort((a, b) => a[1] - b[1])
-
-      if (object) {
-        object.interactWith(activeObject)
-      }
+    update: () => {
+      
     },
     mesh,
     floorMesh

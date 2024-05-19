@@ -143,7 +143,6 @@ export const render = (state: State) => {
       const { objects } = systems.objectsSystem
 
       systems.cullingSystem.update(camera, rooms, objects, decorationObjects);
-      systems.activeRoomSystem.update(rooms, objects);
       TWEEN.update();
 
       if (settings.game.physics) {
