@@ -9,11 +9,7 @@ import { createFloorMaterial } from './floorMaterial';
 import { systems } from '../../systems/index.ts';
 import { createStone } from './stone.ts';
 import { createStem } from './stem.ts';
-import { MapObject } from '../../types/MapObject.ts';
-
-type InteractiveRoomObject = any
-
-const scale = 10
+import { scale } from '../../state.ts';
 
 export const Room = (config: RoomConfig) => {
   let isOnline = true
@@ -50,7 +46,6 @@ export const Room = (config: RoomConfig) => {
   mesh.matrixAutoUpdate = false
 
   const treesPhysicBodies: CANNON.Body[] = []
-  const intractiveObjects: InteractiveRoomObject[] = []
 
   for (let i = 0; i < config.tiles.length; i++) {
     const baseX = i % config.width
