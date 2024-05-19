@@ -20,7 +20,7 @@ export const ObjectsSystem = () => {
   // Создаем Octree
   const min = new THREE.Vector3(0, -1, 0);
   const max = new THREE.Vector3(state.colls * scale, 20, state.rows * scale);
-  const octree = new PointOctree<MapObject>(min, max);
+  const octree = new PointOctree<MapObject>(min, max, 0, 10000);
 
   const findActiveObject = (objects: Record<string, MapObject>) => {
     for (const id in objects) {
