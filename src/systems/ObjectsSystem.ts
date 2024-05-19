@@ -84,6 +84,14 @@ export const ObjectsSystem = () => {
         // const intersects = octree.findPoints(activeObject.mesh.position, 10, true);
         const intersects = octree.raycast(raycaster);
 
+        if (intersects.length) {
+          const closest = intersects.find(o => o.data?.interactWith)
+
+          if (closest?.data?.interactWith) {
+            closest.data.interactWith()
+          }
+        }
+
         objectsToInteract.length = 0
         objectsToInteract.push(...intersects)
       }

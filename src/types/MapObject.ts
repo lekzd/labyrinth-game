@@ -8,4 +8,5 @@ export type MapObject = {
   mesh: THREE.Mesh,
   physicBody?: CANNON.Body
   physicY?: number
+  interactWith?: () => void
 }

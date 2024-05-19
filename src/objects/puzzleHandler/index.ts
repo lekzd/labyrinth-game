@@ -1,10 +1,12 @@
 import * as CANNON from "cannon";
 import { BoxGeometry, Mesh, MeshPhongMaterial, Object3DEventMap } from "three";
 import * as THREE from 'three'
+import * as TWEEN from '@tweenjs/tween.js'
 import { loads } from "../../loader";
 import { DynamicObject } from "../../types/DynamicObject";
 import { createInteractivitySign } from "./interactivitySign";
 import { createPhysicBox } from "../../cannon";
+import { systems } from "../../systems";
 
 const PHYSIC_Y = 4;
 export class PuzzleHandler {
@@ -12,14 +14,59 @@ export class PuzzleHandler {
   readonly mesh: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
   readonly physicBody: CANNON.Body
   readonly physicY = PHYSIC_Y
+
+  private focusInterval = 0
+  private focusAnimation = false
+  private busyOnInteraction = false
+  sign: { mesh: Mesh<THREE.ConeGeometry, THREE.ShaderMaterial, Object3DEventMap>; setFocused: (value: boolean) => void; };
+  cube: Mesh<BoxGeometry, THREE.MeshLambertMaterial[], Object3DEventMap>;
+
   constructor(props: DynamicObject) {
     this.props = props;
     this.mesh = initMesh(props);
     this.physicBody = initPhysicBody()
+    
+    this.sign = createInteractivitySign()
+    
+    this.sign.mesh.position.y = 7.5
+    
+    this.mesh.add(this.sign.mesh)
+    
+    this.cube = initCube();
+    this.mesh.add(this.cube)
 
     correctionPhysicBody(this.physicBody, this.mesh)
   }
   update(time: number) {}
+
+  interactWith() {
+    const { input } = systems.inputSystem
+
+    clearInterval(this.focusInterval)
+
+    if (!this.focusAnimation) {
+      this.sign.setFocused(true)
+      this.focusAnimation = true
+    }
+    if (this.focusAnimation) {
+      this.focusInterval = setTimeout(() => {
+        this.sign.setFocused(false)
+        this.focusAnimation = false
+      }, 100)
+    }
+
+    if (!this.busyOnInteraction && input.interact) {
+      new TWEEN.Tween(this.cube.rotation)
+        .to( { y: this.cube.rotation.y + (Math.PI / 2) }, 700)
+        .start()
+
+      setTimeout(() => {
+        this.busyOnInteraction = false
+      }, 1000)
+      this.busyOnInteraction = true
+    }
+
+  }
 }
 
 function correctionPhysicBody(
@@ -34,22 +81,7 @@ function correctionPhysicBody(
   physicBody.quaternion.copy(target.quaternion);
 }
 
-function initMesh(props: DynamicObject) {
-  const target = new THREE.Group()
-
-  target.name = 'PuzzleHandler'
-
-  Object.assign(target.position, props.position);
-  Object.assign(target.quaternion, props.rotation);
-
-  const base = new THREE.Mesh(
-    new THREE.BoxGeometry(
-      10,
-      1,
-      10,
-    ),
-    new THREE.MeshPhongMaterial({ color: 0xff0000 }),
-  )
+function initCube() {
   const runicTexture = loads.texture["runic_2.png"]?.clone()!
   runicTexture.wrapS = THREE.RepeatWrapping
   runicTexture.wrapT = THREE.RepeatWrapping
@@ -90,18 +122,33 @@ function initMesh(props: DynamicObject) {
 
   cube.castShadow = true
   cube.receiveShadow = true
+  cube.position.y = 0.5
+
+  return cube
+}
+
+function initMesh(props: DynamicObject) {
+  const target = new THREE.Group()
+
+  target.name = 'PuzzleHandler'
+
+  Object.assign(target.position, props.position);
+  Object.assign(target.quaternion, props.rotation);
+
+  const base = new THREE.Mesh(
+    new THREE.BoxGeometry(
+      10,
+      1,
+      10,
+    ),
+    new THREE.MeshPhongMaterial({ color: 0xff0000 }),
+  )
+  
   base.receiveShadow = true
 
   base.position.y = -3
-  cube.position.y = 0.5
 
-  const sign = createInteractivitySign()
-
-  sign.mesh.position.y = 7.5
-
-  target.add(sign.mesh)
   target.add(base)
-  target.add(cube)
 
   return target
 }
