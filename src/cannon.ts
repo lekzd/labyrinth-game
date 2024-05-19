@@ -1,6 +1,5 @@
 import * as CANNON from 'cannon'
 import { Vector3Like } from 'three';
-import {state} from "./state.ts";
 
 export const physicWorld = new CANNON.World();
 physicWorld.gravity.set(0, -9.82, 0); // m/s²

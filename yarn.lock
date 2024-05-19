@@ -6098,6 +6098,7 @@ __metadata:
     polygon-clipping: "npm:^0.15.7"
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
+    sparse-octree: "npm:^7.1.8"
     storybook: "npm:^8.0.10"
     styled-components: "npm:^6.1.11"
     three: "npm:^0.164.1"
@@ -8003,6 +8004,15 @@ __metadata:
   version: 2.0.2
   resolution: "space-separated-tokens@npm:2.0.2"
   checksum: 10/202e97d7ca1ba0758a0aa4fe226ff98142073bcceeff2da3aad037968878552c3bbce3b3231970025375bbba5aee00c5b8206eda408da837ab2dc9c0f26be990
+  languageName: node
+  linkType: hard
+
+"sparse-octree@npm:^7.1.8":
+  version: 7.1.8
+  resolution: "sparse-octree@npm:7.1.8"
+  peerDependencies:
+    three: 0.x.x
+  checksum: 10/d186dfa2c49702f464b0be6fcb1be666f9525bc0fbfac6b45e41c179e4c71dbc950b18b4ebb4b6a38ea16db1fbb0ebfee95ddb648b48ec7b733e574cf7954cb2
   languageName: node
   linkType: hard
 

@@ -10,9 +10,8 @@ import { systems } from '../../systems/index.ts';
 import { createStone } from './stone.ts';
 import { createStem } from './stem.ts';
 import { MapObject } from '../../types/MapObject.ts';
-import { createPuzzleHandler } from './puzzleHandler.ts';
 
-type InteractiveRoomObject = ReturnType<typeof createPuzzleHandler>
+type InteractiveRoomObject = any
 
 const scale = 10
 
@@ -105,30 +104,6 @@ export const Room = (config: RoomConfig) => {
 
       }
     }
-
-    if (config.tiles[i] === Tiles.PuzzleHandler) {
-      const x = i % config.width
-      const y = Math.floor(i / config.width)
-
-      const puzzleHandler = createPuzzleHandler()
-
-      assign(puzzleHandler.mesh.position, { x: x * scale, y: 4, z: y * scale })
-
-      const physicY = 4
-      const physicRadius = 5
-      const physicBody = createPhysicBox({ x: physicRadius, y: physicY, z: physicRadius }, { mass: 0 });
-
-      physicBody.position.set(
-        (config.x + x) * scale,
-        physicY,
-        (config.y + y) * scale,
-      )
-
-      treesPhysicBodies.push(physicBody)
-      intractiveObjects.push(puzzleHandler)
-
-      mesh.add(puzzleHandler.mesh)
-    }
   }
 
   return {
@@ -152,59 +127,8 @@ export const Room = (config: RoomConfig) => {
       })
 
     },
-    update: (objectsInside: MapObject[]) => {
-      const { activeObjectRef: { current: activeObject } } = systems.activeRoomSystem
-
-      if (!activeObject) {
-        return
-      }
-
-      const { camera } = systems.uiSettingsSystem
-
-      const getDistance = (mesh: THREE.Object3D) => {
-        const worldVector = new THREE.Vector3();
-        mesh.getWorldPosition(worldVector);
-        return worldVector.distanceTo(activeObject.mesh.position)
-      }
-
-      const nearestObjects = intractiveObjects
-        .filter(object => {
-          return getDistance(object.mesh) < 2 * scale
-        })
-
-        const cameraDirection = new THREE.Vector3();
-      camera.getWorldDirection(cameraDirection);
-
-      // Получить позицию камеры и объекта
-      const cameraPosition = new THREE.Vector3();
-      camera.getWorldPosition(cameraPosition);
-
-      const objectsDotProducts: [InteractiveRoomObject, number][] = []
-      const fieldOfView = Math.cos(Math.PI / 4);
-
-      nearestObjects.forEach(object => {
-        const objectPosition = new THREE.Vector3();
-        object.mesh.getWorldPosition(objectPosition);
-
-        // Вычислить вектор направления к объекту
-        const directionToObject = new THREE.Vector3();
-        directionToObject.subVectors(objectPosition, cameraPosition).normalize();
-        const dotProduct = cameraDirection.dot(directionToObject)
-
-        if (dotProduct > fieldOfView) {
-          objectsDotProducts.push([object, fieldOfView - dotProduct])
-        }
-      })
-
-      if (!objectsDotProducts.length) {
-        return
-      }
-
-      const [[object]] = objectsDotProducts.sort((a, b) => a[1] - b[1])
-
-      if (object) {
-        object.interactWith(activeObject)
-      }
+    update: () => {
+      
     },
     mesh,
     floorMesh
