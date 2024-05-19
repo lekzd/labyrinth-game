@@ -1,4 +1,4 @@
-export const isEqual = (a, b) => {
+export const isEqual = (a: any, b: any) => {
   if (!a || !b) {
     return !a === !b;
   }
