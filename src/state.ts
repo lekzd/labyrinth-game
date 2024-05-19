@@ -69,7 +69,9 @@ export const initState = (initialState: Partial<State>): State => {
 export const ROWS = 150
 export const COLLS = 150
 
-const getId = () => `${Math.floor(Math.random() * 100)}`
+let id = 0
+
+const getId = () => `${id++}`
 
 export const createObject = (data: Partial<DynamicObject>): DynamicObject => {
   return {
