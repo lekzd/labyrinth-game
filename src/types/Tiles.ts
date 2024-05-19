@@ -11,4 +11,5 @@ export enum Tiles {
   EastExit,
 
   PuzzleHandler,
+  Weapon,
 }

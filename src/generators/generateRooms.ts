@@ -76,16 +76,31 @@ const generateRoom = ({
   }
 
   if (actions.includes(Tiles.PuzzleHandler)) {
-    let handlersNum = 3
+    let itemsNumber = 3
 
-    while (handlersNum) {
+    while (itemsNumber) {
       const tileX = random(0, width)
       const tileY = random(0, height)
       const tileIndex = tileY * width + tileX
 
       if (tiles[tileIndex] === Tiles.Floor) {
         tiles[tileIndex] = Tiles.PuzzleHandler
-        handlersNum--
+        itemsNumber--
+      }
+    }
+  }
+
+  if (actions.includes(Tiles.Weapon)) {
+    let itemsNumber = 1
+
+    while (itemsNumber) {
+      const tileX = random(0, width)
+      const tileY = random(0, height)
+      const tileIndex = tileY * width + tileX
+
+      if (tiles[tileIndex] === Tiles.Floor) {
+        tiles[tileIndex] = Tiles.Weapon
+        itemsNumber--
       }
     }
   }
@@ -212,6 +227,8 @@ export const generateRooms = ({
       if (random(0, 3) === 0) {
         actions.push(Tiles.PuzzleHandler)
       }
+
+      actions.push(Tiles.Weapon)
 
       const perpendicularExits = getPerpendicularExits(action)
 

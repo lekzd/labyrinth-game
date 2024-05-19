@@ -15,6 +15,10 @@ const getColor = (tile: Tiles) => {
       return `rgb(${20},${10},0)`
     case Tiles.Wall:
       return `rgb(0,0,0)`
+    case Tiles.PuzzleHandler:
+      return `#ff9d00`
+    case Tiles.Weapon:
+      return `#00FF00`
     case Tiles.Floor:
       return `#555555`
     case Tiles.Empty:
