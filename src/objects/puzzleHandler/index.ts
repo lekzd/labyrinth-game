@@ -107,6 +107,6 @@ function initMesh(props: DynamicObject) {
 }
 
 function initPhysicBody() {
-  const physicRadius = 5
-  return createPhysicBox({ x: physicRadius, y: PHYSIC_Y, z: physicRadius }, { mass: 0 });
+  const physicRadius = 4
+  return createPhysicBox({ x: physicRadius, y: PHYSIC_Y * 2, z: physicRadius }, { mass: 0 });
 }

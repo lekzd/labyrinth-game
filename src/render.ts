@@ -20,6 +20,7 @@ import { App } from "./ui/App.tsx";
 import { Box } from "./objects/box/index.ts";
 import { Campfire } from "./objects/campfire/index.ts";
 import { PuzzleHandler } from "./objects/puzzleHandler/index.ts";
+import CannonDebugRenderer from "./cannonDebugRender.ts";
 
 const stats = new Stats();
 
@@ -116,6 +117,8 @@ export const render = (state: State) => {
 
   window.addEventListener("resize", onWindowResize, false);
 
+  const cannonDebugRenderer = new CannonDebugRenderer(scene, physicWorld)
+
   /*
    * Рендерит рекурсивно сцену, пробрасывая в подписчиков (персонаж, камера)
    * тайминг для апдейта сцены
@@ -145,6 +148,7 @@ export const render = (state: State) => {
 
       if (settings.game.physics) {
         systems.objectsSystem.update(timeElapsedS)
+        // cannonDebugRenderer.update()
       }
 
       prevTime = t;
