@@ -5,7 +5,7 @@ import { DynamicObject } from './DynamicObject';
 export type MapObject = {
   props: DynamicObject,
   update: (time: number) => void,
-  mesh: THREE.Object3D<THREE.Object3DEventMap>,
+  mesh: THREE.Mesh,
   physicBody?: CANNON.Body
   physicY?: number
 }

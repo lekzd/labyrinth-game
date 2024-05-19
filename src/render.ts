@@ -11,7 +11,6 @@ import { createGroundBody, physicWorld } from "./cannon.ts";
 import { KeyboardCharacterController } from "./objects/hero/controller.ts";
 import { currentPlayer } from "./main.ts";
 import { Room } from "./objects/room/index.ts";
-import { MapObject } from "./types/MapObject.ts";
 import { systems } from "./systems/index.ts";
 import { RoomConfig } from "./generators/types.ts";
 import PolygonClipping from "polygon-clipping";
@@ -20,6 +19,7 @@ import { Herois } from "./objects/hero/Herois.ts";
 import { App } from "./ui/App.tsx";
 import { Box } from "./objects/box/index.ts";
 import { Campfire } from "./objects/campfire/index.ts";
+import { PuzzleHandler } from "./objects/puzzleHandler/index.ts";
 
 const stats = new Stats();
 
@@ -28,33 +28,53 @@ const subscribers: { update: (time: number) => void }[] = [
   systems.grassSystem,
   systems.inputSystem,
 ];
-export const objects: Record<string, MapObject> = {}
 const rooms: ReturnType<typeof Room>[] = []
 const decorationObjects: THREE.Mesh[] = []
 
 
-const getObjectClass = (type: ObjectType) => {
+const getObjectCOntructorConfig = (type: ObjectType) => {
   switch (type) {
     case "Campfire":
-      return Campfire;
+      return {
+        Constructor: Campfire,
+        physical: false,
+        interactive: true,
+      };
     case "Box":
-      return Box;
+      return {
+        Constructor: Box,
+        physical: true,
+        interactive: true,
+      };
+    case "PuzzleHandler":
+      return {
+        Constructor: PuzzleHandler,
+        physical: true,
+        interactive: true,
+      };
     default:
-      return Herois;
+      return {
+        Constructor: Herois,
+        physical: true,
+        interactive: true,
+      };
   }
 };
 
 export const addObjects = (items = {}) => {
   for (const id in items) {
-    if (id in objects) continue;
+    if (id in systems.objectsSystem.objects) continue;
     const objectConfig = items[id];
 
     const controllable = currentPlayer.activeObjectId === id;
-    const ObjectConstructor = getObjectClass(objectConfig.type);
+    const {
+      Constructor: ObjectConstructor,
+      ...config
+    } = getObjectCOntructorConfig(objectConfig.type);
 
     const object = new ObjectConstructor({ ...objectConfig });
 
-    objects[id] = object;
+    systems.objectsSystem.add(object, config)
     subscribers.push(object);
     scene.add(object.mesh);
 
@@ -117,27 +137,14 @@ export const render = (state: State) => {
         item.update(timeElapsedS);
       }
 
+      const { objects } = systems.objectsSystem
+
       systems.cullingSystem.update(camera, rooms, objects, decorationObjects);
       systems.activeRoomSystem.update(rooms, objects);
       TWEEN.update();
 
       if (settings.game.physics) {
-        const fixedTimeStep = 1.0 / 60.0; // seconds
-
-        physicWorld.step(fixedTimeStep, timeElapsedS);
-
-        for (const id in objects) {
-          const object = objects[id];
-
-          if (object.physicBody) {
-            object.mesh.position.set(
-              object.physicBody.position.x,
-              object.physicBody.position.y - (object.physicY ?? 0),
-              object.physicBody.position.z
-            );
-            object.mesh.quaternion.copy(object.physicBody.quaternion);
-          }
-        }
+        systems.objectsSystem.update(timeElapsedS)
       }
 
       prevTime = t;

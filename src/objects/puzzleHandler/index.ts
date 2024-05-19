@@ -1,12 +1,46 @@
-import * as THREE from "three";
-import * as TWEEN from '@tweenjs/tween.js'
-import { MapObject } from "../../types/MapObject";
-import { systems } from "../../systems";
+import * as CANNON from "cannon";
+import { BoxGeometry, Mesh, MeshPhongMaterial, Object3DEventMap } from "three";
+import * as THREE from 'three'
 import { loads } from "../../loader";
+import { DynamicObject } from "../../types/DynamicObject";
 import { createInteractivitySign } from "./interactivitySign";
+import { createPhysicBox } from "../../cannon";
 
-export const createPuzzleHandler = () => {
-  const target = new THREE.Object3D()
+const PHYSIC_Y = 4;
+export class PuzzleHandler {
+  readonly props: DynamicObject;
+  readonly mesh: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
+  readonly physicBody: CANNON.Body
+  readonly physicY = PHYSIC_Y
+  constructor(props: DynamicObject) {
+    this.props = props;
+    this.mesh = initMesh(props);
+    this.physicBody = initPhysicBody()
+
+    correctionPhysicBody(this.physicBody, this.mesh)
+  }
+  update(time: number) {}
+}
+
+function correctionPhysicBody(
+  physicBody: CANNON.Body,
+  target: THREE.Object3D<Object3DEventMap>
+) {
+  physicBody.position.set(
+    target.position.x,
+    target.position.y + PHYSIC_Y,
+    target.position.z
+  );
+  physicBody.quaternion.copy(target.quaternion);
+}
+
+function initMesh(props: DynamicObject) {
+  const target = new THREE.Group()
+
+  target.name = 'PuzzleHandler'
+
+  Object.assign(target.position, props.position);
+  Object.assign(target.quaternion, props.rotation);
 
   const base = new THREE.Mesh(
     new THREE.BoxGeometry(
@@ -69,39 +103,10 @@ export const createPuzzleHandler = () => {
   target.add(base)
   target.add(cube)
 
-  let busyOnInteraction = false
-  let focusAnimation = false
-  let focusInterval = 0;
+  return target
+}
 
-  return {
-    mesh: target,
-    interactWith: (mapObject: MapObject) => {
-      const { input } = systems.inputSystem
-      
-      clearInterval(focusInterval)
-
-      if (!focusAnimation) {
-        sign.setFocused(true)
-        focusAnimation = true
-      }
-      if (focusAnimation) {
-        focusInterval = setTimeout(() => {
-          sign.setFocused(false)
-          focusAnimation = false
-        }, 100)
-      }
-
-      if (!busyOnInteraction && input.interact) {
-        new TWEEN.Tween(cube.rotation)
-          .to( { y: cube.rotation.y + (Math.PI / 2) }, 700)
-          .start()
-
-        setTimeout(() => {
-          busyOnInteraction = false
-        }, 1000)
-        busyOnInteraction = true
-      }
-      
-    }
-  };
+function initPhysicBody() {
+  const physicRadius = 5
+  return createPhysicBox({ x: physicRadius, y: PHYSIC_Y, z: physicRadius }, { mass: 0 });
 }

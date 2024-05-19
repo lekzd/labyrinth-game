@@ -10,9 +10,8 @@ import { systems } from '../../systems/index.ts';
 import { createStone } from './stone.ts';
 import { createStem } from './stem.ts';
 import { MapObject } from '../../types/MapObject.ts';
-import { createPuzzleHandler } from './puzzleHandler.ts';
 
-type InteractiveRoomObject = ReturnType<typeof createPuzzleHandler>
+type InteractiveRoomObject = any
 
 const scale = 10
 
@@ -104,30 +103,6 @@ export const Room = (config: RoomConfig) => {
         }
 
       }
-    }
-
-    if (config.tiles[i] === Tiles.PuzzleHandler) {
-      const x = i % config.width
-      const y = Math.floor(i / config.width)
-
-      const puzzleHandler = createPuzzleHandler()
-
-      assign(puzzleHandler.mesh.position, { x: x * scale, y: 4, z: y * scale })
-
-      const physicY = 4
-      const physicRadius = 5
-      const physicBody = createPhysicBox({ x: physicRadius, y: physicY, z: physicRadius }, { mass: 0 });
-
-      physicBody.position.set(
-        (config.x + x) * scale,
-        physicY,
-        (config.y + y) * scale,
-      )
-
-      treesPhysicBodies.push(physicBody)
-      intractiveObjects.push(puzzleHandler)
-
-      mesh.add(puzzleHandler.mesh)
     }
   }
 

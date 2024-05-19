@@ -9,6 +9,7 @@ import {
   COLLS,
   createCampfireObject,
   createHeroObject,
+  createObject,
   createPlayerObject,
   ROWS,
   scale,
@@ -16,6 +17,8 @@ import {
 } from './state.ts';
 import {onUpdate, send} from "./socket.ts";
 import {pickBy} from "./utils/pickBy.ts";
+import { DynamicObject } from './types/DynamicObject.ts';
+import { Tiles } from './types/Tiles.ts';
 
 const ROOM_SIZE = 13
 
@@ -47,14 +50,40 @@ onUpdate((next) => {
     }))
   }
 
+  const { staticGrid, rooms } = generateRooms({
+    state,
+    ROOM_SIZE,
+  })
+
+  const roomObjects: DynamicObject[] = []
+
+  rooms.forEach(room => {
+    room.tiles.forEach((tile, i) => {
+      const x = (room.x + (i % room.width)) * scale
+      const z = (room.y + Math.floor(i / room.width)) * scale
+
+      switch (tile) {
+        case Tiles.PuzzleHandler:
+          roomObjects.push(createObject({
+            type: 'PuzzleHandler',
+            position: {
+              x,
+              y: 4,
+              z,
+            }
+          }))
+          break
+      }
+    })
+  })
+
   state.setState({
-    ...generateRooms({
-      state,
-      ROOM_SIZE,
-    }),
+    staticGrid,
+    rooms,
     objects: [
       createCampfireObject(),
       ...heroes,
+      ...roomObjects,
     ].reduce((acc, item) => ({ ...acc, [item.id]: item }), {}),
 
   })

@@ -1,27 +1,17 @@
-import * as THREE from 'three';
-import {objects} from "../../render.ts";
 import {state} from "../../state.ts";
 import {NpcBaseAnimations} from "./NpcAnimationStates.ts";
 import { systems } from '../../systems/index.ts';
 
 export const checkHit = (attacker, distance = 8) => {
-  const raycaster = new THREE.Raycaster();
-  const direction = new THREE.Vector3(0, 0, 1);
-  direction.applyQuaternion(attacker.quaternion);
-  raycaster.set(attacker.position, direction);
-  raycaster.camera = systems.uiSettingsSystem.camera
-
-  const items = Object.values(objects)
-    .filter(item => item.target)
-    .map(item => item.target)
-
-  const intersects = raycaster.intersectObjects(items, true);
+  const intersects = systems.objectsSystem.objectsToInteract
   const changes = { objects: {} };
 
   for (const intersect of intersects) {
+    if (!intersect.data) {
+      continue
+    }
     if (intersect.distance <= distance) {
-      // Так как удар попадает по скину, берем парента (таргет героя) и id из userData
-      const { id } = intersect.object.parent.userData;
+      const { id } = intersect.data?.props;
       const health = state.objects[id].health - 5;
       changes.objects[id] = { health };
       if (health <= 0) changes.objects[id].state = NpcBaseAnimations.death;

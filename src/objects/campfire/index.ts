@@ -50,9 +50,9 @@ function initMesh(props: DynamicObject, particleMaterial: ShaderMaterial) {
   const indexes = new Float32Array(PARTICLE_COUNT * 3); // 3 компоненты (x, y, z) на каждую частицу
 
   for (let i = 0; i < positions.length; i += 3) {
-    positions[i] = Math.random() * 4 - 2; // Рандомное положение частицы по оси X
-    positions[i + 1] = Math.random() * 2 + 0; // Рандомное положение частицы по оси Y
-    positions[i + 2] = Math.random() * 4 - 2; // Рандомное положение частицы по оси Z
+    positions[i] = frandom(-2, 2); // Рандомное положение частицы по оси X
+    positions[i + 1] = frandom(0, 2); // Рандомное положение частицы по оси Y
+    positions[i + 2] = frandom(-2, 2); // Рандомное положение частицы по оси Z
 
     indexes[i] = i / positions.length;
     indexes[i + 1] = frandom(0.1, 1);
