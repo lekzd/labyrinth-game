@@ -101,6 +101,7 @@ export const createHeroObject = (data: Partial<DynamicObject>): DynamicObject =>
     ...data,
     state: NpcAnimationStates.idle,
     type,
+    weapon: null,
     ...settings[type],
   })
 }

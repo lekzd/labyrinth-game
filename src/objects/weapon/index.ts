@@ -1,5 +1,5 @@
 import * as CANNON from "cannon";
-import { BoxGeometry, Mesh, MeshPhongMaterial, Object3DEventMap, TextureLoader } from "three";
+import { BoxGeometry, Mesh, MeshPhongMaterial, Object3DEventMap, TextureLoader, Vector3Like } from "three";
 import * as THREE from 'three'
 import * as TWEEN from '@tweenjs/tween.js'
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
@@ -8,6 +8,8 @@ import { DynamicObject } from "../../types/DynamicObject";
 import { createInteractivitySign } from "../../utils/interactivitySign";
 import { createPhysicBox } from "../../cannon";
 import { systems } from "../../systems";
+import {currentPlayer} from "../../main.ts";
+import {state} from "../../state.ts";
 
 const PHYSIC_Y = 4;
 export class Weapon {
@@ -45,7 +47,19 @@ export class Weapon {
 
     correctionPhysicBody(this.physicBody, this.mesh)
   }
-  update(time: number) {}
+  update(time: number) {
+
+    const obj = state.objects[this.props.id];
+    this.setPosition(obj.position);
+  }
+
+  setPosition(position: Partial<Vector3Like>) {
+    this.physicBody.position.set(
+      position.x || this.physicBody.position.x,
+      position.y ? position.y + this.physicY : this.physicBody.position.y,
+      position.z || this.physicBody.position.z
+    );
+  }
 
   interactWith() {
     const { input } = systems.inputSystem
@@ -63,15 +77,9 @@ export class Weapon {
       }, 100)
     }
 
-    if (!this.busyOnInteraction && input.interact) {
-      new TWEEN.Tween(this.cube.rotation)
-        .to( { y: this.cube.rotation.y + (Math.PI / 2) }, 700)
-        .start()
-
-      setTimeout(() => {
-        this.busyOnInteraction = false
-      }, 1000)
-      this.busyOnInteraction = true
+    if (input.interact) {
+      console.log(currentPlayer.id, this.props.id)
+      state.setState({ objects: { [currentPlayer.activeObjectId]: { weapon: this.props.id }, [this.props.id]: { position: { x: 0, y: 0, z: -1000000 } } } })
     }
 
   }

@@ -5,6 +5,7 @@ export type SettingObject = {
   mana: number,
   speed: number,
   mass: number,
+  weapon: number | null,
 }
 
 export const settings: Record<modelType, SettingObject> = {
