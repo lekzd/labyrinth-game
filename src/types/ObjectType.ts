@@ -1,3 +1,3 @@
-import { modelType } from "../loader";
+import {modelType, weaponType} from "../loader";
 
-export type ObjectType = modelType | 'Campfire' | 'Box' | 'PuzzleHandler'
+export type ObjectType = modelType | weaponType | 'Campfire' | 'Box' | 'PuzzleHandler'

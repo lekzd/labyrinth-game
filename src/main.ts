@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import './utils/threejsPatches.ts';
 
 import { generateRooms } from './generators/generateRooms'
-import {loaders} from './loader.ts';
+import {loaders, weaponType} from './loader.ts';
 import {
   COLLS,
   createCampfireObject,
@@ -19,6 +19,7 @@ import {onUpdate, send} from "./socket.ts";
 import {pickBy} from "./utils/pickBy.ts";
 import { DynamicObject } from './types/DynamicObject.ts';
 import { Tiles } from './types/Tiles.ts';
+import {something} from "./utils/something.ts";
 
 const ROOM_SIZE = 13
 
@@ -73,9 +74,20 @@ onUpdate((next) => {
             }
           }))
           break
+        case Tiles.Weapon:
+          roomObjects.push(createObject({
+            type: something(Object.values(weaponType)) as weaponType,
+            position: {
+              x,
+              y: 4,
+              z,
+            }
+          }))
       }
     })
   })
+
+  console.log('roomObjects', roomObjects)
 
   state.setState({
     staticGrid,

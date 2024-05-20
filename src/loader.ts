@@ -33,6 +33,20 @@ export enum modelType {
   // Skeleton_Warrior = 'Skeleton_Warrior',
 }
 
+export enum weaponType {
+  arrow = 'arrow',
+  bow = 'bow',
+  dagger = 'dagger',
+  hammer = 'hammer',
+  katana = 'katana',
+  minigun = 'minigun',
+  staff = 'staff',
+  staff2 = 'staff2',
+  sword = 'sword',
+  swordLazer = 'swordLazer',
+  // crossbow = 'crossbow',
+}
+
 export enum worldType {
   Tree_001 = 'Tree_001',
   Tree_002 = 'Tree_002',
@@ -60,12 +74,14 @@ export enum worldType {
 type ItemsType = {
   world: Partial<Record<worldType, THREE.Group<THREE.Object3DEventMap>>>
   model: Partial<Record<modelType, THREE.Group<THREE.Object3DEventMap>>>
+  weapon: Partial<Record<modelType, THREE.Group<THREE.Object3DEventMap>>>
   animation: Partial<Record<animationType, THREE.Group<THREE.Object3DEventMap>>>
   texture: Partial<Record<texturesType, THREE.Texture>>
 }
 
 export const loads: ItemsType = {
   world: {},
+  weapon: {},
   model: {},
   animation: {},
   texture: {},
@@ -108,6 +124,7 @@ export const loaders = [
   load(loader, worldType, 'world', '.fbx'),
   load(loader, modelType, 'model', '.fbx'),
   load(loader, animationType, 'animation', '.fbx'),
+  load(loader, weaponType, 'weapon', '.fbx'),
 ];
 
 // @ts-expect-error

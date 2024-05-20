@@ -3,24 +3,26 @@ import * as TWEEN from "@tweenjs/tween.js";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import Stats from "./utils/Stats.ts";
-import { Camera } from "./objects/hero/camera.ts";
-import { State, scale } from "./state.ts";
-import { scene } from "./scene.ts";
-import { ObjectType } from "./types/ObjectType.ts";
-import { createGroundBody, physicWorld } from "./cannon.ts";
-import { KeyboardCharacterController } from "./objects/hero/controller.ts";
-import { currentPlayer } from "./main.ts";
-import { Room } from "./objects/room/index.ts";
-import { systems } from "./systems/index.ts";
-import { RoomConfig } from "./generators/types.ts";
+import {Camera} from "./objects/hero/camera.ts";
+import {scale, State} from "./state.ts";
+import {scene} from "./scene.ts";
+import {ObjectType} from "./types/ObjectType.ts";
+import {createGroundBody, physicWorld} from "./cannon.ts";
+import {KeyboardCharacterController} from "./objects/hero/controller.ts";
+import {currentPlayer} from "./main.ts";
+import {Room} from "./objects/room/index.ts";
+import {systems} from "./systems/index.ts";
+import {RoomConfig} from "./generators/types.ts";
 import PolygonClipping from "polygon-clipping";
-import { frandom } from "./utils/random.ts";
-import { Herois } from "./objects/hero/Herois.ts";
-import { App } from "./ui/App.tsx";
-import { Box } from "./objects/box/index.ts";
-import { Campfire } from "./objects/campfire/index.ts";
-import { PuzzleHandler } from "./objects/puzzleHandler/index.ts";
+import {frandom} from "./utils/random.ts";
+import {Herois} from "./objects/hero/Herois.ts";
+import {App} from "./ui/App.tsx";
+import {Box} from "./objects/box/index.ts";
+import {Campfire} from "./objects/campfire/index.ts";
+import {PuzzleHandler} from "./objects/puzzleHandler/index.ts";
 import CannonDebugRenderer from "./cannonDebugRender.ts";
+import {Weapon} from "./objects/weapon";
+import {modelType} from "./loader.ts";
 
 const stats = new Stats();
 
@@ -53,9 +55,20 @@ const getObjectCOntructorConfig = (type: ObjectType) => {
         physical: true,
         interactive: true,
       };
-    default:
+    case modelType.Warrior:
+    case modelType.Rogue:
+    case modelType.Monk:
+    case modelType.Cleric:
+    case modelType.Wizard:
       return {
         Constructor: Herois,
+        physical: true,
+        interactive: true,
+      };
+      break
+    default:
+      return {
+        Constructor: Weapon,
         physical: true,
         interactive: true,
       };

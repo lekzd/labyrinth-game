@@ -4,7 +4,7 @@ import * as THREE from 'three'
 import * as TWEEN from '@tweenjs/tween.js'
 import { loads } from "../../loader";
 import { DynamicObject } from "../../types/DynamicObject";
-import { createInteractivitySign } from "./interactivitySign";
+import { createInteractivitySign } from "../../utils/interactivitySign.ts";
 import { createPhysicBox } from "../../cannon";
 import { systems } from "../../systems";
 
