@@ -5,6 +5,7 @@ import { NpcAnimationStates } from "./NpcAnimationStates.ts";
 import { animationType } from "../../loader.ts";
 import { systems } from '../../systems/index.ts';
 import {checkHit} from "./hit.ts";
+import {settings} from "./settings.ts";
 
 const sendThrottle = state.setState
 
@@ -29,6 +30,7 @@ const isEqualParams = (prev, { rotation, position, ...other }) => {
 
 const BasicCharacterControllerInput = (person) => {
   let timeout = null
+  const { speed } = settings[person.props.type];
 
   const animate = (anim) => {
     state.setState({ objects: { [person.id]: { state: anim } } })
@@ -84,13 +86,13 @@ const BasicCharacterControllerInput = (person) => {
         if (!timeout)
           next.state = input.speed ? NpcAnimationStates.run : NpcAnimationStates.walk;
 
-        acc.multiplyScalar(input.speed ? 6.0 : 3);
+        acc.multiplyScalar(input.speed ? speed * 2 : speed);
         velocity.z += acc.z * timeInSeconds;
       } else if (input.backward) {
         if (!timeout)
           next.state = input.speed ? NpcAnimationStates.run : NpcAnimationStates.walk;
 
-        acc.multiplyScalar(input.speed ? 6.0 : 3);
+        acc.multiplyScalar(input.speed ? speed * 2 : speed);
         velocity.z -= acc.z * timeInSeconds;
       } else if ([NpcAnimationStates.run, NpcAnimationStates.walk].includes(next.state)) {
         next.state = NpcAnimationStates.idle;

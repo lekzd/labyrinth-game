@@ -5,24 +5,24 @@ export type SettingObject = {
   mana: number,
   speed: number,
   mass: number,
-  weapon: number | null,
+  weapon?: number | null,
 }
 
 export const settings: Record<modelType, SettingObject> = {
   [modelType.Monk]: {
-    health: 30,
+    health: 100,
     mana: 10,
-    speed: 3,
+    speed: 2,
     mass: 50,
   },
   [modelType.Cleric]: {
-    health: 30,
+    health: 50,
     mana: 10,
     speed: 3,
     mass: 25,
   },
   [modelType.Wizard]: {
-    health: 30,
+    health: 50,
     mana: 10,
     speed: 3,
     mass: 25,
@@ -34,9 +34,9 @@ export const settings: Record<modelType, SettingObject> = {
     mass: 25,
   },
   [modelType.Warrior]: {
-    health: 30,
+    health: 60,
     mana: 10,
-    speed: 3,
+    speed: 2.5,
     mass: 25,
   },
 }

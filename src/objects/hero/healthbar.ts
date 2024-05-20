@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { makeCtx } from '../../utils/makeCtx';
 import {isEqual} from "../../utils/isEqual.ts";
+import {HeroisProps} from "./Herois.ts";
+import {settings} from "./settings.ts";
 
 const createTexture = () => {
   const context = makeCtx(64, 16);
@@ -35,8 +37,9 @@ const getCanvasCtx = (texture: THREE.Texture) => {
   return canvas.getContext('2d');
 }
 
-export const HealthBar = ({ health, mana }, target) =>  {
+export const HealthBar = (props: HeroisProps, target) =>  {
   let state = {}
+  const base = settings[props.type];
   const healthSprite = createSprite(); // 75% здоровья
   healthSprite.position.set(0, 310, 0);
 
@@ -47,17 +50,17 @@ export const HealthBar = ({ health, mana }, target) =>  {
   target.add(manaSprite);
 
   const root = {
-    update: ({ health, mana }) => {
+    update: ({ health, mana }: HeroisProps) => {
       if (isEqual(state, { health, mana })) return;
 
-      updateTexture(healthSprite, health, '#ff0000');
-      updateTexture(manaSprite, mana, '#3713dd');
+      updateTexture(healthSprite, health / base.health * 100, '#ff0000');
+      updateTexture(manaSprite, mana / base.mana * 100, '#3713dd');
 
       state = { health, mana }
     }
   }
 
-  root.update({ health, mana });
+  root.update(props);
 
   return root;
 }

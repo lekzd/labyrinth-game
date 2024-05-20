@@ -24,7 +24,7 @@ import {NpcAnimationStates, NpcBaseAnimations} from "./NpcAnimationStates";
 import { state } from "../../state.ts";
 import { HealthBar } from "./healthbar.ts";
 
-interface HeroisProps extends DynamicObject {
+export interface HeroisProps extends DynamicObject {
   type: modelType;
 }
 
@@ -79,12 +79,7 @@ export class Herois {
     this.physicBody = initPhysicBody(props.mass);
     this.elementsHerois = initElementsHerois(this.target);
     this.stateMachine = initStateMashine(this.animations);
-    this.healthBar = HealthBar({
-        health: props.health,
-        mana: props.mana,
-      },
-      this.target
-    );
+    this.healthBar = HealthBar(props, this.target);
     correctionPhysicBody(this.physicBody, this.target);
     physicWorld.addBody(this.physicBody);
   }
