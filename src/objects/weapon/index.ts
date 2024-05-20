@@ -38,7 +38,7 @@ export class Weapon {
 
     this.sign = createInteractivitySign()
 
-    this.sign.mesh.position.y = 7.5
+    this.sign.mesh.position.y = 12
 
     this.mesh.add(this.sign.mesh)
 
@@ -97,74 +97,92 @@ function correctionPhysicBody(
   physicBody.quaternion.copy(target.quaternion);
 }
 
+const weaponMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+      color: { value: new THREE.Color(0xffff00) },
+      radius: { value: 5 }
+  },
+  vertexShader: `
+      void main() {
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+  `,
+  fragmentShader: `
+      uniform vec3 color;
+      void main() {
+          gl_FragColor = vec4(color, 0.5);
+      }
+  `,
+  transparent: true,
+  side: 2,
+});
+
+const glowMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+      color: { value: new THREE.Color(0xffff00) },
+      radius: { value: 5 }
+  },
+  vertexShader: `
+      varying vec2 vUv;
+      void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+  `,
+  fragmentShader: `
+      uniform vec3 color;
+      uniform float radius;
+      varying vec2 vUv;
+      void main() {
+          float dist = length(vUv - vec2(0.5, 0.5)) * 2.0;
+          float alpha = 1.0 - smoothstep(0.1, 0.5, dist);
+          gl_FragColor = vec4(color, alpha);
+      }
+  `,
+  transparent: true,
+  side: 2,
+});
+
 function initCube() {
-  const runicTexture = loads.texture["runic_2.png"]?.clone()!
-  runicTexture.wrapS = THREE.RepeatWrapping
-  runicTexture.wrapT = THREE.RepeatWrapping
+  const geometry = new THREE.CircleGeometry(5, 64);
 
-  runicTexture.repeat = new THREE.Vector2(1 / 4, 1 / 3)
+  const glowMesh = new THREE.Mesh(geometry, glowMaterial);
+  glowMesh.position.y = -3.9
+  glowMesh.rotation.x = -Math.PI / 2;
 
-  const materials: THREE.MeshLambertMaterial[] = []
-
-  const coordsMap = [
-    { x: 1, y: 0 },
-    { x: 0, y: 1 },
-    { x: 1, y: 1 },
-    { x: 1, y: 2 },
-    { x: 2, y: 1 },
-    { x: 3, y: 2 },
-  ]
-
-  for (let i = 0; i < 6; i++) {
-    const map = loads.texture["runic_2.png"]?.clone()!
-    const { x, y } = coordsMap[i]
-
-    map.repeat = new THREE.Vector2(1 / 4, 1 / 3)
-    map.offset = new THREE.Vector2((1 / 4) * x, (1 / 3) * y)
-
-    materials.push(
-      new THREE.MeshLambertMaterial({ map,  })
-    )
-  }
-
-  const cube = new THREE.Mesh(
-    new THREE.BoxGeometry(
-      6,
-      6,
-      6,
-    ),
-    materials,
-  )
-
-  cube.castShadow = true
-  cube.receiveShadow = true
-  cube.position.y = 0.5
-
-  return cube
+  return glowMesh
 }
 
 function initTarget(model: Group<Object3DEventMap>, props: HeroisProps) {
+  const containner = new THREE.Object3D()
   const target = clone(model);
   target.userData.id = props.id;
-  Object.assign(target.position, props.position);
-  Object.assign(target.quaternion, props.rotation);
+  Object.assign(containner.position, props.position);
+  Object.assign(containner.quaternion, props.rotation);
 
   // TODO: скелетоны scale.multiplyScalar(5);
   target.scale.multiplyScalar(0.05);
   target.updateMatrix();
+  containner.updateMatrix();
 
   target.traverse((o) => {
     if (o.isMesh) {
       o.castShadow = true;
       o.receiveShadow = true;
 
-      o.material.map = new TextureLoader().load(
-        `model/${target.name}_Texture.png`
-      );
+      o.material = weaponMaterial
+
+      // o.material.wireframe = true
+      // o.material.color = 0xFFcc00
+
+      // o.material.map = new TextureLoader().load(
+      //   `model/${target.name}_Texture.png`
+      // );
       o.material.needsUpdate = true;
     }
   });
-  return target;
+  containner.add(target)
+  return containner;
 }
 
 function initPhysicBody() {
