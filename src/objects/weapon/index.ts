@@ -1,27 +1,38 @@
 import * as CANNON from "cannon";
-import { BoxGeometry, Mesh, MeshPhongMaterial, Object3DEventMap, TextureLoader, Vector3Like } from "three";
-import * as THREE from 'three'
+import {
+  BoxGeometry,
+  Group,
+  Mesh,
+  MeshPhongMaterial,
+  Object3DEventMap,
+  Vector3Like,
+} from "three";
+import * as THREE from "three";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
-import { loads } from "../../loader";
-import { DynamicObject } from "../../types/DynamicObject";
-import { createInteractivitySign } from "../../utils/interactivitySign";
-import { createPhysicBox } from "../../cannon";
-import { systems } from "../../systems";
-import {currentPlayer} from "../../main.ts";
-import {state} from "../../state.ts";
-import { GlowMaterial } from "../../materials/glow/index.ts";
+import { loads } from "@/loader";
+import { DynamicObject } from "@/types";
+import { createInteractivitySign } from "@/utils/interactivitySign";
+import { createPhysicBox } from "@/cannon";
+import { systems } from "@/systems";
+import { currentPlayer } from "@/main.ts";
+import { state } from "@/state.ts";
+import { GlowMaterial } from "@/materials/glow/index.ts";
+import { HeroisProps } from "@/types";
 
 const PHYSIC_Y = 4;
 export class Weapon {
   readonly props: DynamicObject;
   readonly mesh: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
-  readonly physicBody: CANNON.Body
-  readonly physicY = PHYSIC_Y
+  readonly physicBody: CANNON.Body;
+  readonly physicY = PHYSIC_Y;
 
-  private focusInterval = 0
-  private focusAnimation = false
-  private busyOnInteraction = false
-  sign: { mesh: Mesh<THREE.ConeGeometry, THREE.ShaderMaterial, Object3DEventMap>; setFocused: (value: boolean) => void; };
+  private focusInterval = 0;
+  private focusAnimation = false;
+  private busyOnInteraction = false;
+  sign: {
+    mesh: Mesh<THREE.ConeGeometry, THREE.ShaderMaterial, Object3DEventMap>;
+    setFocused: (value: boolean) => void;
+  };
   cube: Mesh<BoxGeometry, THREE.MeshLambertMaterial[], Object3DEventMap>;
 
   constructor(props: DynamicObject) {
@@ -34,21 +45,20 @@ export class Weapon {
     this.props = props;
     this.mesh = initTarget(model, props);
 
-    this.physicBody = initPhysicBody()
+    this.physicBody = initPhysicBody();
 
-    this.sign = createInteractivitySign()
+    this.sign = createInteractivitySign();
 
-    this.sign.mesh.position.y = 12
+    this.sign.mesh.position.y = 12;
 
-    this.mesh.add(this.sign.mesh)
+    this.mesh.add(this.sign.mesh);
 
     this.cube = initCube();
-    this.mesh.add(this.cube)
+    this.mesh.add(this.cube);
 
-    correctionPhysicBody(this.physicBody, this.mesh)
+    correctionPhysicBody(this.physicBody, this.mesh);
   }
   update(time: number) {
-
     const obj = state.objects[this.props.id];
     this.setPosition(obj.position);
   }
@@ -62,26 +72,30 @@ export class Weapon {
   }
 
   interactWith() {
-    const { input } = systems.inputSystem
+    const { input } = systems.inputSystem;
 
-    clearInterval(this.focusInterval)
+    clearInterval(this.focusInterval);
 
     if (!this.focusAnimation) {
-      this.sign.setFocused(true)
-      this.focusAnimation = true
+      this.sign.setFocused(true);
+      this.focusAnimation = true;
     }
     if (this.focusAnimation) {
       this.focusInterval = setTimeout(() => {
-        this.sign.setFocused(false)
-        this.focusAnimation = false
-      }, 100)
+        this.sign.setFocused(false);
+        this.focusAnimation = false;
+      }, 100);
     }
 
     if (input.interact) {
-      console.log(currentPlayer.id, this.props.id)
-      state.setState({ objects: { [currentPlayer.activeObjectId]: { weapon: this.props.id }, [this.props.id]: { position: { x: 0, y: 0, z: -1000000 } } } })
+      console.log(currentPlayer.id, this.props.id);
+      state.setState({
+        objects: {
+          [currentPlayer.activeObjectId]: { weapon: this.props.id },
+          [this.props.id]: { position: { x: 0, y: 0, z: -1000000 } },
+        },
+      });
     }
-
   }
 }
 
@@ -97,21 +111,21 @@ function correctionPhysicBody(
   physicBody.quaternion.copy(target.quaternion);
 }
 
-const weaponMaterial = new GlowMaterial({ type: 'opaque', opacity: 0.5 })
-const glowMaterial = new GlowMaterial({ type: 'gradient', opacity: 1 })
+const weaponMaterial = new GlowMaterial({ type: "opaque", opacity: 0.5 });
+const glowMaterial = new GlowMaterial({ type: "gradient", opacity: 1 });
 
 function initCube() {
   const geometry = new THREE.CircleGeometry(5, 64);
 
   const glowMesh = new THREE.Mesh(geometry, glowMaterial);
-  glowMesh.position.y = -3.9
+  glowMesh.position.y = -3.9;
   glowMesh.rotation.x = -Math.PI / 2;
 
-  return glowMesh
+  return glowMesh;
 }
 
 function initTarget(model: Group<Object3DEventMap>, props: HeroisProps) {
-  const containner = new THREE.Object3D()
+  const containner = new THREE.Object3D();
   const target = clone(model);
   target.userData.id = props.id;
   Object.assign(containner.position, props.position);
@@ -127,7 +141,7 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroisProps) {
       o.castShadow = true;
       o.receiveShadow = true;
 
-      o.material = weaponMaterial
+      o.material = weaponMaterial;
 
       // o.material.wireframe = true
       // o.material.color = 0xFFcc00
@@ -138,11 +152,14 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroisProps) {
       o.material.needsUpdate = true;
     }
   });
-  containner.add(target)
+  containner.add(target);
   return containner;
 }
 
 function initPhysicBody() {
-  const physicRadius = 4
-  return createPhysicBox({ x: physicRadius, y: PHYSIC_Y * 2, z: physicRadius }, { mass: 0 });
+  const physicRadius = 4;
+  return createPhysicBox(
+    { x: physicRadius, y: PHYSIC_Y * 2, z: physicRadius },
+    { mass: 0 }
+  );
 }

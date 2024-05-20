@@ -22,10 +22,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@/*": ["src/*"],
-      "@utils/*": ["src/utils/*"],
-      "@uses/*": ["src/uses/*"],
-      "@types/*": ["src/types"]
+      "@/*": ["src/*"]
     }
   },
   "include": ["src"]

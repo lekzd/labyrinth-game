@@ -14,19 +14,15 @@ import {
   LoopOnce,
   Vector3Like,
 } from "three";
-import { animationType, loads, modelType } from "../../loader";
-import { DynamicObject } from "../../types/DynamicObject";
+import { animationType, loads } from "@/loader";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import * as CANNON from "cannon";
-import { createPhysicBox, physicWorld } from "../../cannon";
-import { createTorch } from "../torch";
-import {NpcAnimationStates, NpcBaseAnimations} from "./NpcAnimationStates";
-import { state } from "../../state.ts";
+import { createPhysicBox, physicWorld } from "@/cannon";
+import { createTorch } from "@/uses";
+import { NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates";
+import { state } from "@/state.ts";
 import { HealthBar } from "./healthbar.ts";
-
-export interface HeroisProps extends DynamicObject {
-  type: modelType;
-}
+import { HeroisProps } from "@/types";
 
 type Animations = Partial<Record<animationType, Group<Object3DEventMap>>>;
 
@@ -182,8 +178,7 @@ function initElementsHerois(
   const torch = createTorch();
   // Прикрепляем факел к руке персонажа
 
-  if (leftHand)
-    leftHand.add(torch);
+  if (leftHand) leftHand.add(torch);
 
   return {
     leftArm,
@@ -264,7 +259,7 @@ function CharacterFSM({ animations }: { animations: AnimationControllers }) {
     //creating new instance of a state class
     currentState = action(animations, name);
 
-    console.log(currentState)
+    console.log(currentState);
 
     //calling the Enter method from State
     currentState.Enter(prevState);

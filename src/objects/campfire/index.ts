@@ -10,11 +10,12 @@ import {
   ShaderMaterial,
   SphereGeometry,
 } from "three";
-import { DynamicObject } from "../../types/DynamicObject";
-import { frandom } from "../../utils/random";
+
+import { frandom } from "@/utils/random";
 import vertexShader from "./shader.vert";
 import fragmentShader from "./shader.frag";
-import { assign } from "../../utils/assign";
+import { assign } from "@/utils/assign";
+import { DynamicObject } from "@/types";
 
 const PARTICLE_COUNT = 100;
 export class Campfire {

@@ -1,15 +1,15 @@
 import * as THREE from 'three';
-import { RoomConfig } from "../../generators/types";
-import { frandom, random } from '../../utils/random';
-import { Tiles } from '../../types/Tiles';
-import { createPhysicBox, physicWorld } from '../../cannon';
-import { assign } from '../../utils/assign';
+import { RoomConfig } from "@/generators/types";
+import { frandom, random } from '@/utils/random';
+import { Tiles } from '@/types/Tiles';
+import { createPhysicBox, physicWorld } from '@/cannon';
+import { assign } from '@/utils/assign';
 import { createTree } from './tree';
 import { createFloorMaterial } from './floorMaterial';
-import { systems } from '../../systems/index.ts';
+import { systems } from '@/systems/index.ts';
 import { createStone } from './stone.ts';
 import { createStem } from './stem.ts';
-import { scale } from '../../state.ts';
+import { scale } from '@/state.ts';
 
 export const Room = (config: RoomConfig) => {
   let isOnline = true

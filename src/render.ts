@@ -2,27 +2,24 @@ import * as THREE from "three";
 import * as TWEEN from "@tweenjs/tween.js";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import Stats from "./utils/Stats.ts";
-import {Camera} from "./objects/hero/camera.ts";
-import {scale, State} from "./state.ts";
-import {scene} from "./scene.ts";
-import {ObjectType} from "./types/ObjectType.ts";
-import {createGroundBody, physicWorld} from "./cannon.ts";
-import {KeyboardCharacterController} from "./objects/hero/controller.ts";
-import {currentPlayer} from "./main.ts";
-import {Room} from "./objects/room/index.ts";
-import {systems} from "./systems/index.ts";
-import {RoomConfig} from "./generators/types.ts";
+import Stats from "@/utils/Stats.ts";
+import { Camera } from "./objects/hero/camera.ts";
+import { scale, State } from "./state.ts";
+import { scene } from "./scene.ts";
+import { ObjectType } from "./types/ObjectType.ts";
+import { createGroundBody, physicWorld } from "./cannon.ts";
+import { KeyboardCharacterController } from "./objects/hero/controller.ts";
+import { currentPlayer } from "./main.ts";
+import { systems } from "./systems/index.ts";
+import { RoomConfig } from "./generators/types.ts";
 import PolygonClipping from "polygon-clipping";
-import {frandom} from "./utils/random.ts";
-import {Herois} from "./objects/hero/Herois.ts";
-import {App} from "./ui/App.tsx";
-import {Box} from "./objects/box/index.ts";
-import {Campfire} from "./objects/campfire/index.ts";
-import {PuzzleHandler} from "./objects/puzzleHandler/index.ts";
+import { frandom } from "./utils/random.ts";
+import { Campfire, Herois, PuzzleHandler, Room, Weapon } from "@/uses";
+import { App } from "./ui/App.tsx";
 import CannonDebugRenderer from "./cannonDebugRender.ts";
-import {Weapon} from "./objects/weapon";
-import {modelType} from "./loader.ts";
+
+import { modelType } from "./loader.ts";
+import { Box } from "cannon";
 
 const stats = new Stats();
 
@@ -31,9 +28,8 @@ const subscribers: { update: (time: number) => void }[] = [
   systems.grassSystem,
   systems.inputSystem,
 ];
-const rooms: ReturnType<typeof Room>[] = []
-const decorationObjects: THREE.Mesh[] = []
-
+const rooms: ReturnType<typeof Room>[] = [];
+const decorationObjects: THREE.Mesh[] = [];
 
 const getObjectCOntructorConfig = (type: ObjectType) => {
   switch (type) {
@@ -65,7 +61,7 @@ const getObjectCOntructorConfig = (type: ObjectType) => {
         physical: true,
         interactive: true,
       };
-      break
+      break;
     default:
       return {
         Constructor: Weapon,
@@ -81,14 +77,12 @@ export const addObjects = (items = {}) => {
     const objectConfig = items[id];
 
     const controllable = currentPlayer.activeObjectId === id;
-    const {
-      Constructor: ObjectConstructor,
-      ...config
-    } = getObjectCOntructorConfig(objectConfig.type);
+    const { Constructor: ObjectConstructor, ...config } =
+      getObjectCOntructorConfig(objectConfig.type);
 
     const object = new ObjectConstructor({ ...objectConfig });
 
-    systems.objectsSystem.add(object, config)
+    systems.objectsSystem.add(object, config);
     subscribers.push(object);
     scene.add(object.mesh);
 
@@ -130,7 +124,7 @@ export const render = (state: State) => {
 
   window.addEventListener("resize", onWindowResize, false);
 
-  const cannonDebugRenderer = new CannonDebugRenderer(scene, physicWorld)
+  const cannonDebugRenderer = new CannonDebugRenderer(scene, physicWorld);
 
   /*
    * Рендерит рекурсивно сцену, пробрасывая в подписчиков (персонаж, камера)
@@ -153,13 +147,13 @@ export const render = (state: State) => {
         item.update(timeElapsedS);
       }
 
-      const { objects } = systems.objectsSystem
+      const { objects } = systems.objectsSystem;
 
       systems.cullingSystem.update(camera, rooms, objects, decorationObjects);
       TWEEN.update();
 
       if (settings.game.physics) {
-        systems.objectsSystem.update(timeElapsedS)
+        systems.objectsSystem.update(timeElapsedS);
         // cannonDebugRenderer.update()
       }
 
@@ -280,7 +274,7 @@ export const items = {
       instancedMesh.setMatrixAt(instanceIndex, matrix);
     });
 
-    instancedMesh.name = 'Scene Border Pines'
+    instancedMesh.name = "Scene Border Pines";
 
     scene.add(instancedMesh);
 

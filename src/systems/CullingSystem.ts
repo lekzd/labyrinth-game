@@ -1,8 +1,9 @@
 import * as THREE from 'three';
-import { Room } from '../objects/room/index.ts';
-import { MapObject } from '../types/MapObject.ts';
-import { scale } from '../state.ts';
+
+import { MapObject } from '@/types';
+import { scale } from '@/state.ts';
 import { systems } from './index.ts';
+import { Room } from '@/uses';
 
 export const CullingSystem = () => {
   const frustum = new THREE.Frustum();

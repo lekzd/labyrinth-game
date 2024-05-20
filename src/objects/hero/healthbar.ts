@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import { makeCtx } from '../../utils/makeCtx';
-import {isEqual} from "../../utils/isEqual.ts";
-import {HeroisProps} from "./Herois.ts";
+import { makeCtx } from '@/utils/makeCtx';
+import {isEqual} from "@/utils/isEqual.ts";
 import {settings} from "./settings.ts";
+import { HeroisProps } from '@/types';
 
 const createTexture = () => {
   const context = makeCtx(64, 16);
