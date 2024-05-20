@@ -6,7 +6,7 @@ import Stats from "@/utils/Stats.ts";
 import { Camera } from "./objects/hero/camera.ts";
 import { scale, State } from "./state.ts";
 import { scene } from "./scene.ts";
-import { ObjectType } from "./types/ObjectType.ts";
+import { ObjectType } from "@/types";
 import { createGroundBody, physicWorld } from "./cannon.ts";
 import { KeyboardCharacterController } from "./objects/hero/controller.ts";
 import { currentPlayer } from "./main.ts";

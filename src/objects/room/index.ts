@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { RoomConfig } from "@/generators/types";
 import { frandom, random } from '@/utils/random';
-import { Tiles } from '@/types/Tiles';
+import { Tiles } from '@/types';
 import { createPhysicBox, physicWorld } from '@/cannon';
 import { assign } from '@/utils/assign';
 import { createTree } from './tree';

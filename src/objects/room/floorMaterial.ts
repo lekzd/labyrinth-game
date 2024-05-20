@@ -1,53 +1,57 @@
-import * as THREE from 'three';
-import { Tiles } from "../../types/Tiles";
-import { frandom } from '../../utils/random';
-import { makeCtx } from '../../utils/makeCtx';
-import { RoomConfig } from '../../generators/types';
+import * as THREE from "three";
+import { Tiles } from "@/types";
+import { frandom } from "@/utils/random";
+import { makeCtx } from "@/utils/makeCtx";
+import { RoomConfig } from "@/generators/types";
 
 const BACKGROUND_COLOR = `rgb(255,0,0)`;
 
-export const createRoomTerrainCanvas = (room: RoomConfig, noiseFactor: number, tileSize: number) => {
-  const r = (v: number) => frandom(-noiseFactor, noiseFactor)
+export const createRoomTerrainCanvas = (
+  room: RoomConfig,
+  noiseFactor: number,
+  tileSize: number
+) => {
+  const r = (v: number) => frandom(-noiseFactor, noiseFactor);
 
   const getColor = (tile: Tiles) => {
-    const noise = r(noiseFactor)
+    const noise = r(noiseFactor);
     switch (tile) {
       case Tiles.Empty:
       case Tiles.NorthExit:
       case Tiles.SouthExit:
       case Tiles.WestExit:
       case Tiles.EastExit:
-        return `rgb(${20+noise},${10+noise},0)`
+        return `rgb(${20 + noise},${10 + noise},0)`;
       case Tiles.Wall:
-        return `rgb(0,0,0)`
+        return `rgb(0,0,0)`;
       default:
-        return `rgb(${2+noise},${4+noise},0)`
+        return `rgb(${2 + noise},${4 + noise},0)`;
     }
-  }
+  };
 
-  const ctx = makeCtx(room.width * tileSize, room.height * tileSize)
+  const ctx = makeCtx(room.width * tileSize, room.height * tileSize);
 
-  ctx.fillStyle = BACKGROUND_COLOR
-  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+  ctx.fillStyle = BACKGROUND_COLOR;
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
   room.tiles.forEach((tile, i) => {
-    const x = (i % room.width) * tileSize
-    const y = Math.floor(i / room.width) * tileSize
+    const x = (i % room.width) * tileSize;
+    const y = Math.floor(i / room.width) * tileSize;
 
-    ctx.fillStyle = getColor(tile)
-    ctx.fillRect(
-      x,
-      y,
-      tileSize, tileSize
-    )
-  })
+    ctx.fillStyle = getColor(tile);
+    ctx.fillRect(x, y, tileSize, tileSize);
+  });
 
-  return ctx.canvas
-}
+  return ctx.canvas;
+};
 
 export const createFloorMaterial = (room: RoomConfig) => {
   const canvas = createRoomTerrainCanvas(room, 5, 3);
   const texture = new THREE.CanvasTexture(canvas);
 
-  return new THREE.MeshPhongMaterial({ map: texture, color: 0xffffff, fog: true });
-}
+  return new THREE.MeshPhongMaterial({
+    map: texture,
+    color: 0xffffff,
+    fog: true,
+  });
+};

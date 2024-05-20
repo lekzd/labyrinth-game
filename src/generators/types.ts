@@ -1,4 +1,4 @@
-import { Tiles } from "../types/Tiles.ts";
+import { Tiles } from "@/types";
 
 export type Player = {
   id: string,
