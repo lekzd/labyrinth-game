@@ -1,7 +1,6 @@
 import * as CANNON from "cannon";
 import { BoxGeometry, Mesh, MeshPhongMaterial, Object3DEventMap, TextureLoader, Vector3Like } from "three";
 import * as THREE from 'three'
-import * as TWEEN from '@tweenjs/tween.js'
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { loads } from "../../loader";
 import { DynamicObject } from "../../types/DynamicObject";
@@ -10,6 +9,7 @@ import { createPhysicBox } from "../../cannon";
 import { systems } from "../../systems";
 import {currentPlayer} from "../../main.ts";
 import {state} from "../../state.ts";
+import { GlowMaterial } from "../../materials/glow/index.ts";
 
 const PHYSIC_Y = 4;
 export class Weapon {
@@ -97,51 +97,8 @@ function correctionPhysicBody(
   physicBody.quaternion.copy(target.quaternion);
 }
 
-const weaponMaterial = new THREE.ShaderMaterial({
-  uniforms: {
-      color: { value: new THREE.Color(0xffff00) },
-      radius: { value: 5 }
-  },
-  vertexShader: `
-      void main() {
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-  `,
-  fragmentShader: `
-      uniform vec3 color;
-      void main() {
-          gl_FragColor = vec4(color, 0.5);
-      }
-  `,
-  transparent: true,
-  side: 2,
-});
-
-const glowMaterial = new THREE.ShaderMaterial({
-  uniforms: {
-      color: { value: new THREE.Color(0xffff00) },
-      radius: { value: 5 }
-  },
-  vertexShader: `
-      varying vec2 vUv;
-      void main() {
-          vUv = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-  `,
-  fragmentShader: `
-      uniform vec3 color;
-      uniform float radius;
-      varying vec2 vUv;
-      void main() {
-          float dist = length(vUv - vec2(0.5, 0.5)) * 2.0;
-          float alpha = 1.0 - smoothstep(0.1, 0.5, dist);
-          gl_FragColor = vec4(color, alpha);
-      }
-  `,
-  transparent: true,
-  side: 2,
-});
+const weaponMaterial = new GlowMaterial({ type: 'opaque', opacity: 0.5 })
+const glowMaterial = new GlowMaterial({ type: 'gradient', opacity: 1 })
 
 function initCube() {
   const geometry = new THREE.CircleGeometry(5, 64);

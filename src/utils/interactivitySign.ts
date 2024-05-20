@@ -1,25 +1,8 @@
 import * as THREE from 'three'
+import { GlowMaterial } from '../materials/glow';
 
 export const createInteractivitySign = () => {
-  const glowMaterial = new THREE.ShaderMaterial({
-    uniforms: {
-      glowColor: { value: new THREE.Color(0x333300) },
-    },
-    vertexShader: `
-      void main() {
-        vec3 vNormal = normalize(normalMatrix * normal);
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform vec3 glowColor;
-      void main() {
-        gl_FragColor = vec4(glowColor, 1.0);
-      }
-    `,
-    side: THREE.FrontSide,
-    // blending: THREE.AdditiveBlending,
-  });
+  const glowMaterial = new GlowMaterial({ type: 'opaque', opacity: 1, color: 0x666600 })
 
   const signMesh = new THREE.Mesh(new THREE.ConeGeometry( 1, 1, 3 ), glowMaterial);
 
@@ -28,7 +11,7 @@ export const createInteractivitySign = () => {
   return {
     mesh: signMesh,
     setFocused: (value: boolean) => {
-      signMesh.material.uniforms.glowColor.value = new THREE.Color(value ? 0xffff00 : 0x666600)
+      signMesh.material.uniforms.color.value = new THREE.Color(value ? 0xffff00 : 0x666600)
       signMesh.material.uniformsNeedUpdate = true
     } 
   }
