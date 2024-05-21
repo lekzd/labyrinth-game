@@ -18,7 +18,7 @@ import { animationType, loads } from "@/loader";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import * as CANNON from "cannon";
 import { createPhysicBox, physicWorld } from "@/cannon";
-import { createTorch } from "@/uses";
+import { Torch } from "@/uses";
 import { NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates.ts";
 import { state } from "@/state.ts";
 import { HealthBar } from "./healthbar.ts";
@@ -173,7 +173,7 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
 function initElementsHero(target: Object3D<Object3DEventMap>): ElementsHero {
   const leftArm = target.getObjectByName("ShoulderL")!;
   const leftHand = target.getObjectByName("Fist1L")!;
-  const torch = createTorch();
+  const torch = new Torch().sphere;
   // Прикрепляем факел к руке персонажа
 
   if (leftHand) leftHand.add(torch);
