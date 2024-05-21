@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from "react";
-import type { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react";
 import { initState } from "@/state";
 import { generateRooms } from "./generateRooms";
-import { Tiles } from "@/types";
+import { Tiles } from "@/config";
 
 const ROOM_SIZE = 13;
 

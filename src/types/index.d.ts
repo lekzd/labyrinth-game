@@ -1,9 +1,8 @@
 import { DynamicObject } from "./DynamicObject";
 import { modelType } from "@/loader";
 import { MapObject } from "./MapObject";
-import { Tiles } from "./Tiles";
+import { Tiles } from "@/config";
 import { ObjectType } from "./ObjectType";
-import { RoomConfig } from "./";
 
 type Player = {
   id: string;
@@ -23,7 +22,7 @@ interface HeroisProps extends DynamicObject {
   type: modelType;
 }
 
-export {
+export type {
   DynamicObject,
   HeroisProps,
   modelType,

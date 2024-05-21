@@ -1,4 +1,4 @@
-import { Tiles } from "@/types";
+import { Tiles } from "@/config";
 import { frandom } from "@/utils/random";
 import { shuffle } from "@/utils/shuffle";
 import { drawRect, range } from "./utils";

@@ -1,5 +1,6 @@
 import { State } from "@/state";
-import { Tiles, RoomConfig } from "@/types";
+import { RoomConfig } from "@/types";
+import { Tiles } from "@/config";
 import { random } from "@/utils/random";
 import { shuffle } from "@/utils/shuffle";
 import { some } from "@/utils/some";

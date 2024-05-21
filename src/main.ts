@@ -17,7 +17,8 @@ import {
 } from "./state.ts";
 import { onUpdate, send } from "./socket.ts";
 import { pickBy } from "./utils/pickBy.ts";
-import { DynamicObject, Tiles } from "@/types";
+import { DynamicObject } from "@/types";
+import { Tiles } from "@/config";
 import { something } from "./utils/something.ts";
 
 const ROOM_SIZE = 13;

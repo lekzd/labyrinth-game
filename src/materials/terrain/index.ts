@@ -1,4 +1,4 @@
-import { Tiles } from "@/types";
+import { Tiles } from "@/config";
 import { State } from "@/state";
 import { frandom } from "@/utils/random";
 import { makeCtx } from "@/utils/makeCtx";

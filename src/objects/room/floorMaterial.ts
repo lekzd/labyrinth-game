@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Tiles } from "@/types";
+import { Tiles } from "@/config";
 import { frandom } from "@/utils/random";
 import { makeCtx } from "@/utils/makeCtx";
 import { RoomConfig } from "@/generators/types";

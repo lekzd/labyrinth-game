@@ -6,7 +6,8 @@ import { makeCtx } from "@/utils/makeCtx";
 import { createTerrainCanvas } from "@/materials/terrain";
 import { scene } from "@/scene";
 import { RoomConfig } from "@/generators/types";
-import { Tiles, DynamicObject } from "@/types";
+import { DynamicObject } from "@/types";
+import { Tiles } from "@/config";
 import { frandom } from "@/utils/random";
 
 export const GrassSystem = () => {
