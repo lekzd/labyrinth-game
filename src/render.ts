@@ -19,6 +19,7 @@ import CannonDebugRenderer from "./cannonDebugRender.ts";
 
 import { modelType } from "./loader.ts";
 import { Box } from "cannon";
+import { Gate } from "./objects/gate/index.ts";
 
 const stats = new Stats();
 
@@ -41,6 +42,12 @@ const getObjectCOntructorConfig = (type: ObjectType) => {
     case "Box":
       return {
         Constructor: Box,
+        physical: true,
+        interactive: true,
+      };
+    case "Gate":
+      return {
+        Constructor: Gate,
         physical: true,
         interactive: true,
       };

@@ -89,6 +89,19 @@ onUpdate((next) => {
               },
             })
           );
+          break;
+        case Tiles.NorthExit:
+          roomObjects.push(
+            createObject({
+              type: "Gate",
+              position: {
+                x,
+                y: 4,
+                z,
+              },
+            })
+          );
+          break;
       }
     });
   });

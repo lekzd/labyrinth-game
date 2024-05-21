@@ -5,11 +5,13 @@ const textureLoader = new THREE.TextureLoader()
 const loader = new FBXLoader();
 
 export enum texturesType {
-  stone_wall = 'stone_wall.jpg',
-  wood_floor = 'wood_floor.jpg',
   tree = 'Tree.png',
   grass = 'grass.webp',
   runic_cube = 'runic_2.png',
+  stone_wall_map = 'stone_wall_map.jpg',
+  stone_wall_bump = 'stone_wall_bump.jpg',
+  wood_gate_map = 'wood_gate_map.jpg',
+  wood_gate_bump = 'wood_gate_bump.jpg',
 }
 
 export enum animationType {
