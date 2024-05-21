@@ -153,7 +153,7 @@ export const render = (state: State) => {
 
       if (settings.game.physics) {
         systems.objectsSystem.update(timeElapsedS);
-        cannonDebugRenderer.update()
+        // cannonDebugRenderer.update()
       }
 
       prevTime = t;
