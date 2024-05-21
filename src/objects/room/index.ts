@@ -1,55 +1,106 @@
-import * as THREE from "three";
 import { RoomConfig } from "@/types";
-import { frandom, random } from "@/utils/random";
 import { Tiles } from "@/config";
-import { createPhysicBox, physicWorld } from "@/cannon";
-import { assign } from "@/utils/assign";
-import { createTree } from "./tree";
-import { createFloorMaterial } from "./floorMaterial";
-import { systems } from "@/systems/index.ts";
-import { createStone } from "./stone.ts";
-import { createStem } from "./stem.ts";
+import {
+  Mesh,
+  MeshPhongMaterial,
+  Object3D,
+  Object3DEventMap,
+  PlaneGeometry,
+} from "three";
 import { scale } from "@/state.ts";
+import { systems } from "@/systems";
+import { createFloorMaterial } from "./floorMaterial";
+import { frandom, random } from "@/utils/random";
+import { createTree } from "./tree";
+import { assign } from "@/utils/assign";
+import { createPhysicBox, physicWorld } from "@/cannon";
+import { createStone } from "./stone";
+import { createStem } from "./stem";
 
-export const Room = (config: RoomConfig) => {
-  let isOnline = true;
-  const mesh = new THREE.Object3D();
+export class Room {
+  private treesPhysicBodies: CANNON.Body[];
+  protected isOnline: boolean = false;
 
+  readonly mesh: Object3D<Object3DEventMap>;
+  readonly floorMesh: Mesh<PlaneGeometry, MeshPhongMaterial, Object3DEventMap>;
+  readonly config: RoomConfig;
+
+  constructor(props: RoomConfig) {
+    this.config = props;
+    this.floorMesh = initFloorMesh(props);
+    this.mesh = initMesh(props, this.floorMesh);
+    this.treesPhysicBodies = initTreesPhysicBodies(props, this.mesh);
+  }
+
+  offline() {
+    this.isOnline = false;
+    this.treesPhysicBodies.forEach((body) => {
+      physicWorld.remove(body);
+    });
+  }
+
+  online() {
+    this.isOnline = true;
+
+    this.mesh.children.forEach((mesh) => {
+      mesh.updateMatrixWorld();
+    });
+
+    this.treesPhysicBodies.forEach((body) => {
+      physicWorld.addBody(body);
+    });
+  }
+  update() {}
+}
+
+function initMesh(
+  props: RoomConfig,
+  floorMesh: Mesh<PlaneGeometry, MeshPhongMaterial, Object3DEventMap>
+) {
+  const mesh = new Object3D();
   mesh.visible = false;
+  mesh.position.set(props.x * scale, 0, props.y * scale);
 
-  mesh.position.set(config.x * scale, 0, config.y * scale);
+  const grassMesh = systems.grassSystem.createRoomMesh(props);
 
-  const grassMesh = systems.grassSystem.createRoomMesh(config);
+  mesh.add(floorMesh);
+  mesh.add(grassMesh);
+  mesh.updateMatrixWorld();
+  mesh.matrixAutoUpdate = false;
 
-  const floorMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(config.width * scale, config.height * scale),
-    createFloorMaterial(config)
+  return mesh;
+}
+
+function initFloorMesh(props: RoomConfig) {
+  const floorMesh = new Mesh(
+    new PlaneGeometry(props.width * scale, props.height * scale),
+    createFloorMaterial(props)
   );
 
   floorMesh.position.set(
-    Math.floor(config.width / 2) * scale,
+    Math.floor(props.width / 2) * scale,
     0,
-    Math.floor(config.height / 2) * scale
+    Math.floor(props.height / 2) * scale
   );
 
   floorMesh.rotation.x = -Math.PI / 2;
   floorMesh.receiveShadow = true;
+  return floorMesh;
+}
 
-  mesh.add(floorMesh);
-  mesh.add(grassMesh);
-
-  mesh.updateMatrixWorld();
-  mesh.matrixAutoUpdate = false;
-
+function initTreesPhysicBodies(
+  props: RoomConfig,
+  mesh: Object3D<Object3DEventMap>
+) {
   const treesPhysicBodies: CANNON.Body[] = [];
 
-  for (let i = 0; i < config.tiles.length; i++) {
-    const baseX = i % config.width;
+  for (let i = 0; i < props.tiles.length; i++) {
+    const baseX = i % props.width;
     const x = baseX + frandom(-0.5, 0.5);
-    const baseY = Math.floor(i / config.width);
+    const baseY = Math.floor(i / props.width);
     const y = baseY + frandom(-0.5, 0.5);
 
-    if (config.tiles[i] === Tiles.Wall) {
+    if (props.tiles[i] === Tiles.Wall) {
       const cube = createTree();
 
       assign(cube.position, { x: x * scale, z: y * scale });
@@ -62,9 +113,9 @@ export const Room = (config: RoomConfig) => {
       );
 
       physicBody.position.set(
-        (config.x + baseX) * scale,
+        (props.x + baseX) * scale,
         physicY,
-        (config.y + baseY) * scale
+        (props.y + baseY) * scale
       );
 
       treesPhysicBodies.push(physicBody);
@@ -98,29 +149,5 @@ export const Room = (config: RoomConfig) => {
       }
     }
   }
-
-  return {
-    config,
-    offline: () => {
-      isOnline = false;
-
-      treesPhysicBodies.forEach((body) => {
-        physicWorld.remove(body);
-      });
-    },
-    online: () => {
-      isOnline = true;
-
-      mesh.children.forEach((mesh) => {
-        mesh.updateMatrixWorld();
-      });
-
-      treesPhysicBodies.forEach((body) => {
-        physicWorld.addBody(body);
-      });
-    },
-    update: () => {},
-    mesh,
-    floorMesh,
-  };
-};
+  return treesPhysicBodies;
+}

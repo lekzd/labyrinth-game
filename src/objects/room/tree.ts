@@ -6,12 +6,12 @@ export const createTree = () => {
 
   const target = model.clone();
 
-  target.scale.multiplyScalar(.05);
+  target.scale.multiplyScalar(0.05);
 
-  target.traverse(o => {
+  target.traverse((o) => {
     if (o.isMesh) {
       o.material.map = loads.texture["Tree.png"];
-      o.material.needsUpdate = true
+      o.material.needsUpdate = true;
 
       // o.castShadow = true;
       // o.receiveShadow = true;
@@ -22,4 +22,4 @@ export const createTree = () => {
   // target.receiveShadow = true;
 
   return target;
-}
+};

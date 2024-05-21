@@ -27,7 +27,7 @@ const subscribers: { update: (time: number) => void }[] = [
   systems.grassSystem,
   systems.inputSystem,
 ];
-const rooms: ReturnType<typeof Room>[] = [];
+const rooms: Room[] = [];
 const decorationObjects: THREE.Mesh[] = [];
 
 const getObjectCOntructorConfig = (type: ObjectType) => {
@@ -191,7 +191,7 @@ function findLineCoordinates(rooms: RoomConfig[]) {
 export const items = {
   roomChunks: (state: State) => {
     state.rooms.forEach((room) => {
-      const roomObject = Room(room);
+      const roomObject = new Room(room);
 
       rooms.push(roomObject);
 
