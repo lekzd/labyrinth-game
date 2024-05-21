@@ -17,7 +17,7 @@ import { systems } from "@/systems";
 import { currentPlayer } from "@/main.ts";
 import { state } from "@/state.ts";
 import { GlowMaterial } from "@/materials/glow/index.ts";
-import { HeroisProps } from "@/types";
+import { HeroProps } from "@/types";
 
 const PHYSIC_Y = 4;
 export class Weapon {
@@ -124,7 +124,7 @@ function initCube() {
   return glowMesh;
 }
 
-function initTarget(model: Group<Object3DEventMap>, props: HeroisProps) {
+function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
   const containner = new THREE.Object3D();
   const target = clone(model);
   target.userData.id = props.id;

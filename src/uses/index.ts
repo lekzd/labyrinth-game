@@ -1,5 +1,5 @@
 export { Box } from "@/objects/Box";
-export { Herois } from "@/objects/hero/Herois";
+export { Hero } from "@/objects/Hero/Hero";
 export { createTorch } from "@/objects/torch";
 export { Campfire } from "@/objects/Campfire";
 export { Weapon } from "@/objects/weapon";

@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { RoomConfig } from "@/generators/types";
+import { RoomConfig } from "@/types";
 import { frandom, random } from "@/utils/random";
 import { Tiles } from "@/config";
 import { createPhysicBox, physicWorld } from "@/cannon";

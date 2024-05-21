@@ -1,25 +1,25 @@
-import { ObjectType } from "./ObjectType"
-import {NpcAnimationStates} from "../objects/hero/NpcAnimationStates.ts";
-import {SettingObject} from "../objects/hero/settings.ts";
+import { ObjectType } from "./ObjectType";
+import { NpcAnimationStates } from "../objects/Hero/NpcAnimationStates.ts";
+import { SettingObject } from "../objects/Hero/settings.ts";
 
 export type ObjectVector3 = {
-  x: number
-  y: number
-  z: number
-}
+  x: number;
+  y: number;
+  z: number;
+};
 
 export type ObjectQuaternion = {
-  x: number
-  y: number
-  z: number
-  w: number
-}
+  x: number;
+  y: number;
+  z: number;
+  w: number;
+};
 
 export type DynamicObject = {
-  id: string,
-  type: ObjectType,
-  state?: keyof typeof NpcAnimationStates,
+  id: string;
+  type: ObjectType;
+  state?: keyof typeof NpcAnimationStates;
 
-  position: ObjectVector3,
-  rotation: ObjectQuaternion,
-} & Partial<SettingObject>
+  position: ObjectVector3;
+  rotation: ObjectQuaternion;
+} & Partial<SettingObject>;

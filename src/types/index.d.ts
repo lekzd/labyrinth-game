@@ -18,13 +18,13 @@ type RoomConfig = {
   x: number;
   y: number;
 };
-interface HeroisProps extends DynamicObject {
+interface HeroProps extends DynamicObject {
   type: modelType;
 }
 
 export type {
   DynamicObject,
-  HeroisProps,
+  HeroProps,
   modelType,
   MapObject,
   Tiles,

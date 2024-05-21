@@ -3,18 +3,17 @@ import * as TWEEN from "@tweenjs/tween.js";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import Stats from "@/utils/Stats.ts";
-import { Camera } from "./objects/hero/camera.ts";
+import { Camera } from "./objects/Hero/camera.ts";
 import { scale, State } from "./state.ts";
 import { scene } from "./scene.ts";
-import { ObjectType } from "@/types";
+import { ObjectType, RoomConfig } from "@/types";
 import { createGroundBody, physicWorld } from "./cannon.ts";
-import { KeyboardCharacterController } from "./objects/hero/controller.ts";
+import { KeyboardCharacterController } from "./objects/Hero/controller.ts";
 import { currentPlayer } from "./main.ts";
 import { systems } from "./systems/index.ts";
-import { RoomConfig } from "./generators/types.ts";
 import PolygonClipping from "polygon-clipping";
 import { frandom } from "./utils/random.ts";
-import { Campfire, Herois, PuzzleHandler, Room, Weapon } from "@/uses";
+import { Campfire, Hero, PuzzleHandler, Room, Weapon } from "@/uses";
 import { App } from "./ui/App.tsx";
 import CannonDebugRenderer from "./cannonDebugRender.ts";
 
@@ -57,7 +56,7 @@ const getObjectCOntructorConfig = (type: ObjectType) => {
     case modelType.Cleric:
     case modelType.Wizard:
       return {
-        Constructor: Herois,
+        Constructor: Hero,
         physical: true,
         interactive: true,
       };

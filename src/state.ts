@@ -1,11 +1,10 @@
-import { Player, RoomConfig } from "./generators/types";
 import { modelType } from "./loader";
-import { DynamicObject } from "@/types";
+import { DynamicObject, Player, RoomConfig } from "@/types";
 import { Tiles } from "@/config";
 import { something } from "./utils/something";
-import { NpcAnimationStates } from "./objects/hero/NpcAnimationStates.ts";
+import { NpcAnimationStates } from "./objects/Hero/NpcAnimationStates.ts";
 import { mergeDeep } from "./utils/mergeDeep.ts";
-import { settings } from "./objects/hero/settings.ts";
+import { settings } from "./objects/Hero/settings.ts";
 
 type setState = (
   state: Partial<State>,

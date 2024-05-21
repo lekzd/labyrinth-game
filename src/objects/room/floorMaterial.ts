@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { Tiles } from "@/config";
 import { frandom } from "@/utils/random";
 import { makeCtx } from "@/utils/makeCtx";
-import { RoomConfig } from "@/generators/types";
+import { RoomConfig } from "@/types";
 
 const BACKGROUND_COLOR = `rgb(255,0,0)`;
 

@@ -19,14 +19,14 @@ import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import * as CANNON from "cannon";
 import { createPhysicBox, physicWorld } from "@/cannon";
 import { createTorch } from "@/uses";
-import { NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates";
+import { NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates.ts";
 import { state } from "@/state.ts";
 import { HealthBar } from "./healthbar.ts";
-import { HeroisProps } from "@/types";
+import { HeroProps } from "@/types";
 
 type Animations = Partial<Record<animationType, Group<Object3DEventMap>>>;
 
-type ElementsHerois = {
+type ElementsHero = {
   leftArm: Object3D<Object3DEventMap>;
   leftHand: Object3D<Object3DEventMap>;
   torch: Mesh<SphereGeometry, MeshBasicMaterial, Object3DEventMap>;
@@ -46,9 +46,9 @@ interface StateAction extends ReturnType<typeof action> {
 }
 
 const PHYSIC_Y = 5;
-export class Herois {
+export class Hero {
   private target: Object3D<Object3DEventMap>;
-  private elementsHerois: ElementsHerois;
+  private elementsHero: ElementsHero;
   private stateMachine: any;
   private mixer: AnimationMixer;
   private healthBar;
@@ -58,9 +58,9 @@ export class Herois {
   readonly decceleration = new Vector3(-0.0005, -0.0001, -5.0);
   readonly acceleration = new Vector3(1, 0.25, 50.0);
   readonly velocity = new Vector3(0, 0, 0);
-  readonly props: HeroisProps;
+  readonly props: HeroProps;
 
-  constructor(props: HeroisProps) {
+  constructor(props: HeroProps) {
     const model = loads.model[props.type];
 
     if (!model) {
@@ -73,7 +73,7 @@ export class Herois {
     this.animations = initAnimations(this.target, this.mixer);
     // console.log(this.target)
     this.physicBody = initPhysicBody(props.mass);
-    this.elementsHerois = initElementsHerois(this.target);
+    this.elementsHero = initElementsHero(this.target);
     this.stateMachine = initStateMashine(this.animations);
     this.healthBar = HealthBar(props, this.target);
     correctionPhysicBody(this.physicBody, this.target);
@@ -142,12 +142,12 @@ export class Herois {
 
     // обновляем позицию руки с факелом,
     // чтобы она не зависела от текущей анимации
-    if (this.elementsHerois.leftArm)
-      this.elementsHerois.leftArm.rotation.x = Math.PI * -0.3;
+    if (this.elementsHero.leftArm)
+      this.elementsHero.leftArm.rotation.x = Math.PI * -0.3;
   }
 }
 
-function initTarget(model: Group<Object3DEventMap>, props: HeroisProps) {
+function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
   const target = clone(model);
   target.userData.id = props.id;
   Object.assign(target.position, props.position);
@@ -170,9 +170,7 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroisProps) {
   });
   return target;
 }
-function initElementsHerois(
-  target: Object3D<Object3DEventMap>
-): ElementsHerois {
+function initElementsHero(target: Object3D<Object3DEventMap>): ElementsHero {
   const leftArm = target.getObjectByName("ShoulderL")!;
   const leftHand = target.getObjectByName("Fist1L")!;
   const torch = createTorch();
