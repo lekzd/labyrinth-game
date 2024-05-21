@@ -55,8 +55,6 @@ export class Weapon {
 
     this.cube = initCube();
     this.mesh.add(this.cube);
-
-    correctionPhysicBody(this.physicBody, this.mesh);
   }
   update(time: number) {
     const obj = state.objects[this.props.id];
@@ -97,18 +95,6 @@ export class Weapon {
       });
     }
   }
-}
-
-function correctionPhysicBody(
-  physicBody: CANNON.Body,
-  target: THREE.Object3D<Object3DEventMap>
-) {
-  physicBody.position.set(
-    target.position.x,
-    target.position.y + PHYSIC_Y,
-    target.position.z
-  );
-  physicBody.quaternion.copy(target.quaternion);
 }
 
 const weaponMaterial = new GlowMaterial({ type: "opaque", opacity: 0.5 });
@@ -160,6 +146,6 @@ function initPhysicBody() {
   const physicRadius = 4;
   return createPhysicBox(
     { x: physicRadius, y: PHYSIC_Y * 2, z: physicRadius },
-    { mass: 0 }
+    { mass: 0, type: CANNON.Body.STATIC }
   );
 }

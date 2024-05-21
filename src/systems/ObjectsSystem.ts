@@ -42,6 +42,9 @@ export const ObjectsSystem = () => {
         if (!object.physicBody) {
           throw Error("ObjectsSystem: physical object should have physicBody!");
         }
+
+        object.physicBody.id = `${object.props.type}:${object.physicBody.id}`
+
         physicObjects.set(object.props.id, object);
         physicWorld.addBody(object.physicBody);
       }

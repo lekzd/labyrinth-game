@@ -8,6 +8,7 @@ import { createInteractivitySign } from "@/utils/interactivitySign.ts";
 import { createPhysicBox } from "@/cannon";
 import { systems } from "@/systems";
 import { DynamicObject } from "@/types";
+import { state } from "@/state";
 
 const PHYSIC_Y = 4;
 export class PuzzleHandler {
@@ -38,10 +39,19 @@ export class PuzzleHandler {
 
     this.cube = initCube();
     this.mesh.add(this.cube);
-
-    correctionPhysicBody(this.physicBody, this.mesh);
   }
-  update(time: number) {}
+  update(time: number) {
+    const obj = state.objects[this.props.id];
+    this.setPosition(obj.position);
+  }
+
+  setPosition(position: Partial<THREE.Vector3Like>) {
+    this.physicBody.position.set(
+      position.x || this.physicBody.position.x,
+      position.y ? position.y + this.physicY : this.physicBody.position.y,
+      position.z || this.physicBody.position.z
+    );
+  }
 
   interactWith() {
     const { input } = systems.inputSystem;
@@ -70,18 +80,6 @@ export class PuzzleHandler {
       this.busyOnInteraction = true;
     }
   }
-}
-
-function correctionPhysicBody(
-  physicBody: CANNON.Body,
-  target: THREE.Object3D<Object3DEventMap>
-) {
-  physicBody.position.set(
-    target.position.x,
-    target.position.y + PHYSIC_Y,
-    target.position.z
-  );
-  physicBody.quaternion.copy(target.quaternion);
 }
 
 function initCube() {

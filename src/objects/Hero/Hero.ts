@@ -17,7 +17,7 @@ import {
 import { animationType, loads } from "@/loader";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import * as CANNON from "cannon";
-import { createPhysicBox, physicWorld } from "@/cannon";
+import { createPhysicBox } from "@/cannon";
 import { Torch } from "@/uses";
 import { NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates.ts";
 import { state } from "@/state.ts";
@@ -77,7 +77,6 @@ export class Hero {
     this.stateMachine = initStateMashine(this.animations);
     this.healthBar = HealthBar(props, this.target);
     correctionPhysicBody(this.physicBody, this.target);
-    physicWorld.addBody(this.physicBody);
   }
 
   get id() {

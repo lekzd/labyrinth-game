@@ -93,8 +93,6 @@ onUpdate((next) => {
     });
   });
 
-  console.log("roomObjects", roomObjects);
-
   state.setState({
     staticGrid,
     rooms,
