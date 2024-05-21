@@ -15,6 +15,9 @@ dist-ssr
 .yarn/cache
 .yarn/unplugged
 .yarn/install-state.gz
+yarn.lock
+
+package-lock.json
 
 .pnp.cjs
 .pnp.loader.mjs
