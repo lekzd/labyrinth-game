@@ -15,6 +15,7 @@ import { createTree } from "./tree";
 import { assign } from "@/utils/assign";
 import { createPhysicBox, physicWorld } from "@/cannon";
 import { createStone } from "./stone";
+import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { createStem } from "./stem";
 
 export class Room {
@@ -88,6 +89,8 @@ function initFloorMesh(props: RoomConfig) {
   return floorMesh;
 }
 
+const tree = Array(10).fill(null).map(() => createTree());
+
 function initTreesPhysicBodies(
   props: RoomConfig,
   mesh: Object3D<Object3DEventMap>
@@ -101,7 +104,7 @@ function initTreesPhysicBodies(
     const y = baseY + frandom(-0.5, 0.5);
 
     if (props.tiles[i] === Tiles.Wall) {
-      const cube = createTree();
+      const cube = i % 5 === 0 ? clone(tree[random(0, 9)]) : createStone();
 
       assign(cube.position, { x: x * scale, z: y * scale });
 

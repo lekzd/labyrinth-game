@@ -6,6 +6,7 @@ const loader = new FBXLoader();
 
 export enum texturesType {
   tree = 'Tree.png',
+  foliage = 'foliage.png',
   grass = 'grass.webp',
   runic_cube = 'runic_2.png',
   stone_wall_map = 'stone_wall_map.jpg',
