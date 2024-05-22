@@ -105,6 +105,8 @@ export const render = (state: State) => {
   const root = ReactDOM.createRoot(document.getElementById("react-root")!);
   root.render(React.createElement(App));
 
+  physicWorld.addBody(createGroundBody());
+
   const hemiLight = new THREE.HemisphereLight(0xffffff, 0x8d8d8d, 0.1);
   hemiLight.position.set(0, 20, 0);
   hemiLight.updateMatrix();
@@ -283,7 +285,5 @@ export const items = {
     instancedMesh.name = "Scene Border Pines";
 
     scene.add(instancedMesh);
-
-    physicWorld.addBody(createGroundBody());
   },
 };

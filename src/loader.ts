@@ -12,6 +12,7 @@ export enum texturesType {
   stone_wall_bump = 'stone_wall_bump.jpg',
   wood_gate_map = 'wood_gate_map.jpg',
   wood_gate_bump = 'wood_gate_bump.jpg',
+  ground_forest_bump = 'ground_forest_bump.jpg',
 }
 
 export enum animationType {

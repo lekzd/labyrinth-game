@@ -3,6 +3,7 @@ import { Tiles } from "@/config";
 import { frandom } from "@/utils/random";
 import { makeCtx } from "@/utils/makeCtx";
 import { RoomConfig } from "@/types";
+import { loads } from "@/loader";
 
 const BACKGROUND_COLOR = `rgb(255,0,0)`;
 
@@ -48,9 +49,15 @@ export const createRoomTerrainCanvas = (
 export const createFloorMaterial = (room: RoomConfig) => {
   const canvas = createRoomTerrainCanvas(room, 5, 3);
   const texture = new THREE.CanvasTexture(canvas);
+  const normalMap = loads.texture['ground_forest_bump.jpg']!.clone()
+  normalMap.repeat = new THREE.Vector2(room.width, room.height)
+  normalMap.wrapS = THREE.RepeatWrapping
+  normalMap.wrapT = THREE.RepeatWrapping
 
   return new THREE.MeshPhongMaterial({
     map: texture,
+    normalMap,
+    normalMapType: 1,
     color: 0xffffff,
     fog: true,
   });
