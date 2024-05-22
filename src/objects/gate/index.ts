@@ -5,6 +5,7 @@ import { state } from "@/state";
 import { systems } from "@/systems";
 import { Tween } from "@tweenjs/tween.js";
 import { loads } from "@/loader";
+import { textureRepeat } from "@/utils/textureRepeat";
 
 const PHYSIC_Y = 0;
 export class Gate {
@@ -14,7 +15,8 @@ export class Gate {
   readonly physicY = PHYSIC_Y;
 
   private busyOnInteraction = false;
-  private door: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
+  private leftDoor: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
+  private rightDoor: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
 
   closed = true;
   doorShape: CANNON.Box;
@@ -27,14 +29,21 @@ export class Gate {
     left.position.x = -10
     this.mesh.add(left)
 
-    this.door = new Group()
+    this.leftDoor = new Mesh()
+    const leftDoorMesh = initMesh(6, 20, 1);
+    leftDoorMesh.position.x = -2
+    this.leftDoor.position.x = 5
 
-    const doorMesh = initMesh(12, 20, 2.5);
-    doorMesh.position.x = -5
-    this.door.position.x = 5
+    this.leftDoor.add(leftDoorMesh)
+    this.mesh.add(this.leftDoor)
 
-    this.door.add(doorMesh)
-    this.mesh.add(this.door)
+    this.rightDoor = new Mesh()
+    const rightDoorMesh = initMesh(6, 20, 1);
+    rightDoorMesh.position.x = 2
+    this.rightDoor.position.x = -5
+
+    this.rightDoor.add(rightDoorMesh)
+    this.mesh.add(this.rightDoor)
 
     const right = initTower(6, 30, 10);
     right.position.x = 10
@@ -80,12 +89,16 @@ export class Gate {
     const { input } = systems.inputSystem;
 
     if (!this.busyOnInteraction && input.interact) {
-      new Tween(this.door.rotation)
-        .to({ y: this.closed ? (Math.PI / 2) : 0 }, 700)
+      new Tween(this.leftDoor.rotation)
+        .to({ y: this.closed ? (Math.PI / 2) : 0 }, 300)
         .onComplete(() => {
           this.closed = !this.closed
           this.doorShape.collisionResponse = this.closed
         })
+        .start();
+
+      new Tween(this.rightDoor.rotation)
+        .to({ y: this.closed ? (-Math.PI / 2) : 0 }, 300)
         .start();
 
       setTimeout(() => {
@@ -102,13 +115,14 @@ function initMesh(x: number, y: number, z: number) {
     y,
     z,
   );
+
   return new Mesh(
     boxGeometry,
     new MeshPhongMaterial({
       color: 0x999999,
       fog: true,
-      map: loads.texture["wood_gate_map.jpg"],
-      normalMap: loads.texture["wood_gate_bump.jpg"],
+      map: textureRepeat(loads.texture["wood_gate_map.jpg"]!, 10, 10, x, y),
+      normalMap: textureRepeat(loads.texture["wood_gate_bump.jpg"]!, 10, 10, x, y),
     })
   );
 }
