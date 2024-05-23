@@ -2,7 +2,7 @@ import vert from './vertex.glsl'
 // import fragmentOpaqueColorShader from './opaqueColor.frag'
 import CustomShaderMaterial from 'three-custom-shader-material/vanilla'
 import {loads} from "@/loader.ts";
-import { Color, FrontSide, MeshStandardMaterial, RepeatWrapping, Vector2 } from 'three';
+import { Color, FrontSide, MeshStandardMaterial, RepeatWrapping, Texture, Vector2 } from 'three';
 import { frandom } from '@/utils/random';
 
 
@@ -22,11 +22,18 @@ const animate = () => {
 animate()
 
 export const createLeavesMaterial = () => {
-  const alphaMap = loads.texture["foliage.png"]!.clone()
+  const prepareTexture = (texture: Texture, size: number) => {
+    const map = texture.clone()
 
-  alphaMap.wrapS = RepeatWrapping
-  alphaMap.wrapT = RepeatWrapping
-  alphaMap.repeat = new Vector2(3, 3)
+    map.wrapS = RepeatWrapping
+    map.wrapT = RepeatWrapping
+    map.repeat = new Vector2(size, size)
+
+    return map
+  }
+
+  const alphaMap = prepareTexture(loads.texture["foliage.png"]!, 3)
+  const map = prepareTexture(loads.texture['Hedge_001_BaseColor.jpg']!, 2)
 
   const colorComponents = [
     Math.floor(63 * frandom(0.5, 1.5)),
@@ -36,7 +43,8 @@ export const createLeavesMaterial = () => {
 
   return new CustomShaderMaterial({
     alphaMap,
-    alphaTest: 0.5,
+    map,
+    alphaTest: 0.8,
     baseMaterial: MeshStandardMaterial,
     color: new Color(`rgb(${colorComponents.join()})`),
     uniforms: uniforms,
