@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import {createLeavesMaterial} from "@/materials/leaves";
 import { frandom } from "@/utils/random";
+import { loads } from "@/loader";
 
 // Function to create a curved branch that straightens out
 function createCurvedBranch(start, mid1, mid2, end, segments, radius) {
@@ -28,7 +29,24 @@ function createCurvedBranch(start, mid1, mid2, end, segments, radius) {
 
   positionAttribute.needsUpdate = true;
 
-  const material = new THREE.MeshPhongMaterial({ color: 0x8B4513, side: 2 });
+  const prepareTexture = (texture: THREE.Texture) => {
+    const map = texture.clone()
+    map.rotation = Math.PI / 2
+    map.wrapS = THREE.RepeatWrapping
+    map.wrapT = THREE.RepeatWrapping
+    map.repeat = new THREE.Vector2(0.5, 2)
+
+    return map
+  }
+
+  const material = new THREE.MeshPhongMaterial({
+    color: 0x704f37,
+    side: 2,
+    shininess: 1,
+    map: prepareTexture(loads.texture["Bark_06_basecolor.jpg"]!),
+    normalMap: prepareTexture(loads.texture["Bark_06_normal.jpg"]!),
+    normalScale: new THREE.Vector2(5, 5)
+  });
   return new THREE.Mesh(geometry, material);
 }
 

@@ -14,6 +14,8 @@ export enum texturesType {
   wood_gate_map = 'wood_gate_map.jpg',
   wood_gate_bump = 'wood_gate_bump.jpg',
   ground_forest_bump = 'ground_forest_bump.jpg',
+  bark_base = 'Bark_06_basecolor.jpg',
+  bark_normal = 'Bark_06_normal.jpg',
 }
 
 export enum animationType {
