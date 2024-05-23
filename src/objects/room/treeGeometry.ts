@@ -41,7 +41,7 @@ function createCurvedBranch(start, mid1, mid2, end, segments, radius) {
 
   const material = new THREE.MeshPhongMaterial({
     color: 0x704f37,
-    side: 2,
+    side: 0,
     shininess: 1,
     map: prepareTexture(loads.texture["Bark_06_basecolor.jpg"]!),
     normalMap: prepareTexture(loads.texture["Bark_06_normal.jpg"]!),
@@ -55,8 +55,6 @@ function createFoliage(radius, height = 2) {
 
   const geometry = new THREE.IcosahedronGeometry(radius + 2, 2);
   const foliage = new THREE.Mesh(geometry, createLeavesMaterial());
-
-  // console.log(foliage, foliage.inject) // createLeavesMaterial()
 
   foliage.scale.y = height; // Увеличиваем высоту кроны
 

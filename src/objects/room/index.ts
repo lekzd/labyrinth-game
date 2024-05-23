@@ -113,7 +113,7 @@ function initTreesPhysicBodies(
     const y = baseY + frandom(-0.5, 0.5);
 
     if (props.tiles[i] === Tiles.Wall) {
-      const cube = i % 5 === 0 ? clone(getTreeMemoised(random(0, 10))) : createStone();
+      const cube = i % 3 === 0 ? clone(getTreeMemoised(random(0, 10))) : createStone();
 
       assign(cube.position, { x: x * scale, z: y * scale });
 
