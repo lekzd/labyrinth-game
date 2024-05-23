@@ -116,16 +116,6 @@ onUpdate((next) => {
   });
 });
 
-state.listen((next, params) => {
-  if (next.rooms || next.staticGrid) {
-    items.roomChunks({ ...state, ...next });
-  }
-
-  if (next.objects) addObjects(next.objects);
-
-  if (!params?.server) send(next);
-});
-
 const x = (COLLS * scale) >> 1;
 const z = (ROWS * scale) >> 1;
 const angle = (0 / 3) * (Math.PI * 2);
@@ -145,6 +135,16 @@ export const currentPlayer = createPlayerObject(objectHero.id);
 Promise.all(loaders).then(() => {
   console.log("end");
   render(state);
+
+  state.listen((next, params) => {
+    if (next.rooms || next.staticGrid) {
+      items.roomChunks({ ...state, ...next });
+    }
+  
+    if (next.objects) addObjects(next.objects);
+  
+    if (!params?.server) send(next);
+  });
 
   state.setState({
     objects: {

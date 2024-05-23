@@ -1,6 +1,7 @@
 import { RoomConfig } from "@/types";
 import { Tiles } from "@/config";
 import {
+  Group,
   Mesh,
   MeshPhongMaterial,
   Object3D,
@@ -89,7 +90,15 @@ function initFloorMesh(props: RoomConfig) {
   return floorMesh;
 }
 
-const tree = Array(10).fill(null).map(() => createTree());
+const treesCache = new Map<number, Group<Object3DEventMap>>()
+
+const getTreeMemoised = (n: number) => {
+  if (!treesCache.get(n)) {
+    treesCache.set(n, createTree())
+  }
+
+  return treesCache.get(n)!
+}
 
 function initTreesPhysicBodies(
   props: RoomConfig,
@@ -104,7 +113,7 @@ function initTreesPhysicBodies(
     const y = baseY + frandom(-0.5, 0.5);
 
     if (props.tiles[i] === Tiles.Wall) {
-      const cube = i % 5 === 0 ? clone(tree[random(0, 9)]) : createStone();
+      const cube = i % 5 === 0 ? clone(getTreeMemoised(random(0, 10))) : createStone();
 
       assign(cube.position, { x: x * scale, z: y * scale });
 
