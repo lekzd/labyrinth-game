@@ -29,7 +29,7 @@ export const createLeavesMaterial = () => {
   alphaMap.repeat = new Vector2(3, 3)
 
   const colorComponents = [
-    Math.floor(63 * frandom(0.5, 2.5)),
+    Math.floor(63 * frandom(0.5, 1.5)),
     Math.floor(109 * frandom(0.5, 1.0)),
     Math.floor(33 * frandom(0.5, 1.5)),
   ]

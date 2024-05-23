@@ -1,19 +1,41 @@
 import * as THREE from "three";
 import {createLeavesMaterial} from "@/materials/leaves";
+import { frandom } from "@/utils/random";
 
 // Function to create a curved branch that straightens out
-function createCurvedBranch(start, mid1, mid2, end, segments) {
+function createCurvedBranch(start, mid1, mid2, end, segments, radius) {
+  const jittering = radius / 5
   const curve = new THREE.CatmullRomCurve3([start, mid1, mid2, end]);
-  const tubeGeometry = new THREE.TubeGeometry(curve, segments, 0.5, 8, false);
-  const material = new THREE.MeshBasicMaterial({ color: 0x8B4513 });
-  return new THREE.Mesh(tubeGeometry, material);
+  const geometry = new THREE.TubeGeometry(curve, segments, radius, 6, false);
+
+  const positionAttribute = geometry.getAttribute('position');
+
+  // Модификация вершин геометрии для создания неровной поверхности
+  for (let i = 0; i < positionAttribute.count; i++) {
+    // Получаем координаты вершины
+    let x = positionAttribute.getX(i);
+    let y = positionAttribute.getY(i);
+    let z = positionAttribute.getZ(i);
+
+    // Сдвигаем вершину в случайных направлениях
+    x += frandom(-jittering, jittering);
+    y += frandom(-jittering, jittering);
+    z += frandom(-jittering, jittering);
+
+    // Устанавливаем новые координаты вершины
+    positionAttribute.setXYZ(i, x, y, z);
+  }
+
+  positionAttribute.needsUpdate = true;
+
+  const material = new THREE.MeshPhongMaterial({ color: 0x8B4513, side: 2 });
+  return new THREE.Mesh(geometry, material);
 }
 
 // Function to create a foliage sphere
 function createFoliage(radius, height = 2) {
 
   const geometry = new THREE.IcosahedronGeometry(radius + 2, 2);
-  const material = new THREE.MeshBasicMaterial({ color: 0x00FF00, transparent: true, opacity: 0.1 });
   const foliage = new THREE.Mesh(geometry, createLeavesMaterial());
 
   // console.log(foliage, foliage.inject) // createLeavesMaterial()
@@ -30,7 +52,8 @@ export function createBranch(level, childBranches, length, radius) {
   const mid1 = new THREE.Vector3(0, length * 0.3, 2);   // Curved part
   const mid2 = new THREE.Vector3(0, length * 0.7, 0);   // Straightening transition
   const end = new THREE.Vector3(0, length, 0);          // Straight part
-  const mainBranch = createCurvedBranch(start, mid1, mid2, end, 10);
+  const mainBranch = createCurvedBranch(start, mid1, mid2, end, 6, (level * level) / 5);
+  mainBranch.rotation.y = Math.PI * frandom(0, 2)
   branchGroup.add(mainBranch);
 
   if (level > 0) {
