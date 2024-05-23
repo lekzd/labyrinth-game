@@ -3,6 +3,7 @@ import vert from './vertex.glsl'
 import CustomShaderMaterial from 'three-custom-shader-material/vanilla'
 import {loads} from "@/loader.ts";
 import { Color, FrontSide, MeshStandardMaterial, RepeatWrapping, Vector2 } from 'three';
+import { frandom } from '@/utils/random';
 
 
 const uniforms = {
@@ -27,11 +28,17 @@ export const createLeavesMaterial = () => {
   alphaMap.wrapT = RepeatWrapping
   alphaMap.repeat = new Vector2(3, 3)
 
+  const colorComponents = [
+    Math.floor(63 * frandom(0.5, 2.5)),
+    Math.floor(109 * frandom(0.5, 1.0)),
+    Math.floor(33 * frandom(0.5, 1.5)),
+  ]
+
   return new CustomShaderMaterial({
     alphaMap,
     alphaTest: 0.5,
     baseMaterial: MeshStandardMaterial,
-    color: new Color('#3f6d21'),
+    color: new Color(`rgb(${colorComponents.join()})`),
     uniforms: uniforms,
     vertexShader: vert,
     shadowSide: FrontSide,
