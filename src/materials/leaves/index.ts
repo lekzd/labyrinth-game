@@ -10,7 +10,7 @@ const uniforms = {
   u_effectBlend: { value: 1.0 },
   u_inflate: { value: 2.5 },
   u_scale: { value: 0.8 },
-  u_windSpeed: { value: 1.0 },
+  u_windSpeed: { value: 2.0 },
   u_windTime: { value: 0.0 },
 }
 
