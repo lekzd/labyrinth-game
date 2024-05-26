@@ -1,6 +1,7 @@
 import { RoomConfig } from "@/types";
 import { Tiles } from "@/config";
 import {
+  Group,
   Mesh,
   MeshPhongMaterial,
   Object3D,
@@ -11,11 +12,12 @@ import { scale } from "@/state.ts";
 import { systems } from "@/systems";
 import { createFloorMaterial } from "./floorMaterial";
 import { frandom, random } from "@/utils/random";
-import { createTree } from "./tree";
 import { assign } from "@/utils/assign";
 import { createPhysicBox, physicWorld } from "@/cannon";
 import { createStone } from "./stone";
+import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { createStem } from "./stem";
+import { createTree } from "./treeGeometry";
 
 export class Room {
   private treesPhysicBodies: CANNON.Body[];
@@ -88,6 +90,16 @@ function initFloorMesh(props: RoomConfig) {
   return floorMesh;
 }
 
+const treesCache = new Map<number, Mesh>()
+
+const getTreeMemoised = (n: number) => {
+  if (!treesCache.get(n)) {
+    treesCache.set(n, createTree())
+  }
+
+  return treesCache.get(n)!
+}
+
 function initTreesPhysicBodies(
   props: RoomConfig,
   mesh: Object3D<Object3DEventMap>
@@ -96,14 +108,18 @@ function initTreesPhysicBodies(
 
   for (let i = 0; i < props.tiles.length; i++) {
     const baseX = i % props.width;
-    const x = baseX + frandom(-0.5, 0.5);
+    const x = baseX + frandom(-0.2, 0.2);
     const baseY = Math.floor(i / props.width);
-    const y = baseY + frandom(-0.5, 0.5);
+    const y = baseY + frandom(-0.2, 0.2);
 
     if (props.tiles[i] === Tiles.Wall) {
-      const cube = createTree();
+      const isTree = i % 3 === 0
+      const cube = isTree ? clone(getTreeMemoised(random(0, 10))) : createStone();
 
       assign(cube.position, { x: x * scale, z: y * scale });
+      if (isTree) {
+        cube.rotateY(frandom(0, 180))
+      }
 
       const physicY = 20;
       const physicRadius = 5;
@@ -122,16 +138,7 @@ function initTreesPhysicBodies(
 
       mesh.add(cube);
 
-      if (random(0, 2) === 0) {
-        const stone = createStone();
-        assign(stone.position, {
-          x: (baseX + frandom(-0.5, 0.5)) * scale,
-          z: (baseY + frandom(-0.5, 0.5)) * scale,
-        });
-        mesh.add(stone);
-      }
-
-      if (random(0, 10) === 0) {
+      if (isTree && random(0, 10) === 0) {
         const count = random(1, 5);
 
         for (let i = 0; i < count; i++) {

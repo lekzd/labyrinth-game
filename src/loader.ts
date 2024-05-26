@@ -6,6 +6,7 @@ const loader = new FBXLoader();
 
 export enum texturesType {
   tree = 'Tree.png',
+  foliage = 'foliage.png',
   grass = 'grass.webp',
   runic_cube = 'runic_2.png',
   stone_wall_map = 'stone_wall_map.jpg',
@@ -13,6 +14,9 @@ export enum texturesType {
   wood_gate_map = 'wood_gate_map.jpg',
   wood_gate_bump = 'wood_gate_bump.jpg',
   ground_forest_bump = 'ground_forest_bump.jpg',
+  bark_base = 'Bark_06_basecolor.jpg',
+  bark_normal = 'Bark_06_normal.jpg',
+  hedge = 'Hedge_001_BaseColor.jpg',
 }
 
 export enum animationType {

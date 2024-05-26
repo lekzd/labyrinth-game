@@ -41,6 +41,7 @@
     "sparse-octree": "^7.1.8",
     "styled-components": "^6.1.11",
     "three": "^0.164.1",
+    "three-custom-shader-material": "^5.4.0",
     "ws": "^8.17.0"
   }
 }

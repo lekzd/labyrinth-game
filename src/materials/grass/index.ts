@@ -26,12 +26,14 @@ type Uniforms = {
   }
 }
 
-export const createLeavesMaterial = (uniforms: Uniforms) => {
-  return new THREE.ShaderMaterial({
-    vertexShader,
-    fragmentShader,
-    uniforms,
-    side: THREE.DoubleSide,
-    fog: true
-  });
+export class GrassMaterial extends THREE.ShaderMaterial {
+  constructor(uniforms: Uniforms) {
+    super({
+      vertexShader,
+      fragmentShader,
+      uniforms,
+      side: THREE.DoubleSide,
+      fog: true
+    })
+  }
 }
