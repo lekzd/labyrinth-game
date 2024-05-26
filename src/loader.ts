@@ -5,7 +5,6 @@ const textureLoader = new THREE.TextureLoader()
 const loader = new FBXLoader();
 
 export enum texturesType {
-  tree = 'Tree.png',
   foliage = 'foliage.png',
   grass = 'grass.webp',
   runic_cube = 'runic_2.png',
@@ -54,32 +53,7 @@ export enum weaponType {
   // crossbow = 'crossbow',
 }
 
-export enum worldType {
-  Tree_001 = 'Tree_001',
-  Tree_002 = 'Tree_002',
-  Tree_003 = 'Tree_003',
-  Tree_004 = 'Tree_004',
-  Tree_005 = 'Tree_005',
-  Tree_006 = 'Tree_006',
-  Tree_007 = 'Tree_007',
-  Tree_008 = 'Tree_008',
-  Tree_009 = 'Tree_009',
-  Tree_010 = 'Tree_010',
-  Tree_011 = 'Tree_011',
-  Tree_012 = 'Tree_012',
-  Tree_013 = 'Tree_013',
-  Tree_014 = 'Tree_014',
-  Tree_015 = 'Tree_015',
-  Tree_016 = 'Tree_016',
-  Tree_017 = 'Tree_017',
-  Tree_018 = 'Tree_018',
-  Tree_019 = 'Tree_019',
-  Tree_020 = 'Tree_020',
-  Tree_021 = 'Tree_021',
-}
-
 type ItemsType = {
-  world: Partial<Record<worldType, THREE.Group<THREE.Object3DEventMap>>>
   model: Partial<Record<modelType, THREE.Group<THREE.Object3DEventMap>>>
   weapon: Partial<Record<modelType, THREE.Group<THREE.Object3DEventMap>>>
   animation: Partial<Record<animationType, THREE.Group<THREE.Object3DEventMap>>>
@@ -87,7 +61,6 @@ type ItemsType = {
 }
 
 export const loads: ItemsType = {
-  world: {},
   weapon: {},
   model: {},
   animation: {},
@@ -128,7 +101,6 @@ const load = (
 
 export const loaders = [
   load(textureLoader, texturesType, 'texture'),
-  load(loader, worldType, 'world', '.fbx'),
   load(loader, modelType, 'model', '.fbx'),
   load(loader, animationType, 'animation', '.fbx'),
   load(loader, weaponType, 'weapon', '.fbx'),

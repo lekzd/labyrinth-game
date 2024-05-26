@@ -3,12 +3,12 @@ import * as TWEEN from "@tweenjs/tween.js";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import Stats from "@/utils/Stats.ts";
-import { Camera } from "./objects/Hero/camera.ts";
+import { Camera } from "./objects/hero/camera.ts";
 import { scale, State } from "./state.ts";
 import { scene } from "./scene.ts";
 import { ObjectType, RoomConfig } from "@/types";
 import { createGroundBody, physicWorld } from "./cannon.ts";
-import { KeyboardCharacterController } from "./objects/Hero/controller.ts";
+import { KeyboardCharacterController } from "./objects/hero/controller.ts";
 import { currentPlayer } from "./main.ts";
 import { systems } from "./systems/index.ts";
 import PolygonClipping from "polygon-clipping";
@@ -138,11 +138,11 @@ export const render = (state: State) => {
    * Рендерит рекурсивно сцену, пробрасывая в подписчиков (персонаж, камера)
    * тайминг для апдейта сцены
    * */
-  let prevTime = null;
+  let prevTime = -1;
 
   const renderLoop = () => {
     requestAnimationFrame((t) => {
-      if (prevTime === null) prevTime = t;
+      if (prevTime === -1) prevTime = t;
 
       renderLoop();
 
