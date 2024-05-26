@@ -53,12 +53,15 @@ const PreviewCanvas = ({ rows, colls }) => {
     ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    state.staticGrid.forEach((tile, i) => {
-      const x = (i % colls) * tileSize;
-      const y = Math.floor(i / colls) * tileSize;
-      ctx.fillStyle = getColor(tile);
-      ctx.fillRect(x, y, tileSize, tileSize);
-    });
+    state.rooms.forEach((room) => {
+      room.tiles.forEach((tile, i) => {
+        const x = room.x + (i % state.colls) * tileSize;
+        const y = room.y + Math.floor(i / state.colls) * tileSize;
+    
+        ctx.fillStyle = getColor(tile);
+        ctx.fillRect(x, y, tileSize, tileSize);
+      })
+    })
   }, [rows, colls, ref]);
 
   return <canvas ref={ref} />;

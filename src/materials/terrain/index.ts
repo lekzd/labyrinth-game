@@ -33,18 +33,20 @@ export const createTerrainCanvas = (
   ctx.fillStyle = BACKGROUND_COLOR;
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-  state.staticGrid.forEach((tile, i) => {
-    const x = (i % state.colls) * tileSize;
-    const y = Math.floor(i / state.colls) * tileSize;
-
-    ctx.fillStyle = getColor(tile);
-    ctx.fillRect(
-      x - Math.round(tileSize / 2),
-      y - Math.round(tileSize / 2),
-      tileSize,
-      tileSize
-    );
-  });
+  state.rooms.forEach((room) => {
+    room.tiles.forEach((tile, i) => {
+      const x = room.x + (i % state.colls) * tileSize;
+      const y = room.y + Math.floor(i / state.colls) * tileSize;
+  
+      ctx.fillStyle = getColor(tile);
+      ctx.fillRect(
+        x - Math.round(tileSize / 2),
+        y - Math.round(tileSize / 2),
+        tileSize,
+        tileSize
+      );
+    })
+  })
 
   return ctx.canvas;
 };

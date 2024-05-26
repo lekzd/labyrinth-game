@@ -4,7 +4,7 @@ import { Tiles } from "@/config";
 import { random } from "@/utils/random";
 import { shuffle } from "@/utils/shuffle";
 import { some } from "@/utils/some";
-import { drawRect, drawTiles, range } from "./utils";
+import { drawRect, range } from "./utils";
 
 const EXITS = [
   Tiles.NorthExit,
@@ -146,17 +146,7 @@ export const generateRooms = ({ state, ROOM_SIZE }: GeneratorConfig) => {
     actions: [Tiles.NorthExit, Tiles.EastExit, Tiles.SouthExit, Tiles.WestExit],
   });
 
-  const { staticGrid, rooms } = state;
-
-  drawTiles(
-    staticGrid,
-    roomStartX,
-    roomStartY,
-    centralRoom.width,
-    centralRoom.height,
-    state.colls,
-    centralRoom.tiles
-  );
+  const { rooms } = state;
 
   rooms.push(centralRoom);
 
@@ -310,20 +300,7 @@ export const generateRooms = ({ state, ROOM_SIZE }: GeneratorConfig) => {
     rooms.push(...roomsSequence);
   }
 
-  rooms.forEach((room) => {
-    drawTiles(
-      staticGrid,
-      room.x,
-      room.y,
-      room.width,
-      room.height,
-      state.colls,
-      room.tiles
-    );
-  });
-
   return {
-    staticGrid,
     rooms,
   };
 };

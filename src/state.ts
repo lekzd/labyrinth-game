@@ -1,6 +1,5 @@
 import { modelType } from "./loader";
 import { DynamicObject, Player, RoomConfig } from "@/types";
-import { Tiles } from "@/config";
 import { something } from "./utils/something";
 import { NpcAnimationStates } from "./objects/Hero/NpcAnimationStates.ts";
 import { mergeDeep } from "./utils/mergeDeep.ts";
@@ -15,7 +14,6 @@ type setState = (
 export type State = {
   rows: number;
   colls: number;
-  staticGrid: Tiles[];
   rooms: RoomConfig[];
   objects: Record<string, DynamicObject>;
   players: Record<string, Player>;
@@ -32,8 +30,6 @@ export const initState = (initialState: Partial<State>): State => {
     rooms = [],
     players = {},
   } = initialState;
-
-  const staticGrid = Array.from<number>({ length: rows * colls }).fill(-1);
 
   const subscribers = new Set();
 
@@ -57,7 +53,6 @@ export const initState = (initialState: Partial<State>): State => {
     ...initialState,
     rows,
     colls,
-    staticGrid,
     objects,
     players,
     rooms,

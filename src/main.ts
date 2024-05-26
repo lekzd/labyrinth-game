@@ -53,7 +53,7 @@ onUpdate((next) => {
     );
   }
 
-  const { staticGrid, rooms } = generateRooms({
+  const { rooms } = generateRooms({
     state,
     ROOM_SIZE,
   });
@@ -107,7 +107,6 @@ onUpdate((next) => {
   });
 
   state.setState({
-    staticGrid,
     rooms,
     objects: [createCampfireObject(), ...heroes, ...roomObjects].reduce(
       (acc, item) => ({ ...acc, [item.id]: item }),
@@ -136,7 +135,7 @@ Promise.all(loaders).then(() => {
   render(state);
 
   state.listen((next, params) => {
-    if (next.rooms || next.staticGrid) {
+    if (next.rooms) {
       items.roomChunks({ ...state, ...next });
     }
   
