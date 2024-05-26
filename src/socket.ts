@@ -1,8 +1,12 @@
+import { updateSeed } from "./utils/random";
+
 const { protocol, search } = window.location;
 
 const host = 'channel.frontende.ru'
 const urlParams = new URLSearchParams(search);
 const channel = urlParams.get('channel') || '';
+
+updateSeed(channel)
 
 const handlers = new Map(), path = `ws${protocol === 'https:' ? 's' : ''}://${host}/ws?channel=${channel}`;
 

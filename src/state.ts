@@ -112,7 +112,7 @@ export const createHeroObject = (
 
 export const createPlayerObject = (activeObjectId: string): Player => {
   return {
-    id: `${Math.floor(Math.random() * 1e9)}`,
+    id: getId(),
     activeObjectId: `${activeObjectId}`,
   };
 };
