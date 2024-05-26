@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { loads, modelType } from "@/loader";
-import { createLeavesMaterial } from "@/materials/leavesMaterial";
+import { GrassMaterial } from "@/materials/grass";
 import { state } from "@/state";
 import { makeCtx } from "@/utils/makeCtx";
 import { createTerrainCanvas } from "@/materials/terrain";
@@ -13,7 +13,7 @@ import { frandom } from "@/utils/random";
 export const GrassSystem = () => {
   const lightsCtx = makeCtx(state.colls, state.rows);
 
-  const uniforms = {
+  const grassUniforms = {
     time: {
       value: 0,
     },
@@ -40,7 +40,7 @@ export const GrassSystem = () => {
     },
   };
 
-  const leavesMaterial = createLeavesMaterial(uniforms);
+  const grassMaterial = new GrassMaterial(grassUniforms);
 
   const getObjectGradient = (object: DynamicObject) => {
     switch (object.type) {
@@ -72,8 +72,6 @@ export const GrassSystem = () => {
   const tilesWithGrass = [Tiles.Floor, Tiles.Wall, Tiles.Tree];
 
   return {
-    lightsCtx,
-    leavesMaterial,
     update: (time: number) => {
       lightsCtx.clearRect(
         0,
@@ -103,10 +101,10 @@ export const GrassSystem = () => {
         lightsCtx.fill();
       }
 
-      uniforms.time.value += time;
-      uniforms.lightsImage.value.needsUpdate = true;
-      uniforms.textureImage.value = loads.texture["grass.webp"];
-      leavesMaterial.uniformsNeedUpdate = true;
+      grassUniforms.time.value += time;
+      grassUniforms.lightsImage.value.needsUpdate = true;
+      grassUniforms.textureImage.value = loads.texture["grass.webp"];
+      grassMaterial.uniformsNeedUpdate = true;
     },
 
     createRoomMesh: (room: RoomConfig) => {
@@ -120,7 +118,7 @@ export const GrassSystem = () => {
       const geometry = new THREE.PlaneGeometry(width, height);
       const instancedMesh = new THREE.InstancedMesh(
         geometry,
-        leavesMaterial,
+        grassMaterial,
         instanceNumber
       );
       const instanceAttribute = new THREE.InstancedBufferAttribute(

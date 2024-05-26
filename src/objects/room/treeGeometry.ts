@@ -1,9 +1,9 @@
 import * as THREE from "three";
-import {createLeavesMaterial} from "@/materials/leaves";
 import { loads } from "@/loader";
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import { jitterGeometry } from "@/utils/jitterGeometry";
 import { createMatrix } from "@/utils/createMatrix";
+import { LeavesMatetial } from "@/materials/leaves";
 
 // Function to create a curved branch that straightens out
 function createCurvedBranch(start: THREE.Vector3, mid1: THREE.Vector3, mid2: THREE.Vector3, end: THREE.Vector3, segments: number, radius: number) {
@@ -125,7 +125,7 @@ export const createTree = () => {
 
   const mesh = new THREE.Mesh(woodGeometry, material);
   
-  const foliage = new THREE.Mesh(croneGeometry, createLeavesMaterial());
+  const foliage = new THREE.Mesh(croneGeometry, new LeavesMatetial());
 
   mesh.add(foliage)
 

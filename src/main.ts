@@ -20,6 +20,7 @@ import { pickBy } from "./utils/pickBy.ts";
 import { DynamicObject } from "@/types";
 import { Tiles } from "@/config";
 import { something } from "./utils/something.ts";
+import { systems } from "./systems/index.ts";
 
 const ROOM_SIZE = 13;
 
@@ -133,7 +134,6 @@ const objectHero = createHeroObject({
 export const currentPlayer = createPlayerObject(objectHero.id);
 
 Promise.all(loaders).then(() => {
-  console.log("end");
   render(state);
 
   state.listen((next, params) => {
