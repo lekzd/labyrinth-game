@@ -26,6 +26,7 @@
     "@types/react-dom": "^18",
     "@types/three": "^0",
     "@types/ws": "^8",
+    "@vitejs/plugin-react": "^4.3.0",
     "storybook": "^8.0.10",
     "typescript": "^5.2.2",
     "vite": "^5.2.0",
