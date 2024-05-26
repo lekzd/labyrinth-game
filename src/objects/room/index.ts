@@ -138,7 +138,7 @@ function initTreesPhysicBodies(
 
       mesh.add(cube);
 
-      if (random(0, 10) === 0) {
+      if (isTree && random(0, 10) === 0) {
         const count = random(1, 5);
 
         for (let i = 0; i < count; i++) {
