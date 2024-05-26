@@ -115,6 +115,7 @@ onUpdate((next) => {
   });
 });
 
+const seed = Math.random().toString(36).substring(2, 6)
 const x = (COLLS * scale) >> 1;
 const z = (ROWS * scale) >> 1;
 const angle = (0 / 3) * (Math.PI * 2);
@@ -129,7 +130,11 @@ const objectHero = createHeroObject({
   rotation: pickBy(quaternion, ["x", "y", "z", "w"]),
 });
 
+objectHero.id = `${seed}:${objectHero.id}`
+
 export const currentPlayer = createPlayerObject(objectHero.id);
+
+currentPlayer.id = `${seed}:${currentPlayer.id}`
 
 Promise.all(loaders).then(() => {
   render(state);

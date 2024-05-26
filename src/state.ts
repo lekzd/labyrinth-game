@@ -67,9 +67,8 @@ export const ROWS = 150;
 export const COLLS = 150;
 
 let id = 0;
-const seed = Math.random().toString(36).substring(2, 6)
 
-const getId = () => `${seed}:${id++}`;
+const getId = () => `${id++}`;
 
 export const createObject = (data: Partial<DynamicObject>): DynamicObject => {
   return {
