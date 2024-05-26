@@ -5,7 +5,7 @@ export const jitterGeometry = (geometry: BufferGeometry, amount: number): Buffer
   const positionAttribute = geometry.getAttribute('position');
 
   // Модификация вершин геометрии для создания неровной поверхности
-  for (let i = 0; i < positionAttribute.count; i++) {
+  for (let i = 0; i < positionAttribute.count - 5; i++) {
     // Получаем координаты вершины
     let x = positionAttribute.getX(i);
     let y = positionAttribute.getY(i);
