@@ -136,7 +136,7 @@ Promise.all(loaders).then(() => {
 
   state.listen((next, params) => {
     if (next.rooms) {
-      items.roomChunks({ ...state, ...next });
+      items.roomChunks({ ...state });
     }
   
     if (next.objects) addObjects(next.objects);
