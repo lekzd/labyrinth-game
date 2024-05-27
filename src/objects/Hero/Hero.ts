@@ -29,6 +29,8 @@ type Animations = Partial<Record<animationType, Group<Object3DEventMap>>>;
 type ElementsHero = {
   leftArm: Object3D<Object3DEventMap>;
   leftHand: Object3D<Object3DEventMap>;
+  weaponRight: Object3D<Object3DEventMap>;
+  weaponTopPosition: Vector3;
   torch: Mesh<SphereGeometry, MeshBasicMaterial, Object3DEventMap>;
 };
 
@@ -48,11 +50,11 @@ interface StateAction extends ReturnType<typeof action> {
 const PHYSIC_Y = 5;
 export class Hero {
   private target: Object3D<Object3DEventMap>;
-  private elementsHero: ElementsHero;
   private stateMachine: any;
   private mixer: AnimationMixer;
   private healthBar;
-
+  
+  readonly elementsHero: ElementsHero;
   readonly animations: AnimationClip[];
   readonly physicBody: CANNON.Body;
   readonly decceleration = new Vector3(-0.0005, -0.0001, -5.0);
@@ -169,17 +171,44 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
   });
   return target;
 }
+
+const getWeaponVectorByName = (name: string) => {
+  switch (name) {
+    case 'Warrior_Sword':
+      return new Vector3(-0.25, 2.7, -0.1)
+    case 'WeaponR':
+      return new Vector3(-0.7, 0, 0)
+    case 'Rogue_Dagger':
+      return new Vector3(-1.0, 0.1, -0.1)
+    case 'WeaponR_end':
+      return new Vector3(0, 0, 0)
+  }
+
+  throw Error(`No vector for weapon name "${name}"`)
+}
+
 function initElementsHero(target: Object3D<Object3DEventMap>): ElementsHero {
   const leftArm = target.getObjectByName("ShoulderL")!;
   const leftHand = target.getObjectByName("Fist1L")!;
+  const weaponRightHand = target.getObjectByName("WeaponR")!;
   const torch = new Torch().sphere;
-  // Прикрепляем факел к руке персонажа
 
+  const {children} = weaponRightHand
+  const weaponRight = (children[0] ?? weaponRightHand) as Object3D
+  const weaponVector = getWeaponVectorByName(weaponRight.name).clone()
+
+  const handlerPosition = weaponRight.position.clone()
+  const topDirection = weaponVector.applyQuaternion(weaponRight.quaternion); // Направление с учетом поворота меча
+  const weaponTopPosition = handlerPosition.add(topDirection);
+
+  // Прикрепляем факел к руке персонажа
   if (leftHand) leftHand.add(torch);
 
   return {
     leftArm,
     leftHand,
+    weaponRight,
+    weaponTopPosition,
     torch,
   };
 }
