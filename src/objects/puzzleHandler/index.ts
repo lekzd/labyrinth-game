@@ -83,13 +83,7 @@ export class PuzzleHandler {
 }
 
 function initCube() {
-  const runicTexture = loads.texture["runic_2.png"]?.clone()!;
-  runicTexture.wrapS = THREE.RepeatWrapping;
-  runicTexture.wrapT = THREE.RepeatWrapping;
-
-  runicTexture.repeat = new THREE.Vector2(1 / 4, 1 / 3);
-
-  const materials: THREE.MeshLambertMaterial[] = [];
+  const materials: THREE.MeshPhysicalMaterial[] = [];
 
   const coordsMap = [
     { x: 1, y: 0 },
@@ -107,7 +101,32 @@ function initCube() {
     map.repeat = new THREE.Vector2(1 / 4, 1 / 3);
     map.offset = new THREE.Vector2((1 / 4) * x, (1 / 3) * y);
 
-    materials.push(new THREE.MeshLambertMaterial({ map }));
+    const normalMap = loads.texture["runic_normal_map.png"]?.clone()!;
+
+    normalMap.repeat = new THREE.Vector2(1 / 4, 1 / 3);
+    normalMap.offset = new THREE.Vector2((1 / 4) * x, (1 / 3) * y);
+
+    const runic_metalness_map = loads.texture["runic_metalness_map.png"]?.clone()!;
+
+    runic_metalness_map.repeat = new THREE.Vector2(1 / 4, 1 / 3);
+    runic_metalness_map.offset = new THREE.Vector2((1 / 4) * x, (1 / 3) * y);
+
+    materials.push(new THREE.MeshPhysicalMaterial({
+      color: 0x666666,
+      map,
+      normalMap,
+      normalScale: new THREE.Vector2(5, 5),
+      metalnessMap: runic_metalness_map,
+      metalness: 1.0,
+
+      sheen: 10.0, // Включение эффекта блеска
+      sheenColor: new THREE.Color(0xffcc99),
+      sheenColorMap: runic_metalness_map,
+
+      reflectivity: 0.5, // настраивайте для получения нужного уровня отражения
+      clearcoat: 0.1, // имитация блеска поверхности
+      clearcoatRoughness: 0.5 // настройка для шероховатости блеска
+    }));
   }
 
   const cube = new THREE.Mesh(new THREE.BoxGeometry(6, 6, 6), materials);

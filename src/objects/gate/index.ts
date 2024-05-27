@@ -1,4 +1,4 @@
-import { BoxGeometry, CylinderGeometry, Group, Mesh, MeshPhongMaterial, Object3DEventMap, Vector3Like } from "three";
+import { BoxGeometry, CylinderGeometry, Group, Mesh, MeshPhongMaterial, MeshPhysicalMaterial, Object3DEventMap, Vector3Like } from "three";
 import { DynamicObject } from "@/types";
 import * as CANNON from "cannon";
 import { state } from "@/state";
@@ -27,11 +27,15 @@ export class Gate {
 
     const left = initTower(6, 30, 10);
     left.position.x = -10
+    left.receiveShadow = true
+    left.castShadow = true
     this.mesh.add(left)
 
     this.leftDoor = new Mesh()
     const leftDoorMesh = initMesh(6, 20, 1);
     leftDoorMesh.position.x = -2
+    leftDoorMesh.receiveShadow = true
+    leftDoorMesh.castShadow = true
     this.leftDoor.position.x = 5
 
     this.leftDoor.add(leftDoorMesh)
@@ -40,6 +44,8 @@ export class Gate {
     this.rightDoor = new Mesh()
     const rightDoorMesh = initMesh(6, 20, 1);
     rightDoorMesh.position.x = 2
+    rightDoorMesh.receiveShadow = true
+    rightDoorMesh.castShadow = true
     this.rightDoor.position.x = -5
 
     this.rightDoor.add(rightDoorMesh)
@@ -47,6 +53,8 @@ export class Gate {
 
     const right = initTower(6, 30, 10);
     right.position.x = 10
+    right.receiveShadow = true
+    right.castShadow = true
     this.mesh.add(right)
 
     Object.assign(this.mesh.position, props.position);
@@ -118,11 +126,15 @@ function initMesh(x: number, y: number, z: number) {
 
   return new Mesh(
     boxGeometry,
-    new MeshPhongMaterial({
+    new MeshPhysicalMaterial({
       color: 0x999999,
       fog: true,
       map: textureRepeat(loads.texture["wood_gate_map.jpg"]!, 10, 10, x, y),
       normalMap: textureRepeat(loads.texture["wood_gate_bump.jpg"]!, 10, 10, x, y),
+      roughness: 0.5,
+      metalnessMap: textureRepeat(loads.texture["wood_gate_metalness_map.jpg"]!, 10, 10, x, y),
+      metalness: 1,
+      specularColor: 0x000000,
     })
   );
 }
