@@ -13,28 +13,11 @@ float remap(float v, float inMin, float inMax, float outMin, float outMax) {
   return mix(outMin, outMax, t);
 }
 
-mat4 rotateZ(float radians) {
-  float c = cos(radians);
-  float s = sin(radians);
-
-	return mat4(
-    c, -s, 0, 0,
-    s, c, 0, 0,
-    0, 0, 1, 0,
-    0, 0, 0, 1
-  );
-}
-
 vec4 applyWind(vec4 v) {
-  float boundedYNormal = remap(normal.y, -1.0, 1.0, 0.0, 1.0);
   float posXZ = position.x + position.z;
-  float power = u_windSpeed / 5.0 * -0.5;
-
-  float topFacing = remap(sin(u_windTime + posXZ), -1.0, 1.0, 0.0, power);
-  float bottomFacing = remap(cos(u_windTime + posXZ), -1.0, 1.0, 0.0, 0.05);
-  float radians = mix(bottomFacing, topFacing, boundedYNormal);
-
-  return rotateZ(radians) * v;
+  v.x += sin(u_windTime + posXZ);
+  v.z += cos(u_windTime + posXZ);
+  return v;
 }
 
 vec2 calcInitialOffsetFromUVs() {

@@ -27,6 +27,7 @@ const subscribers: { update: (time: number) => void }[] = [
   stats,
   systems.grassSystem,
   systems.inputSystem,
+  systems.environmentSystem
 ];
 const rooms: Room[] = [];
 const decorationObjects: THREE.Mesh[] = [];
@@ -106,13 +107,6 @@ export const render = (state: State) => {
   root.render(React.createElement(App));
 
   physicWorld.addBody(createGroundBody());
-
-  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x8d8d8d, 0.3);
-  hemiLight.position.set(0, 20, 0);
-  hemiLight.updateMatrix();
-  hemiLight.matrixAutoUpdate = false;
-
-  scene.add(hemiLight);
 
   const { renderer, camera, settings } = systems.uiSettingsSystem;
 

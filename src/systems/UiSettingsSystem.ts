@@ -21,6 +21,7 @@ const DEFAULTS = {
   },
   game: {
     physics: true,
+    time: 0,
   }
 }
 
@@ -149,6 +150,7 @@ export const UiSettingsSystem = () => {
     const addRenderingParam = addParam.bind(0, rederingGui, 'game', applyCameraChange)
 
     addRenderingParam('Физика', 'physics')
+    addRenderingParam('Время', 'time', 0, 1440)
   }
 
   addRenderingControlls()
