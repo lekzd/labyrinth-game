@@ -210,25 +210,27 @@ export const items = {
     });
     shape.closePath();
 
-    const wallHeight = 50;
+    const wallHeight = 0.1;
 
     const geometry = new THREE.ExtrudeGeometry(shape, {
-      steps: 2,
+      steps: 200,
       depth: wallHeight,
     });
 
     const wallMesh = new THREE.Mesh(
       geometry,
-      new THREE.MeshBasicMaterial({ color: 0x000000, side: 2, fog: true })
+      new THREE.MeshStandardMaterial({
+        color: new THREE.Color('#131209'),
+      })
     );
 
     wallMesh.receiveShadow = false;
 
-    wallMesh.position.set(0, wallHeight, 0);
+    wallMesh.position.set(0, -1, 0);
 
     wallMesh.rotation.x = Math.PI / 2;
 
-    // scene.add(wallMesh);
+    scene.add(wallMesh);
 
     let prevPoint = line[0];
 
