@@ -4,6 +4,7 @@ import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 import { createMatrix } from "@/utils/createMatrix";
 import { LeavesMatetial } from "@/materials/leaves";
 import { CustomTubeGeometry } from "./CustomTubeGeometry";
+import { frandom } from "@/utils/random";
 
 const radiusFunction = (from: number, to: number) => (t: number) => {
   return from - (t * (from - to));
@@ -63,11 +64,11 @@ export function createBranch(level: number, count: number, length: number, paren
   });
 
   if (level > 0) {
-    const angle = Math.PI / 4; // Угол ветвления
+    const angle = Math.PI / 2; // Угол ветвления
 
     for (let i = 0; i < count; i++) {
-      const childRotationY = parentRotation.y + (Math.PI * 2 / count) * i;
-      const childRotationZ = parentRotation.z + angle * (i - 1);
+      const childRotationY = parentRotation.y + (Math.PI * frandom(0, 2));
+      const childRotationZ = parentRotation.z + (angle * frandom(0, 1));
       const childRotation = { x: parentRotation.x, y: childRotationY, z: childRotationZ };
 
       // Создаем матрицу вращения для родительской ветки
