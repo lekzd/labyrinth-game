@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import * as dat from 'dat.gui';
 import { mergeDeep } from '../utils/mergeDeep';
 import { scene } from '../scene';
+import { systems } from '.';
 
 const DEFAULTS = {
   renderer: {
@@ -140,17 +141,18 @@ export const UiSettingsSystem = () => {
   const addGameControlls = () => {
     const rederingGui = gui.addFolder('Игра')
 
-    const applyCameraChange = (attr: string, value: any) => {
-      // switch (attr) {
-      //   default:
-      //     camera[attr] = value
-      // }
+    const applyGameChange = (attr: string, value: any) => {
+      switch (attr) {
+        case 'time':
+          systems.environmentSystem.setTime(value);
+          break;
+      }
     }
 
-    const addRenderingParam = addParam.bind(0, rederingGui, 'game', applyCameraChange)
+    const addRenderingParam = addParam.bind(0, rederingGui, 'game', applyGameChange)
 
     addRenderingParam('Физика', 'physics')
-    addRenderingParam('Время', 'time', 0, 1440)
+    addRenderingParam('Время', 'time', 0, 24 * 60 * 60)
   }
 
   addRenderingControlls()

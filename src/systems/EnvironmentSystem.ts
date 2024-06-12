@@ -117,6 +117,9 @@ export const EnvironmentSystem = () => {
 
   return {
     values,
+    setTime(time: number) {
+      currentTime = time
+    },
     update(timeElapsed: number) {
       currentTime += timeElapsed * 1000
 
