@@ -108,10 +108,10 @@ const getTreeMemoised = (n: number) => {
 const createPine = () => {
   const prepareTexture = (texture: Texture) => {
     const map = texture.clone()
-    map.rotation = Math.PI / 2
+    // map.rotation = Math.PI / 2
     map.wrapS = RepeatWrapping
     map.wrapT = RepeatWrapping
-    map.repeat = new Vector2(0.5, 0.5)
+    map.repeat = new Vector2(0.4, 2)
 
     return map
   }
