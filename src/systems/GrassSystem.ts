@@ -9,6 +9,7 @@ import { RoomConfig } from "@/types";
 import { DynamicObject } from "@/types";
 import { Tiles } from "@/config";
 import { frandom } from "@/utils/random";
+import { systems } from ".";
 
 export const GrassSystem = () => {
   const lightsCtx = makeCtx(state.colls, state.rows);
@@ -79,6 +80,14 @@ export const GrassSystem = () => {
         lightsCtx.canvas.width,
         lightsCtx.canvas.height
       );
+
+      lightsCtx.fillStyle = systems.environmentSystem.values.grassColor.getStyle()
+      lightsCtx.fillRect(
+        0,
+        0,
+        lightsCtx.canvas.width,
+        lightsCtx.canvas.height
+      )
 
       for (const id in state.objects) {
         const object = state.objects[id];

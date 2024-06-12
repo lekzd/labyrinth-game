@@ -1,4 +1,5 @@
 import { CullingSystem } from "./CullingSystem"
+import { EnvironmentSystem } from "./EnvironmentSystem"
 import { GrassSystem } from "./GrassSystem"
 import { InputSystem } from "./InputSystem"
 import { ObjectsSystem } from "./ObjectsSystem"
@@ -10,4 +11,5 @@ export const systems = {
   uiSettingsSystem: UiSettingsSystem(),
   inputSystem: InputSystem(),
   objectsSystem: ObjectsSystem(),
+  environmentSystem: EnvironmentSystem(),
 }

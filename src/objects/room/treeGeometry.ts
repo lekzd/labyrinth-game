@@ -1,19 +1,21 @@
 import * as THREE from "three";
 import { loads } from "@/loader";
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
-import { jitterGeometry } from "@/utils/jitterGeometry";
 import { createMatrix } from "@/utils/createMatrix";
 import { LeavesMatetial } from "@/materials/leaves";
+import { CustomTubeGeometry } from "./CustomTubeGeometry";
+import { frandom } from "@/utils/random";
+
+const radiusFunction = (from: number, to: number) => (t: number) => {
+  return from - (t * (from - to));
+};
 
 // Function to create a curved branch that straightens out
-function createCurvedBranch(start: THREE.Vector3, mid1: THREE.Vector3, mid2: THREE.Vector3, end: THREE.Vector3, segments: number, radius: number) {
-  const jittering = radius / 5
+function createCurvedBranch(start: THREE.Vector3, mid1: THREE.Vector3, mid2: THREE.Vector3, end: THREE.Vector3, segments: number, fromRadius: number, toRadius: number) {
   const curve = new THREE.CatmullRomCurve3([start, mid1, mid2, end]);
-  // сделать сужение трубы
-  const tubeGeometry = new THREE.TubeGeometry(curve, segments, radius, 6, false);
-  const geometry = jitterGeometry(tubeGeometry, jittering);
+  const tubeGeometry = new CustomTubeGeometry(curve, segments, radiusFunction(fromRadius, toRadius), 6, false);
 
-  return geometry;
+  return tubeGeometry;
 }
 
 type BranchData = {
@@ -30,7 +32,9 @@ function createBranchGeometry({ level, length, matrix }: BranchData) {
   const mid1 = new THREE.Vector3(0, length * 0.3, 2);   // Curved part
   const mid2 = new THREE.Vector3(0, length * 0.7, 0);   // Straightening transition
   const end = new THREE.Vector3(0, length, 0);          // Straight part
-  const geometry = createCurvedBranch(start, mid1, mid2, end, 6, (level * level) / 5);
+  const fromRadius = (level * level) / 5
+  const toRadius = ((level-1) * (level-1)) / 5
+  const geometry = createCurvedBranch(start, mid1, mid2, end, 6, fromRadius, toRadius);
   
   geometry.applyMatrix4(createMatrix(matrix))
 
@@ -60,11 +64,11 @@ export function createBranch(level: number, count: number, length: number, paren
   });
 
   if (level > 0) {
-    const angle = Math.PI / 4; // Угол ветвления
+    const angle = Math.PI / 2; // Угол ветвления
 
     for (let i = 0; i < count; i++) {
-      const childRotationY = parentRotation.y + (Math.PI * 2 / count) * i;
-      const childRotationZ = parentRotation.z + angle * (i - 1);
+      const childRotationY = parentRotation.y + (Math.PI * frandom(0, 2));
+      const childRotationZ = parentRotation.z + (angle * frandom(0, 1));
       const childRotation = { x: parentRotation.x, y: childRotationY, z: childRotationZ };
 
       // Создаем матрицу вращения для родительской ветки
