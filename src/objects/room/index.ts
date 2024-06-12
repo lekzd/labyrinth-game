@@ -1,12 +1,16 @@
 import { RoomConfig } from "@/types";
 import { Tiles } from "@/config";
 import {
-  Group,
+  Color,
+  CylinderGeometry,
   Mesh,
   MeshPhongMaterial,
   Object3D,
   Object3DEventMap,
   PlaneGeometry,
+  RepeatWrapping,
+  Texture,
+  Vector2,
 } from "three";
 import { scale } from "@/state.ts";
 import { systems } from "@/systems";
@@ -18,6 +22,7 @@ import { createStone } from "./stone";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { createStem } from "./stem";
 import { createTree } from "./treeGeometry";
+import { loads } from "@/loader";
 
 export class Room {
   private treesPhysicBodies: CANNON.Body[];
@@ -94,10 +99,49 @@ const treesCache = new Map<number, Mesh>()
 
 const getTreeMemoised = (n: number) => {
   if (!treesCache.get(n)) {
-    treesCache.set(n, createTree())
+    treesCache.set(n, createTree().rotateY(frandom(0, 180)))
   }
 
   return treesCache.get(n)!
+}
+
+const createPine = () => {
+  const prepareTexture = (texture: Texture) => {
+    const map = texture.clone()
+    map.rotation = Math.PI / 2
+    map.wrapS = RepeatWrapping
+    map.wrapT = RepeatWrapping
+    map.repeat = new Vector2(0.5, 0.5)
+
+    return map
+  }
+
+  const material = new MeshPhongMaterial({
+    color: new Color('#715c4c'),
+    side: 0,
+    shininess: 1,
+    map: prepareTexture(loads.texture["Bark_06_basecolor.jpg"]!),
+    normalMap: prepareTexture(loads.texture["Bark_06_normal.jpg"]!),
+    normalScale: new Vector2(5, 5)
+  });
+
+  const radius = frandom(1, 3)
+
+  const mesh = new Mesh(
+    new CylinderGeometry(radius, radius, 80, 5),
+    material
+  )
+
+  return mesh
+}
+
+const getForestObject = (type: number) => {
+  switch (type) {
+    case 1: 
+      return createPine()
+    default:
+      return createStone()
+  }
 }
 
 function initTreesPhysicBodies(
@@ -113,13 +157,11 @@ function initTreesPhysicBodies(
     const y = baseY + frandom(-0.2, 0.2);
 
     if (props.tiles[i] === Tiles.Wall) {
-      const isTree = (baseX + baseY) % 3 === 0
-      const cube = isTree ? clone(getTreeMemoised(random(0, 10))) : createStone();
+      const objecType = (baseX + baseY) % 3
+      const isTree = objecType === 0
+      const cube = isTree ? clone(getTreeMemoised(random(0, 10))) : getForestObject(objecType);
 
       assign(cube.position, { x: x * scale, z: y * scale });
-      if (isTree) {
-        cube.rotateY(frandom(0, 180))
-      }
 
       const physicY = 20;
       const physicRadius = 5;

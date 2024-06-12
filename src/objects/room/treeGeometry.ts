@@ -4,7 +4,7 @@ import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 import { createMatrix } from "@/utils/createMatrix";
 import { LeavesMatetial } from "@/materials/leaves";
 import { CustomTubeGeometry } from "./CustomTubeGeometry";
-import { frandom } from "@/utils/random";
+import { frandom, random } from "@/utils/random";
 
 const radiusFunction = (from: number, to: number) => (t: number) => {
   return from - (t * (from - to));
@@ -101,7 +101,7 @@ export function createBranch(level: number, count: number, length: number, paren
 }
 
 export const createTree = () => {
-  const branches = createBranch(3, 4, 15)
+  const branches = createBranch(3, 4, random(5, 50))
   const branchGeometries = branches.map(createBranchGeometry)
   const woodGeometry = BufferGeometryUtils.mergeGeometries(branchGeometries)
   

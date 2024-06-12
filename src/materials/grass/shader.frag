@@ -19,7 +19,9 @@ void main() {
   vec3 terrainColor = texture2D(terrainImage, vec2(vInstanceColor)).rgb;
   vec4 lightColor = texture2D(lightsImage, vec2(vInstanceColor));
   float clarity = ((vUv.y - 0.45) * 3.0);
-  vec3 mixedColor = (mix(baseColor.rgb, terrainColor, 0.9));
+  vec3 mixedColor = terrainColor.r < 0.01
+    ? terrainColor + (lightColor.rgb * (lightColor.g * 2.0))
+    : (terrainColor * lightColor.r) + (lightColor.rgb * lightColor.a);
 
-  gl_FragColor = vec4(mix(fogColor, mixedColor + (lightColor.rgb * lightColor.a), (1.0 - vFogFactor)) * clarity * vNoise, 1.0);
+  gl_FragColor = vec4(mix(fogColor, mixedColor, (1.0 - vFogFactor)) * clarity * vNoise, 1.0);
 }

@@ -116,6 +116,11 @@ export const GrassSystem = () => {
       grassMaterial.uniformsNeedUpdate = true;
     },
 
+    updateTerrainTexture: () => {
+      grassMaterial.uniforms.terrainImage.value = new THREE.CanvasTexture(createTerrainCanvas(state, 10, 4))
+      grassMaterial.uniformsNeedUpdate = true
+    },
+
     createRoomMesh: (room: RoomConfig) => {
       const dummy = new THREE.Object3D();
       const width = 2;

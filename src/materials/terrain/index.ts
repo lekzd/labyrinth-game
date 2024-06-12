@@ -24,7 +24,7 @@ export const createTerrainCanvas = (
       case Tiles.Wall:
         return `rgb(0,0,0)`;
       default:
-        return `rgb(${2 + noise},${4 + noise},0)`;
+        return `rgb(${10 + noise},${20 + noise},0)`;
     }
   };
 
@@ -35,8 +35,8 @@ export const createTerrainCanvas = (
 
   state.rooms.forEach((room) => {
     room.tiles.forEach((tile, i) => {
-      const x = room.x + (i % state.colls) * tileSize;
-      const y = room.y + Math.floor(i / state.colls) * tileSize;
+      const x = (room.x + (i % room.width)) * tileSize;
+      const y = (room.y + Math.floor(i / room.width)) * tileSize;
   
       ctx.fillStyle = getColor(tile);
       ctx.fillRect(

@@ -201,6 +201,8 @@ export const items = {
       scene.add(roomObject.mesh);
     });
 
+    systems.grassSystem.updateTerrainTexture()
+
     const line = findLineCoordinates(state.rooms);
     const shape = new THREE.Shape();
 
