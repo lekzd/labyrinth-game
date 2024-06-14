@@ -1,7 +1,7 @@
-export { Box } from "@/objects/Box";
-export { Hero } from "@/objects/Hero/Hero";
-export { Torch } from "@/objects/Torch";
-export { Campfire } from "@/objects/Campfire";
+export { Box } from "@/objects/box";
+export { Hero } from "@/objects/hero/Hero";
+export { Torch } from "@/objects/torch";
+export { Campfire } from "@/objects/campfire";
 export { Weapon } from "@/objects/weapon";
-export { PuzzleHandler } from "@/objects/PuzzleHandler";
-export { Room } from "@/objects/Room";
+export { PuzzleHandler } from "@/objects/puzzleHandler";
+export { Room } from "@/objects/room";

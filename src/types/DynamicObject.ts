@@ -1,6 +1,6 @@
 import { ObjectType } from "./ObjectType";
-import { NpcAnimationStates } from "../objects/Hero/NpcAnimationStates.ts";
-import { SettingObject } from "../objects/Hero/settings.ts";
+import { NpcAnimationStates } from "../objects/hero/NpcAnimationStates.ts";
+import { SettingObject } from "../objects/hero/settings.ts";
 
 export type ObjectVector3 = {
   x: number;

@@ -8,8 +8,6 @@ import {
   Object3D,
   Object3DEventMap,
   PlaneGeometry,
-  RepeatWrapping,
-  Texture,
   Vector2,
 } from "three";
 import { scale } from "@/state.ts";
@@ -23,6 +21,7 @@ import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { createStem } from "./stem";
 import { createTree } from "./treeGeometry";
 import { loads } from "@/loader";
+import { textureRepeat } from "@/utils/textureRepeat";
 
 export class Room {
   private treesPhysicBodies: CANNON.Body[];
@@ -106,22 +105,12 @@ const getTreeMemoised = (n: number) => {
 }
 
 const createPine = () => {
-  const prepareTexture = (texture: Texture) => {
-    const map = texture.clone()
-    // map.rotation = Math.PI / 2
-    map.wrapS = RepeatWrapping
-    map.wrapT = RepeatWrapping
-    map.repeat = new Vector2(0.4, 2)
-
-    return map
-  }
-
   const material = new MeshPhongMaterial({
     color: new Color('#715c4c'),
     side: 0,
     shininess: 1,
-    map: prepareTexture(loads.texture["Bark_06_basecolor.jpg"]!),
-    normalMap: prepareTexture(loads.texture["Bark_06_normal.jpg"]!),
+    map: textureRepeat(loads.texture["Bark_06_basecolor.jpg"]!, 1, 1, 0.4, 2),
+    normalMap: textureRepeat(loads.texture["Bark_06_normal.jpg"]!, 1, 1, 0.4, 2),
     normalScale: new Vector2(5, 5)
   });
 
