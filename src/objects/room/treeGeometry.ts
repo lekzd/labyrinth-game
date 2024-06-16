@@ -101,7 +101,7 @@ export function createBranch(level: number, count: number, length: number, paren
 }
 
 export const createTree = () => {
-  const branches = createBranch(3, 4, random(5, 50))
+  const branches = createBranch(3, 4, random(10, 50))
   const branchGeometries = branches.map(createBranchGeometry)
 
   const woodGeometry = BufferGeometryUtils.mergeGeometries(branchGeometries)

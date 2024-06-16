@@ -121,6 +121,8 @@ const createPine = () => {
     material
   )
 
+  mesh.translateY(40)
+
   return mesh
 }
 

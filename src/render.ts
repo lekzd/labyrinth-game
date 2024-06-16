@@ -17,9 +17,10 @@ import { Campfire, Hero, PuzzleHandler, Room, Weapon } from "@/uses";
 import { App } from "./ui/App.tsx";
 import CannonDebugRenderer from "./cannonDebugRender.ts";
 
-import { modelType } from "./loader.ts";
+import { loads, modelType } from "./loader.ts";
 import { Box } from "cannon";
 import { Gate } from "./objects/gate/index.ts";
+import { textureRepeat } from "./utils/textureRepeat.ts";
 
 const stats = new Stats();
 
@@ -166,9 +167,9 @@ export const render = (state: State) => {
   renderLoop();
 };
 
-function findLineCoordinates(rooms: RoomConfig[]) {
+function findLineCoordinates(rooms: RoomConfig[], padding: number) {
   const roomPoints = (room: RoomConfig) => {
-    const p = 1;
+    const p = padding;
     return [
       [room.x - p, room.y - p],
       [room.x + room.width + p, room.y - p],
@@ -187,7 +188,79 @@ function findLineCoordinates(rooms: RoomConfig[]) {
     y: coords[1],
   }));
 
-  return lineCoordinates;
+  let prevPoint = lineCoordinates[0];
+
+  const points: { x: number; y: number }[] = [];
+
+  lineCoordinates.slice(1).forEach((point) => {
+    const prevVector = new THREE.Vector2(prevPoint.x, prevPoint.y);
+    const curVector = new THREE.Vector2(point.x, point.y);
+    const distance = prevVector.distanceTo(curVector);
+
+    const steps = Math.floor(distance / 1);
+
+    for (let i = 0; i < 1; i += 1 / steps) {
+      const newPosition = {
+        x: prevVector.x + (curVector.x - prevVector.x) * i,
+        y: prevVector.y + (curVector.y - prevVector.y) * i,
+      };
+
+      points.push(newPosition);
+    }
+
+    prevPoint = point;
+  });
+
+  return points;
+}
+
+const getWallMesh = (points: { x: number, y: number }[]) => {
+  const wallHeight = 3 * scale;
+
+  const vertices = [];
+  for (let i = 0; i < points.length; i++) {
+    const x = points[i].x * scale;
+    const y = points[i].y * scale;
+
+    vertices.push(x, y, frandom(2, 10));  // нижняя часть
+    vertices.push(x + frandom(-10, 10), y + frandom(-10, 10), wallHeight);  // верхняя часть
+  }
+
+  // Индексы для построения треугольников
+  const indices = [];
+  const pointCount = points.length;
+  for (let i = 0; i < pointCount - 1; i++) {
+    // нижний треугольник
+    indices.push(i * 2, i * 2 + 1, (i + 1) * 2);
+    // верхний треугольник
+    indices.push(i * 2 + 1, (i + 1) * 2 + 1, (i + 1) * 2);
+  }
+
+  // Создаем BufferGeometry и устанавливаем атрибуты
+  const wallGeometry = new THREE.BufferGeometry();
+  wallGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+  wallGeometry.setIndex(indices);
+
+  // Вычисляем нормали для корректного отображения освещения
+  wallGeometry.computeVertexNormals();
+
+  const wallMesh = new THREE.Mesh(
+    wallGeometry,
+    new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#181c06'),
+      flatShading: true
+    })
+  )
+
+  wallMesh.position.set(
+    0,
+    wallHeight,
+    0,
+  );
+
+  wallMesh.rotation.x = Math.PI / 2;
+
+  return wallMesh
 }
 
 // TODO: стандартизировать
@@ -203,79 +276,58 @@ export const items = {
 
     systems.grassSystem.updateTerrainTexture()
 
-    const line = findLineCoordinates(state.rooms);
-    const shape = new THREE.Shape();
+    const treesLine = findLineCoordinates(state.rooms, 0).map(point => ({
+      x: frandom(-0.3, 0.3) + point.x,
+      y: frandom(-0.3, 0.3) + point.y,
+    }));
 
-    shape.moveTo(line[0].x * scale, line[0].y * scale);
-    line.slice(1).forEach(({ x, y }) => {
-      shape.lineTo(x * scale, y * scale);
-    });
-    shape.closePath();
+    const wallLine = findLineCoordinates(state.rooms, 1).map(point => ({
+      x: frandom(-0.3, 0.3) + point.x,
+      y: frandom(-0.3, 0.3) + point.y,
+    }));;
 
-    const wallHeight = 0.1;
+    const planeWidth = state.colls * scale
+    const planeHeight = state.rows * scale
 
-    const geometry = new THREE.ExtrudeGeometry(shape, {
-      steps: 200,
-      depth: wallHeight,
-    });
-
-    const wallMesh = new THREE.Mesh(
-      geometry,
+    const floorMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(planeWidth, planeHeight),
       new THREE.MeshStandardMaterial({
         color: new THREE.Color('#131209'),
       })
     );
 
-    wallMesh.receiveShadow = false;
+    floorMesh.rotation.x = -Math.PI / 2;
 
-    wallMesh.position.set(0, -1, 0);
+    floorMesh.position.set(
+      planeWidth / 2,
+      -1,
+      planeHeight / 2,
+    );
 
-    wallMesh.rotation.x = Math.PI / 2;
+    scene.add(floorMesh);
 
-    scene.add(wallMesh);
-
-    let prevPoint = line[0];
-
-    const trees: { x: number; y: number }[] = [];
-
-    line.slice(1).forEach((point) => {
-      const prevVector = new THREE.Vector2(prevPoint.x, prevPoint.y);
-      const curVector = new THREE.Vector2(point.x, point.y);
-      const distance = prevVector.distanceTo(curVector);
-
-      const steps = Math.floor(distance / 1);
-
-      for (let i = 0; i < 1; i += 1 / steps) {
-        const newPosition = {
-          x:
-            frandom(-0.3, 0.3) +
-            prevVector.x +
-            (curVector.x - prevVector.x) * i,
-          y:
-            frandom(-0.3, 0.3) +
-            prevVector.y +
-            (curVector.y - prevVector.y) * i,
-        };
-
-        trees.push(newPosition);
-      }
-
-      prevPoint = point;
-    });
+    scene.add(getWallMesh(wallLine));
 
     const matrix = new THREE.Matrix4();
     const height = 40;
-    const instanceNumber = trees.length;
-    const threeGeometry = new THREE.CylinderGeometry(1, 10, height, 4, 1);
-    const material = new THREE.MeshToonMaterial({ color: 0x143728 });
+    const instanceNumber = treesLine.length;
+    const threeGeometry = new THREE.BoxGeometry(10, height, 10, 4, 1);
+    const material = new THREE.MeshPhongMaterial({
+      color: new THREE.Color('#374310'),
+      map: textureRepeat(loads.texture["Hedge_001_BaseColor.jpg"]!, 40, 40, 10, height),
+      alphaMap: textureRepeat(loads.texture["foliage.png"]!, 10, 10, 10, height),
+      alphaTest: 0.8,
+      side: THREE.DoubleSide,
+    });
     const instancedMesh = new THREE.InstancedMesh(
       threeGeometry,
       material,
       instanceNumber
     );
 
-    trees.forEach((point, instanceIndex) => {
-      matrix.setPosition(point.x * scale, height * 0.35, point.y * scale);
+    treesLine.forEach((point, instanceIndex) => {
+      matrix.makeRotationY(Math.PI / 4)
+      matrix.setPosition(point.x * scale, height * frandom(0.2, 0.4), point.y * scale);
 
       instancedMesh.setMatrixAt(instanceIndex, matrix);
     });
