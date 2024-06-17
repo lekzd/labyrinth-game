@@ -7,7 +7,7 @@ export const createStone = () => {
   const radius = frandom(3, 7)
   const geometry = jitterGeometry(
     new THREE.SphereGeometry(radius, 5, 5),
-    radius / 6
+    radius / 3
   )
   
   geometry.scale(1, 1, 2)
