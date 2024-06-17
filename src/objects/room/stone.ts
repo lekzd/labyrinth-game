@@ -18,13 +18,12 @@ export const createStone = () => {
   }
 
   // Создание материала и объекта камня
-  var material = new THREE.MeshPhongMaterial({
+  const material = new THREE.MeshPhongMaterial({
     color: randomGray(),
-    // flatShading:true,
     map: loads.texture["stone_wall_map.jpg"],
     normalMap: loads.texture["stone_wall_bump.jpg"],
   });
-  var stone = new THREE.Mesh(geometry, material);
+  const stone = new THREE.Mesh(geometry, material);
 
   stone.rotation.x = Math.PI / 2
 

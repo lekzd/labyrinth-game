@@ -3,6 +3,7 @@ import { Tiles } from "@/config";
 import {
   Color,
   CylinderGeometry,
+  DoubleSide,
   Mesh,
   MeshPhongMaterial,
   Object3D,
@@ -22,6 +23,7 @@ import { createStem } from "./stem";
 import { createTree } from "./treeGeometry";
 import { loads } from "@/loader";
 import { textureRepeat } from "@/utils/textureRepeat";
+import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
 
 export class Room {
   private treesPhysicBodies: CANNON.Body[];
@@ -126,11 +128,36 @@ const createPine = () => {
   return mesh
 }
 
+const createFoliage = () => {
+  const height = 15
+  const material = new MeshPhongMaterial({
+    color: new Color('#374310'),
+    map: loads.texture["Hedge_001_BaseColor.jpg"],
+    alphaMap: loads.texture["foliage.png"],
+    alphaTest: 0.8,
+    side: DoubleSide,
+  });
+
+  const geometries = [
+    (new PlaneGeometry(height, height)).rotateY(Math.PI / 4),
+    (new PlaneGeometry(height, height)).rotateY((Math.PI / 4) * 3),
+  ]
+
+  const mesh = new Mesh(
+    BufferGeometryUtils.mergeGeometries(geometries),
+    material
+  )
+
+  mesh.translateY(height >> 1)
+
+  return mesh
+}
+
 const getForestObject = (type: number) => {
   switch (type) {
     case 1: 
       return createPine()
-    default:
+    default: 
       return createStone()
   }
 }
@@ -186,6 +213,17 @@ function initTreesPhysicBodies(
           stem.rotation.z = Math.PI / 16;
           mesh.add(stem);
         }
+      }
+
+      if (random(0, 3) === 0) {
+        const cube = createFoliage()
+
+        assign(cube.position, {
+          x: (x + frandom(-0.5, 0.5)) * scale,
+          z: (y + frandom(-0.5, 0.5)) * scale,
+        });
+
+        mesh.add(cube);
       }
     }
   }
