@@ -13,7 +13,6 @@ import { loads } from "@/loader";
 import { DynamicObject } from "@/types";
 import { createInteractivitySign } from "@/utils/interactivitySign";
 import { createPhysicBox } from "@/cannon";
-import { systems } from "@/systems";
 import { currentPlayer } from "@/main.ts";
 import { state } from "@/state.ts";
 import { GlowMaterial } from "@/materials/glow/index.ts";
@@ -26,9 +25,6 @@ export class Weapon {
   readonly physicBody: CANNON.Body;
   readonly physicY = PHYSIC_Y;
 
-  private focusInterval = 0;
-  private focusAnimation = false;
-  private busyOnInteraction = false;
   sign: {
     mesh: Mesh<THREE.ConeGeometry, THREE.ShaderMaterial, Object3DEventMap>;
     setFocused: (value: boolean) => void;
@@ -69,23 +65,12 @@ export class Weapon {
     );
   }
 
-  interactWith() {
-    const { input } = systems.inputSystem;
+  setFocus(value: boolean) {
+    this.sign.setFocused(value);
+  }
 
-    clearInterval(this.focusInterval);
-
-    if (!this.focusAnimation) {
-      this.sign.setFocused(true);
-      this.focusAnimation = true;
-    }
-    if (this.focusAnimation) {
-      this.focusInterval = setTimeout(() => {
-        this.sign.setFocused(false);
-        this.focusAnimation = false;
-      }, 100);
-    }
-
-    if (input.interact) {
+  interactWith(value: boolean) {
+    if (value) {
       console.log(currentPlayer.id, this.props.id);
       state.setState({
         objects: {

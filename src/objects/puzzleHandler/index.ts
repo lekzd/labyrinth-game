@@ -6,7 +6,6 @@ import { loads } from "@/loader";
 
 import { createInteractivitySign } from "@/utils/interactivitySign.ts";
 import { createPhysicBox } from "@/cannon";
-import { systems } from "@/systems";
 import { DynamicObject } from "@/types";
 import { state } from "@/state";
 
@@ -17,9 +16,6 @@ export class PuzzleHandler {
   readonly physicBody: CANNON.Body;
   readonly physicY = PHYSIC_Y;
 
-  private focusInterval = 0;
-  private focusAnimation = false;
-  private busyOnInteraction = false;
   sign: {
     mesh: Mesh<THREE.ConeGeometry, THREE.ShaderMaterial, Object3DEventMap>;
     setFocused: (value: boolean) => void;
@@ -53,31 +49,15 @@ export class PuzzleHandler {
     );
   }
 
-  interactWith() {
-    const { input } = systems.inputSystem;
+  setFocus(value: boolean) {
+    this.sign.setFocused(value);
+  }
 
-    clearInterval(this.focusInterval);
-
-    if (!this.focusAnimation) {
-      this.sign.setFocused(true);
-      this.focusAnimation = true;
-    }
-    if (this.focusAnimation) {
-      this.focusInterval = setTimeout(() => {
-        this.sign.setFocused(false);
-        this.focusAnimation = false;
-      }, 100);
-    }
-
-    if (!this.busyOnInteraction && input.interact) {
+  interactWith(value: boolean) {
+    if (value) {
       new TWEEN.Tween(this.cube.rotation)
         .to({ y: this.cube.rotation.y + Math.PI / 2 }, 700)
         .start();
-
-      setTimeout(() => {
-        this.busyOnInteraction = false;
-      }, 1000);
-      this.busyOnInteraction = true;
     }
   }
 }

@@ -1,8 +1,7 @@
-import { BoxGeometry, CylinderGeometry, Group, Mesh, MeshPhongMaterial, MeshPhysicalMaterial, Object3DEventMap, Vector3Like } from "three";
+import { BoxGeometry, CylinderGeometry, Mesh, MeshPhongMaterial, MeshPhysicalMaterial, Object3DEventMap, Vector3Like } from "three";
 import { DynamicObject } from "@/types";
 import * as CANNON from "cannon";
 import { state } from "@/state";
-import { systems } from "@/systems";
 import { Tween } from "@tweenjs/tween.js";
 import { loads } from "@/loader";
 import { textureRepeat } from "@/utils/textureRepeat";
@@ -14,7 +13,6 @@ export class Gate {
   readonly physicBody: CANNON.Body;
   readonly physicY = PHYSIC_Y;
 
-  private busyOnInteraction = false;
   private leftDoor: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
   private rightDoor: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
 
@@ -93,10 +91,8 @@ export class Gate {
     return boxBody;
   }
 
-  interactWith() {
-    const { input } = systems.inputSystem;
-
-    if (!this.busyOnInteraction && input.interact) {
+  interactWith(value: boolean) {
+    if (value) {
       new Tween(this.leftDoor.rotation)
         .to({ y: this.closed ? (Math.PI / 2) : 0 }, 300)
         .onComplete(() => {
@@ -104,15 +100,10 @@ export class Gate {
           this.doorShape.collisionResponse = this.closed
         })
         .start();
-
+  
       new Tween(this.rightDoor.rotation)
         .to({ y: this.closed ? (-Math.PI / 2) : 0 }, 300)
         .start();
-
-      setTimeout(() => {
-        this.busyOnInteraction = false;
-      }, 1000);
-      this.busyOnInteraction = true;
     }
   }
 }

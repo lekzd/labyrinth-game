@@ -11,6 +11,35 @@ type ObjectAddConfig = Partial<{
   physical: boolean;
 }>;
 
+const intervals = new Map<string, number>()
+
+const tryRunMethod = (object: MapObject | null | undefined, methodName: 'interactWith' | 'setFocus') => {
+  if (!object) {
+    return
+  }
+
+  const key = `${object.props.id}_${methodName}`
+
+  if (intervals.has(key)) {
+    clearTimeout(intervals.get(key))
+    intervals.delete(key)
+  } else {
+    if (object[methodName]) {
+      object[methodName]?.(true);
+    }
+  }
+
+  const intervalId = setTimeout(() => {
+    if (object[methodName]) {
+      object[methodName]?.(false);
+    }
+
+    intervals.delete(key)
+  }, 300)
+
+  intervals.set(key, intervalId)
+}
+
 export const ObjectsSystem = () => {
   const objects: Record<string, MapObject> = {};
   const physicObjects = new Map<string, MapObject>();
@@ -90,8 +119,12 @@ export const ObjectsSystem = () => {
         if (intersects.length) {
           const closest = intersects.find((o) => o.data?.interactWith);
 
-          if (closest?.data?.interactWith) {
-            closest.data.interactWith();
+          const { input } = systems.inputSystem
+
+          tryRunMethod(closest?.data, 'setFocus')
+
+          if (input.interact) {
+            tryRunMethod(closest?.data, 'interactWith')
           }
         }
 
