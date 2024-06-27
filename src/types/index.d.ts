@@ -10,7 +10,7 @@ type Player = {
 };
 
 type RoomConfig = {
-  id: number;
+  id: string;
   width: number;
   height: number;
   actions: Tiles[];

@@ -14,9 +14,6 @@ const EXITS = [
   Tiles.WestExit,
 ];
 
-let id = 0;
-const getId = () => id++;
-
 const intersectRect = (r1: RoomConfig, r2: RoomConfig) => {
   return !(
     r2.x > r1.x + r1.width ||
@@ -108,7 +105,7 @@ const generateRoom = ({
   }
 
   return {
-    id: getId(),
+    id: `${x}_${y}`,
     width,
     height,
     actions,
@@ -139,7 +136,7 @@ export const generateRooms = ({ state, ROOM_SIZE }: GeneratorConfig) => {
   const roomStartX = Math.round((state.colls - ROOM_SIZE) / 2);
   const roomStartY = Math.round((state.rows - ROOM_SIZE) / 2);
   const centralRoom = generateRoom({
-    id: getId(),
+    id: `${roomStartX}_${roomStartY}`,
     width: ROOM_SIZE,
     height: ROOM_SIZE,
     x: roomStartX,
@@ -234,7 +231,7 @@ export const generateRooms = ({ state, ROOM_SIZE }: GeneratorConfig) => {
         actions.push(...some(perpendicularExits, random(0, 3)));
       }
 
-      const room = { id: getId(), width, height, actions, x, y, tiles: [] };
+      const room = { id: `${x}_${y}`, width, height, actions, x, y, tiles: [] };
 
       perpendicularExits.forEach((exit) => {
         if (actions.includes(exit)) {
