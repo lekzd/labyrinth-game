@@ -266,7 +266,9 @@ const getWallMesh = (points: { x: number, y: number }[]) => {
 // TODO: стандартизировать
 export const items = {
   roomChunks: (state: State) => {
-    state.rooms.forEach((room) => {
+    const roomsArray = Object.values(state.rooms);
+
+    roomsArray.forEach((room) => {
       const roomObject = new Room(room);
 
       rooms.push(roomObject);
@@ -276,12 +278,12 @@ export const items = {
 
     systems.grassSystem.updateTerrainTexture()
 
-    const treesLine = findLineCoordinates(state.rooms, 0).map(point => ({
+    const treesLine = findLineCoordinates(roomsArray, 0).map(point => ({
       x: frandom(-0.3, 0.3) + point.x,
       y: frandom(-0.3, 0.3) + point.y,
     }));
 
-    const wallLine = findLineCoordinates(state.rooms, 1).map(point => ({
+    const wallLine = findLineCoordinates(roomsArray, 1).map(point => ({
       x: frandom(-0.3, 0.3) + point.x,
       y: frandom(-0.3, 0.3) + point.y,
     }));;

@@ -60,7 +60,7 @@ onUpdate((next) => {
 
   const roomObjects: DynamicObject[] = [];
 
-  rooms.forEach((room) => {
+  Object.values(rooms).forEach((room) => {
     room.tiles.forEach((tile, i) => {
       const x = (room.x + (i % room.width)) * scale;
       const z = (room.y + Math.floor(i / room.width)) * scale;

@@ -5,6 +5,7 @@ import { random } from "@/utils/random";
 import { shuffle } from "@/utils/shuffle";
 import { some } from "@/utils/some";
 import { drawRect, range } from "./utils";
+import { assign } from "@/utils/assign";
 
 const EXITS = [
   Tiles.NorthExit,
@@ -148,7 +149,7 @@ export const generateRooms = ({ state, ROOM_SIZE }: GeneratorConfig) => {
 
   const { rooms } = state;
 
-  rooms.push(centralRoom);
+  rooms[centralRoom.id] = centralRoom;
 
   // draw branches
   const branches = shuffle(range(4, 8));
@@ -159,7 +160,7 @@ export const generateRooms = ({ state, ROOM_SIZE }: GeneratorConfig) => {
     length: number,
     deep: number
   ) => {
-    const result: RoomConfig[] = [];
+    const result: Record<string, RoomConfig> = {};
 
     for (let i = 0; i < length; i++) {
       let isLast = i === length - 1;
@@ -242,10 +243,10 @@ export const generateRooms = ({ state, ROOM_SIZE }: GeneratorConfig) => {
 
           for (let i = length; i > 0; i--) {
             const roomsSequence = addSequence(room, exit, i, deep + 1);
-            const hasIntersection = roomsSequence.some((newRoom) =>
-              rooms.find((addedRoom) => intersectRect(newRoom, addedRoom))
+            const hasIntersection = Object.values(roomsSequence).some((newRoom) =>
+              Object.values(rooms).find((addedRoom) => intersectRect(newRoom, addedRoom))
             );
-            const hasOutOfBounds = roomsSequence.some(
+            const hasOutOfBounds = Object.values(roomsSequence).some(
               (newRoom) =>
                 newRoom.x < 0 ||
                 newRoom.y < 0 ||
@@ -256,7 +257,8 @@ export const generateRooms = ({ state, ROOM_SIZE }: GeneratorConfig) => {
             if (hasIntersection || hasOutOfBounds) {
               continue;
             }
-            result.push(...roomsSequence);
+
+            assign(result, roomsSequence);
             success = true;
             break;
           }
@@ -267,8 +269,9 @@ export const generateRooms = ({ state, ROOM_SIZE }: GeneratorConfig) => {
         }
       });
 
-      result.push(generateRoom(room));
+      const newRoom = generateRoom(room);
 
+      result[newRoom.id] = newRoom;
       parentRoom = room;
 
       if (isLast) {
@@ -288,16 +291,18 @@ export const generateRooms = ({ state, ROOM_SIZE }: GeneratorConfig) => {
       continue;
     }
 
-    const roomsSequence = addSequence(parentRoom, action, length, 0).filter(
-      (newRoom) =>
-        !(
-          newRoom.x < 0 ||
-          newRoom.y < 0 ||
-          newRoom.x + newRoom.width > state.colls ||
-          newRoom.y + newRoom.height > state.rows
-        )
-    );
-    rooms.push(...roomsSequence);
+    Object.values(addSequence(parentRoom, action, length, 0))
+      .filter(
+        (newRoom) =>
+          !(
+            newRoom.x < 0 ||
+            newRoom.y < 0 ||
+            newRoom.x + newRoom.width > state.colls ||
+            newRoom.y + newRoom.height > state.rows
+          )
+      ).forEach(newRoom => {
+        rooms[newRoom.id] = newRoom;
+      });
   }
 
   return {

@@ -14,7 +14,7 @@ type setState = (
 export type State = {
   rows: number;
   colls: number;
-  rooms: RoomConfig[];
+  rooms: Record<string, RoomConfig>;
   objects: Record<string, DynamicObject>;
   players: Record<string, Player>;
   activePlayerId: number;
@@ -27,7 +27,7 @@ export const initState = (initialState: Partial<State>): State => {
     rows = 100,
     colls = 100,
     objects = {},
-    rooms = [],
+    rooms = {},
     players = {},
   } = initialState;
 

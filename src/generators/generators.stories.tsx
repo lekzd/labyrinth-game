@@ -53,7 +53,7 @@ const PreviewCanvas = ({ rows, colls }) => {
     ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    state.rooms.forEach((room) => {
+    Object.values(state.rooms).forEach((room) => {
       room.tiles.forEach((tile, i) => {
         const x = room.x + (i % state.colls) * tileSize;
         const y = room.y + Math.floor(i / state.colls) * tileSize;

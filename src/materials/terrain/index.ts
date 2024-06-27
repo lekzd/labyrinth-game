@@ -33,7 +33,7 @@ export const createTerrainCanvas = (
   ctx.fillStyle = BACKGROUND_COLOR;
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-  state.rooms.forEach((room) => {
+  Object.values(state.rooms).forEach((room) => {
     room.tiles.forEach((tile, i) => {
       const x = (room.x + (i % room.width)) * tileSize;
       const y = (room.y + Math.floor(i / room.width)) * tileSize;
