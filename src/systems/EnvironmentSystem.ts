@@ -121,7 +121,7 @@ export const EnvironmentSystem = () => {
       currentTime = time
     },
     update(timeElapsed: number) {
-      currentTime += timeElapsed * 1000
+      currentTime += timeElapsed * 10
 
       if (currentTime > MAX_TIME) {
         currentTime = currentTime % MAX_TIME
