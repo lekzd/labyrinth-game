@@ -15,6 +15,7 @@ type RoomConfig = {
   height: number;
   actions: Tiles[];
   tiles: Tiles[];
+  direction: Tiles;
   x: number;
   y: number;
 };

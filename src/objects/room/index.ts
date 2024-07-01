@@ -1,4 +1,4 @@
-import { RoomConfig } from "@/types";
+import { DynamicObject, RoomConfig } from "@/types";
 import { Tiles } from "@/config";
 import {
   Color,
@@ -11,7 +11,7 @@ import {
   PlaneGeometry,
   Vector2,
 } from "three";
-import { scale } from "@/state.ts";
+import { createObject, scale, state } from "@/state.ts";
 import { systems } from "@/systems";
 import { createFloorMaterial } from "./floorMaterial";
 import { frandom, random } from "@/utils/random";
@@ -21,9 +21,10 @@ import { createStone } from "./stone";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { createStem } from "./stem";
 import { createTree } from "./treeGeometry";
-import { loads } from "@/loader";
+import { loads, weaponType } from "@/loader";
 import { textureRepeat } from "@/utils/textureRepeat";
 import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
+import { something } from "@/utils/something";
 
 export class Room {
   private physicBodies: CANNON.Body[] = [];
@@ -37,10 +38,17 @@ export class Room {
     this.config = props;
     this.floorMesh = initFloorMesh(props);
     this.mesh = initMesh(props, this.floorMesh);
+    const roomObjects: DynamicObject[] = [];
+
+    const hasPuzzles = props.tiles.includes(Tiles.PuzzleHandler)
+    let hasGate = false
 
     for (let i = 0; i < props.tiles.length; i++) {
       const baseX = i % props.width;
       const baseY = Math.floor(i / props.width);
+
+      const x = (props.x + (i % props.width)) * scale;
+      const z = (props.y + Math.floor(i / props.width)) * scale;
 
       switch (props.tiles[i]) {
         case Tiles.Wall: {
@@ -53,7 +61,55 @@ export class Room {
           ))
           break;
         }
+        case Tiles.PuzzleHandler:
+          roomObjects.push(
+            createObject({
+              type: "PuzzleHandler",
+              position: {
+                x,
+                y: 4,
+                z,
+              },
+            })
+          );
+          break;
+        case Tiles.Weapon:
+          roomObjects.push(
+            createObject({
+              type: something(Object.values(weaponType)) as weaponType,
+              position: {
+                x,
+                y: 4,
+                z,
+              },
+            })
+          );
+          break;
       }
+
+      if (!hasGate && hasPuzzles && props.tiles[i] === props.direction) {
+        roomObjects.push(
+          createObject({
+            type: "Gate",
+            position: {
+              x,
+              y: 4,
+              z,
+            },
+          })
+        );
+
+        hasGate = true
+      }
+    }
+
+    if (roomObjects.length) {
+      state.setState({
+        objects: roomObjects.reduce(
+          (acc, item) => ({ ...acc, [item.id]: item }),
+          {}
+        )
+      })
     }
   }
 
