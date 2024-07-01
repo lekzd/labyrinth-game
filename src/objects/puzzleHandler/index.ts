@@ -8,7 +8,6 @@ import { createInteractivitySign } from "@/utils/interactivitySign.ts";
 import { createPhysicBox } from "@/cannon";
 import { DynamicObject } from "@/types";
 import { state } from "@/state";
-import { random } from "@/utils/random";
 
 const PHYSIC_Y = 4;
 export class PuzzleHandler {
@@ -16,9 +15,6 @@ export class PuzzleHandler {
   readonly mesh: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
   readonly physicBody: CANNON.Body;
   readonly physicY = PHYSIC_Y;
-
-  rotation = random(0, 4)
-  targetRotation = random(0, 4)
 
   sign: {
     mesh: Mesh<THREE.ConeGeometry, THREE.ShaderMaterial, Object3DEventMap>;
@@ -36,9 +32,11 @@ export class PuzzleHandler {
     this.sign.mesh.position.y = 7.5;
 
     this.mesh.add(this.sign.mesh);
-
     this.cube = initCube();
-    this.cube.rotation.y = (Math.PI / 2) * this.rotation
+
+    const rotation = state.objects[this.props.id].state
+
+    this.cube.rotation.y = (Math.PI / 2) * rotation;
     this.mesh.add(this.cube);
   }
   update(time: number) {
@@ -59,7 +57,8 @@ export class PuzzleHandler {
   }
 
   get isOpened() {
-    return (this.rotation % 4) === this.targetRotation
+    const rotation = +state.objects[this.props.id].state
+    return (rotation % 4) === +this.props.id % 4
   }
 
   private getColor() {
@@ -69,8 +68,9 @@ export class PuzzleHandler {
   }
 
   private updateState() {
+    const rotation = state.objects[this.props.id].state
     new TWEEN.Tween(this.cube.rotation)
-      .to({ y: (Math.PI / 2) * this.rotation }, 700)
+      .to({ y: (Math.PI / 2) * rotation }, 700)
       .start();
 
     this.mesh.children[0].material.color = this.getColor();
@@ -78,7 +78,12 @@ export class PuzzleHandler {
 
   interactWith(value: boolean) {
     if (value) {
-      this.rotation++;
+      const rotation = state.objects[this.props.id].state + 1
+      state.setState({
+        objects: {
+          [this.props.id]: { state: rotation }
+        }
+      })
       this.updateState();
     }
   }

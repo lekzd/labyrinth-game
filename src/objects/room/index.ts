@@ -68,6 +68,7 @@ export class Room {
           roomObjects.push(
             createObject({
               type: "PuzzleHandler",
+              state: random(0, 4),
               position: {
                 x,
                 y: 4,
@@ -110,6 +111,7 @@ export class Room {
         roomObjects.push(
           createObject({
             type: "Gate",
+            state: 0,
             position: {
               x,
               y: 4,
@@ -129,6 +131,30 @@ export class Room {
           (acc, item) => ({ ...acc, [item.id]: item }),
           {}
         )
+      })
+
+      const puzzleHandlers = roomObjects.filter(object => object.type === 'PuzzleHandler')
+      const puzzleIds = puzzleHandlers.map(object => object.id)
+      const gateObject = roomObjects.find(object => object.type === 'Gate')
+
+      state.listen(next => {
+        if (next.objects) {
+          if (!puzzleIds.some(id => Object.keys(next.objects).includes(id))) {
+            return
+          }
+
+          const solved = puzzleHandlers.every(object => {
+            return state.objects[object.id].state % 4 === object.id % 4
+          })
+
+          if (gateObject && !!state.objects[gateObject.id].state !== solved) {
+            state.setState({
+              objects: {
+                [gateObject.id]: { state: +solved }
+              }
+            })
+          }
+        }
       })
     }
   }

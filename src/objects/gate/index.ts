@@ -16,7 +16,6 @@ export class Gate {
   private leftDoor: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
   private rightDoor: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
 
-  closed = true;
   doorShape: CANNON.Box;
 
   constructor(props: DynamicObject) {
@@ -59,6 +58,12 @@ export class Gate {
     Object.assign(this.mesh.quaternion, props.rotation);
 
     this.physicBody = this.initPhysicBody();
+
+    state.listen(next => {
+      if (next.objects[this.props.id]) {
+        this.updateState();
+      }
+    })
   }
   update(time: number) {
     const obj = state.objects[this.props.id];
@@ -96,20 +101,27 @@ export class Gate {
     return boxBody;
   }
 
-  interactWith(value: boolean) {
-    if (value) {
-      new Tween(this.leftDoor.rotation)
-        .to({ y: this.closed ? (Math.PI / 2) : 0 }, 300)
-        .onComplete(() => {
-          this.closed = !this.closed
-          this.doorShape.collisionResponse = this.closed
-        })
-        .start();
-  
-      new Tween(this.rightDoor.rotation)
-        .to({ y: this.closed ? (-Math.PI / 2) : 0 }, 300)
-        .start();
-    }
+  get closed() {
+    return !!state.objects[this.props.id].state
+  }
+
+  set closed(value: boolean) {
+    state.setState({
+      objects: { [this.props.id]: { state: value ? 1 : 0 } }
+    })
+  }
+
+  private updateState() {
+    new Tween(this.leftDoor.rotation)
+      .to({ y: this.closed ? (Math.PI / 2) : 0 }, 300)
+      .onComplete(() => {
+        this.doorShape.collisionResponse = !this.closed
+      })
+      .start();
+
+    new Tween(this.rightDoor.rotation)
+      .to({ y: this.closed ? (-Math.PI / 2) : 0 }, 300)
+      .start();
   }
 }
 
