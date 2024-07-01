@@ -26,7 +26,7 @@ import { textureRepeat } from "@/utils/textureRepeat";
 import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
 
 export class Room {
-  private treesPhysicBodies: CANNON.Body[];
+  private physicBodies: CANNON.Body[] = [];
   protected isOnline: boolean = false;
 
   readonly mesh: Object3D<Object3DEventMap>;
@@ -37,12 +37,29 @@ export class Room {
     this.config = props;
     this.floorMesh = initFloorMesh(props);
     this.mesh = initMesh(props, this.floorMesh);
-    this.treesPhysicBodies = initTreesPhysicBodies(props, this.mesh);
+
+    for (let i = 0; i < props.tiles.length; i++) {
+      const baseX = i % props.width;
+      const baseY = Math.floor(i / props.width);
+
+      switch (props.tiles[i]) {
+        case Tiles.Wall: {
+          this.physicBodies.push(createWallPhysicBody(
+            (props.x + baseX) * scale,
+            (props.y + baseY) * scale,
+          ))
+          this.mesh.add(...createWallObjectMeshes(
+            baseX, baseY
+          ))
+          break;
+        }
+      }
+    }
   }
 
   offline() {
     this.isOnline = false;
-    this.treesPhysicBodies.forEach((body) => {
+    this.physicBodies.forEach((body) => {
       physicWorld.remove(body);
     });
   }
@@ -54,11 +71,13 @@ export class Room {
       mesh.updateMatrixWorld();
     });
 
-    this.treesPhysicBodies.forEach((body) => {
+    this.physicBodies.forEach((body) => {
       physicWorld.addBody(body);
     });
   }
-  update() {}
+  update() {
+    console.log('_debug room update')
+  }
 }
 
 function initMesh(
@@ -155,77 +174,71 @@ const createFoliage = () => {
 
 const getForestObject = (type: number) => {
   switch (type) {
-    case 1: 
+    case 1:
       return createPine()
-    default: 
+    default:
       return createStone()
   }
 }
 
-function initTreesPhysicBodies(
-  props: RoomConfig,
-  mesh: Object3D<Object3DEventMap>
-) {
-  const treesPhysicBodies: CANNON.Body[] = [];
+function createWallPhysicBody(x: number, y: number) {
+  const physicY = 20;
+  const physicRadius = 5;
+  const physicBody = createPhysicBox(
+    { x: physicRadius, y: physicY, z: physicRadius },
+    { mass: 0 }
+  );
 
-  for (let i = 0; i < props.tiles.length; i++) {
-    const baseX = i % props.width;
-    const x = baseX + frandom(-0.2, 0.2);
-    const baseY = Math.floor(i / props.width);
-    const y = baseY + frandom(-0.2, 0.2);
+  physicBody.position.set(
+    x,
+    physicY,
+    y
+  );
 
-    if (props.tiles[i] === Tiles.Wall) {
-      const objecType = (baseX + baseY) % 3
-      const isTree = objecType === 0
-      const cube = isTree ? clone(getTreeMemoised(random(0, 10))) : getForestObject(objecType);
+  return physicBody;
+}
 
-      assign(cube.position, { x: x * scale, z: y * scale });
+function createWallObjectMeshes(baseX: number, baseY: number) {
+  const result: Object3D[] = []
+  const x = baseX + frandom(-0.2, 0.2);
+  const y = baseY + frandom(-0.2, 0.2);
 
-      const physicY = 20;
-      const physicRadius = 5;
-      const physicBody = createPhysicBox(
-        { x: physicRadius, y: physicY, z: physicRadius },
-        { mass: 0 }
-      );
+  const objecType = (baseX + baseY) % 3
+  const isTree = objecType === 0
+  const cube = isTree ? clone(getTreeMemoised(random(0, 10))) : getForestObject(objecType);
 
-      physicBody.position.set(
-        (props.x + baseX) * scale,
-        physicY,
-        (props.y + baseY) * scale
-      );
+  assign(cube.position, { x: x * scale, z: y * scale });
 
-      treesPhysicBodies.push(physicBody);
+  result.push(cube);
 
-      mesh.add(cube);
+  if (isTree && random(0, 10) === 0) {
+    const count = random(1, 5);
 
-      if (isTree && random(0, 10) === 0) {
-        const count = random(1, 5);
+    for (let i = 0; i < count; i++) {
+      const stem = createStem();
+      const radians = ((Math.PI * 2) / count) * i;
 
-        for (let i = 0; i < count; i++) {
-          const stem = createStem();
-          const radians = ((Math.PI * 2) / count) * i;
+      assign(stem.position, {
+        x: (x + Math.cos(radians) * 0.5) * scale,
+        z: (y + Math.sin(radians) * 0.5) * scale,
+      });
+      stem.rotation.y = radians;
+      stem.rotation.z = Math.PI / 16;
 
-          assign(stem.position, {
-            x: (x + Math.cos(radians) * 0.5) * scale,
-            z: (y + Math.sin(radians) * 0.5) * scale,
-          });
-          stem.rotation.y = radians;
-          stem.rotation.z = Math.PI / 16;
-          mesh.add(stem);
-        }
-      }
-
-      if (random(0, 3) === 0) {
-        const cube = createFoliage()
-
-        assign(cube.position, {
-          x: (x + frandom(-0.5, 0.5)) * scale,
-          z: (y + frandom(-0.5, 0.5)) * scale,
-        });
-
-        mesh.add(cube);
-      }
+      result.push(stem);
     }
   }
-  return treesPhysicBodies;
+
+  if (random(0, 3) === 0) {
+    const cube = createFoliage()
+
+    assign(cube.position, {
+      x: (x + frandom(-0.5, 0.5)) * scale,
+      z: (y + frandom(-0.5, 0.5)) * scale,
+    });
+
+    result.push(cube);
+  }
+
+  return result
 }
