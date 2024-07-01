@@ -9,7 +9,9 @@ import {
   Object3D,
   Object3DEventMap,
   PlaneGeometry,
+  Quaternion,
   Vector2,
+  Vector3,
 } from "three";
 import { createObject, scale, state } from "@/state.ts";
 import { systems } from "@/systems";
@@ -25,6 +27,7 @@ import { loads, weaponType } from "@/loader";
 import { textureRepeat } from "@/utils/textureRepeat";
 import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
 import { something } from "@/utils/something";
+import { pickBy } from "@/utils/pickBy";
 
 export class Room {
   private physicBodies: CANNON.Body[] = [];
@@ -88,6 +91,22 @@ export class Room {
       }
 
       if (!hasGate && hasPuzzles && props.tiles[i] === props.direction) {
+
+        const rotation = new Quaternion();
+        const axis = new Vector3(0, 1, 0);
+
+        if (props.direction === Tiles.WestExit) {
+          rotation.setFromAxisAngle(axis, -Math.PI / 2);
+        }
+
+        if (props.direction === Tiles.EastExit) {
+          rotation.setFromAxisAngle(axis, Math.PI / 2);
+        }
+
+        if (props.direction === Tiles.SouthExit) {
+          rotation.setFromAxisAngle(axis, Math.PI);
+        }
+
         roomObjects.push(
           createObject({
             type: "Gate",
@@ -96,6 +115,7 @@ export class Room {
               y: 4,
               z,
             },
+            rotation: pickBy(rotation, ["x", "y", "z", "w"])
           })
         );
 

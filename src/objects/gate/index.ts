@@ -1,4 +1,4 @@
-import { BoxGeometry, CylinderGeometry, Mesh, MeshPhongMaterial, MeshPhysicalMaterial, Object3DEventMap, Vector3Like } from "three";
+import { BoxGeometry, CylinderGeometry, Mesh, MeshPhongMaterial, MeshPhysicalMaterial, Object3DEventMap, QuaternionLike, Vector3Like } from "three";
 import { DynamicObject } from "@/types";
 import * as CANNON from "cannon";
 import { state } from "@/state";
@@ -63,6 +63,7 @@ export class Gate {
   update(time: number) {
     const obj = state.objects[this.props.id];
     this.setPosition(obj.position);
+    this.setRotation(obj.rotation);
   }
 
   setPosition(position: Partial<Vector3Like>) {
@@ -71,6 +72,10 @@ export class Gate {
       position.y ? position.y + this.physicY : this.physicBody.position.y,
       position.z || this.physicBody.position.z
     );
+  }
+
+  setRotation(quaternion: QuaternionLike) {
+    this.physicBody.quaternion.copy(quaternion);
   }
 
   initPhysicBody() {
