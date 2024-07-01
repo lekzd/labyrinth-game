@@ -8,6 +8,7 @@ import { createInteractivitySign } from "@/utils/interactivitySign.ts";
 import { createPhysicBox } from "@/cannon";
 import { DynamicObject } from "@/types";
 import { state } from "@/state";
+import { random } from "@/utils/random";
 
 const PHYSIC_Y = 4;
 export class PuzzleHandler {
@@ -15,6 +16,9 @@ export class PuzzleHandler {
   readonly mesh: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
   readonly physicBody: CANNON.Body;
   readonly physicY = PHYSIC_Y;
+
+  rotation = random(0, 4)
+  targetRotation = random(0, 4)
 
   sign: {
     mesh: Mesh<THREE.ConeGeometry, THREE.ShaderMaterial, Object3DEventMap>;
@@ -24,7 +28,7 @@ export class PuzzleHandler {
 
   constructor(props: DynamicObject) {
     this.props = props;
-    this.mesh = initMesh(props);
+    this.mesh = initMesh(props, this.getColor());
     this.physicBody = initPhysicBody();
 
     this.sign = createInteractivitySign();
@@ -34,6 +38,7 @@ export class PuzzleHandler {
     this.mesh.add(this.sign.mesh);
 
     this.cube = initCube();
+    this.cube.rotation.y = (Math.PI / 2) * this.rotation
     this.mesh.add(this.cube);
   }
   update(time: number) {
@@ -53,11 +58,28 @@ export class PuzzleHandler {
     this.sign.setFocused(value);
   }
 
+  get isOpened() {
+    return (this.rotation % 4) === this.targetRotation
+  }
+
+  private getColor() {
+    return this.isOpened
+      ? new THREE.Color(0x00FF00)
+      : new THREE.Color(0xFF0000);
+  }
+
+  private updateState() {
+    new TWEEN.Tween(this.cube.rotation)
+      .to({ y: (Math.PI / 2) * this.rotation }, 700)
+      .start();
+
+    this.mesh.children[0].material.color = this.getColor();
+  }
+
   interactWith(value: boolean) {
     if (value) {
-      new TWEEN.Tween(this.cube.rotation)
-        .to({ y: this.cube.rotation.y + Math.PI / 2 }, 700)
-        .start();
+      this.rotation++;
+      this.updateState();
     }
   }
 }
@@ -118,7 +140,7 @@ function initCube() {
   return cube;
 }
 
-function initMesh(props: DynamicObject) {
+function initMesh(props: DynamicObject, color: THREE.Color) {
   const target = new THREE.Group();
 
   target.name = "PuzzleHandler";
@@ -128,7 +150,7 @@ function initMesh(props: DynamicObject) {
 
   const base = new THREE.Mesh(
     new THREE.BoxGeometry(10, 1, 10),
-    new THREE.MeshPhongMaterial({ color: 0xff0000 })
+    new THREE.MeshPhongMaterial({ color })
   );
 
   base.receiveShadow = true;
