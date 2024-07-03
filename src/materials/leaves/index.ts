@@ -1,9 +1,8 @@
 import vert from './vertex.glsl'
 import CustomShaderMaterial from 'three-custom-shader-material/vanilla'
 import { loads } from "@/loader.ts";
-import { Color, FrontSide, MeshStandardMaterial } from 'three';
+import { Color, MeshStandardMaterial } from 'three';
 import { frandom } from '@/utils/random';
-import { textureRepeat } from '@/utils/textureRepeat';
 
 
 const uniforms = {
@@ -23,8 +22,8 @@ animate()
 
 export class LeavesMatetial extends CustomShaderMaterial<MeshStandardMaterial> {
   constructor() {
-    const map = textureRepeat(loads.texture['Hedge_001_BaseColor.jpg']!, 1, 1, 2, 2)
-    const alphaMap = textureRepeat(loads.texture["foliage.png"]!, 1, 1, 3, 3)
+    const map = loads.texture['Hedge_001_BaseColor.jpg']
+    const alphaMap = loads.texture["foliage.png"]
 
     const colorComponents = [
       Math.floor(63 * frandom(0.5, 1.5)),
@@ -36,11 +35,11 @@ export class LeavesMatetial extends CustomShaderMaterial<MeshStandardMaterial> {
       baseMaterial: MeshStandardMaterial,
       map,
       alphaMap,
-      alphaTest: 0.8,
+      alphaTest: 0.5,
       color: new Color(`rgb(${colorComponents.join()})`),
       uniforms: uniforms,
       vertexShader: vert,
-      shadowSide: FrontSide,
+      side: 2,
     })
   }
 }

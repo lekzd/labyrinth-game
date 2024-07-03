@@ -5,6 +5,7 @@ import { createMatrix } from "@/utils/createMatrix";
 import { LeavesMatetial } from "@/materials/leaves";
 import { CustomTubeGeometry } from "./CustomTubeGeometry";
 import { frandom, random } from "@/utils/random";
+import { pickBy } from "@/utils/pickBy";
 
 const radiusFunction = (from: number, to: number) => (t: number) => {
   return from - (t * (from - to));
@@ -21,6 +22,7 @@ function createCurvedBranch(start: THREE.Vector3, mid1: THREE.Vector3, mid2: THR
 type BranchData = {
   level: number
   length: number
+  endPosition: THREE.Vector3Like
   matrix: {
     translation: Partial<THREE.Vector3Like>
     rotation: Partial<THREE.Vector3Like>
@@ -41,29 +43,40 @@ function createBranchGeometry({ level, length, matrix }: BranchData) {
   return geometry
 }
 
-function createFoliageGeometry({ length, matrix }: BranchData) {
-  const geometry = new THREE.IcosahedronGeometry(length * 0.8, 1);
-  
-  geometry
-    .applyMatrix4(createMatrix(matrix))
+function createFoliageGeometry({ length, matrix, endPosition }: BranchData) {
+  const baseMatrix = createMatrix({ ...matrix, translation: endPosition });
 
-  return geometry
+  return [
+    (new THREE.PlaneGeometry(length, length)).rotateY(Math.PI / 4).applyMatrix4(baseMatrix),
+    (new THREE.PlaneGeometry(length, length)).rotateY((Math.PI / 4) * 3).applyMatrix4(baseMatrix),
+  ]
 }
 
 export function createBranch(level: number, count: number, length: number, parentRotation = { x: 0, y: 0, z: 0 }, parentPosition = { x: 0, y: 0, z: 0 }) {
   const branchGroup: BranchData[] = [];
 
+  // Создаем матрицу вращения для родительской ветки
+  const parentRotationMatrix = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(parentRotation.x, parentRotation.y, parentRotation.z));
+
+  // Вектор направления для дочерних веток
+  const direction = new THREE.Vector3(0, length, 0).applyMatrix4(parentRotationMatrix);
+
+  // Позиция конца родительской ветки
+  const endPositionVector = new THREE.Vector3(parentPosition.x, parentPosition.y, parentPosition.z).add(direction);
+  const endPosition = pickBy(endPositionVector, ['x', 'y', 'z']);
+
   // Начальная ветка
   branchGroup.push({
     level,
     length,
+    endPosition,
     matrix: {
       translation: { ...parentPosition },
       rotation: { ...parentRotation }
     }
   });
 
-  if (level > 0) {
+  if (level > 1) {
     const angle = Math.PI / 2; // Угол ветвления
 
     for (let i = 0; i < count; i++) {
@@ -71,27 +84,7 @@ export function createBranch(level: number, count: number, length: number, paren
       const childRotationZ = parentRotation.z + (angle * frandom(0, 1));
       const childRotation = { x: parentRotation.x, y: childRotationY, z: childRotationZ };
 
-      // Создаем матрицу вращения для родительской ветки
-      const parentRotationMatrix = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(parentRotation.x, parentRotation.y, parentRotation.z));
-
-      // Вектор направления для дочерних веток
-      const direction = new THREE.Vector3(0, length, 0).applyMatrix4(parentRotationMatrix);
-
-      // Позиция конца родительской ветки
-      const endPosition = new THREE.Vector3(parentPosition.x, parentPosition.y, parentPosition.z).add(direction);
-
-      const childBranches = createBranch(level - 1, count - 1, length * 0.7, childRotation, { x: endPosition.x, y: endPosition.y, z: endPosition.z });
-
-      childBranches.forEach(branch => {
-        branch.matrix = {
-          translation: {
-            x: branch.matrix.translation.x,
-            y: branch.matrix.translation.y,
-            z: branch.matrix.translation.z,
-          },
-          rotation: { ...childRotation }
-        };
-      });
+      const childBranches = createBranch(level - 1, count - 1, length * 0.7, childRotation, endPosition);
 
       branchGroup.push(...childBranches);
     }
@@ -106,7 +99,7 @@ export const createTree = () => {
 
   const woodGeometry = BufferGeometryUtils.mergeGeometries(branchGeometries)
   
-  const foliageGeometries = branches.slice(1).map(createFoliageGeometry)
+  const foliageGeometries = branches.slice(1).map(createFoliageGeometry).flat()
   const croneGeometry = BufferGeometryUtils.mergeGeometries(foliageGeometries)
 
   const prepareTexture = (texture: THREE.Texture) => {
@@ -129,7 +122,6 @@ export const createTree = () => {
   });
 
   const mesh = new THREE.Mesh(woodGeometry, material);
-  
   const foliage = new THREE.Mesh(croneGeometry, new LeavesMatetial());
 
   mesh.add(foliage)
