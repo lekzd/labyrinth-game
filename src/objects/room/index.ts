@@ -247,9 +247,14 @@ const createPine = () => {
 }
 
 const createFoliage = () => {
-  const height = 15
+  const height = random(10, 20)
+  const colorComponents = [
+    Math.floor(63 * frandom(0.5, 1.5)),
+    Math.floor(109 * frandom(0.5, 1.0)),
+    Math.floor(33 * frandom(0.5, 1.5)),
+  ]
   const material = new MeshPhongMaterial({
-    color: new Color('#374310'),
+    color: new Color(`rgb(${colorComponents.join()})`),
     map: loads.texture["Hedge_001_BaseColor.jpg"],
     alphaMap: loads.texture["foliage.png"],
     alphaTest: 0.8,
@@ -328,7 +333,7 @@ function createWallObjectMeshes(baseX: number, baseY: number) {
     }
   }
 
-  if (random(0, 3) === 0) {
+  if (random(0, 2) === 0) {
     const cube = createFoliage()
 
     assign(cube.position, {
