@@ -51,7 +51,7 @@ const getObjectCOntructorConfig = (type: ObjectType) => {
       return {
         Constructor: Gate,
         physical: true,
-        interactive: true,
+        interactive: false,
       };
     case "PuzzleHandler":
       return {

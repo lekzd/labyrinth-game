@@ -5,9 +5,16 @@ import { NpcAnimationStates } from "./objects/hero/NpcAnimationStates.ts";
 import { mergeDeep } from "./utils/mergeDeep.ts";
 import { settings } from "./objects/hero/settings.ts";
 
+type RecursivePartial<T> = {
+  [P in keyof T]?:
+    T[P] extends (infer U)[] ? RecursivePartial<U>[] :
+    T[P] extends object | undefined ? RecursivePartial<T[P]> :
+    T[P];
+};
+
 type setState = (
-  state: Partial<State>,
-  params?: { permoment?: boolean; server?: boolean; throttle?: string }
+  state: RecursivePartial<State>,
+  params?: { server?: boolean }
 ) => void;
 
 // TODO: засунуть сюда какой-нибудь стейт-менеджер

@@ -1,4 +1,4 @@
-import { BoxGeometry, CylinderGeometry, Mesh, MeshPhongMaterial, MeshPhysicalMaterial, Object3DEventMap, Vector3Like } from "three";
+import { BoxGeometry, CylinderGeometry, Mesh, MeshPhongMaterial, MeshPhysicalMaterial, Object3DEventMap, QuaternionLike, Vector3Like } from "three";
 import { DynamicObject } from "@/types";
 import * as CANNON from "cannon";
 import { state } from "@/state";
@@ -16,7 +16,6 @@ export class Gate {
   private leftDoor: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
   private rightDoor: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
 
-  closed = true;
   doorShape: CANNON.Box;
 
   constructor(props: DynamicObject) {
@@ -59,11 +58,19 @@ export class Gate {
     Object.assign(this.mesh.quaternion, props.rotation);
 
     this.physicBody = this.initPhysicBody();
-  }
-  update(time: number) {
+
+    state.listen(next => {
+      if (next.objects?.[this.props.id]) {
+        this.updateState();
+      }
+    })
+
     const obj = state.objects[this.props.id];
     this.setPosition(obj.position);
+    this.setRotation(obj.rotation);
   }
+
+  update(time: number) {}
 
   setPosition(position: Partial<Vector3Like>) {
     this.physicBody.position.set(
@@ -71,6 +78,10 @@ export class Gate {
       position.y ? position.y + this.physicY : this.physicBody.position.y,
       position.z || this.physicBody.position.z
     );
+  }
+
+  setRotation(quaternion: QuaternionLike) {
+    this.physicBody.quaternion.copy(quaternion);
   }
 
   initPhysicBody() {
@@ -91,20 +102,27 @@ export class Gate {
     return boxBody;
   }
 
-  interactWith(value: boolean) {
-    if (value) {
-      new Tween(this.leftDoor.rotation)
-        .to({ y: this.closed ? (Math.PI / 2) : 0 }, 300)
-        .onComplete(() => {
-          this.closed = !this.closed
-          this.doorShape.collisionResponse = this.closed
-        })
-        .start();
-  
-      new Tween(this.rightDoor.rotation)
-        .to({ y: this.closed ? (-Math.PI / 2) : 0 }, 300)
-        .start();
-    }
+  get closed() {
+    return !!state.objects[this.props.id].state
+  }
+
+  set closed(value: boolean) {
+    state.setState({
+      objects: { [this.props.id]: { state: value ? 1 : 0 } }
+    })
+  }
+
+  private updateState() {
+    new Tween(this.leftDoor.rotation)
+      .to({ y: this.closed ? (Math.PI / 2) : 0 }, 300)
+      .onComplete(() => {
+        this.doorShape.collisionResponse = !this.closed
+      })
+      .start();
+
+    new Tween(this.rightDoor.rotation)
+      .to({ y: this.closed ? (-Math.PI / 2) : 0 }, 300)
+      .start();
   }
 }
 

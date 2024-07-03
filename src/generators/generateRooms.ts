@@ -27,6 +27,7 @@ const generateRoom = ({
   width,
   height,
   actions,
+  direction,
   x,
   y,
 }: Omit<RoomConfig, "tiles">): RoomConfig => {
@@ -109,6 +110,7 @@ const generateRoom = ({
     width,
     height,
     actions,
+    direction,
     tiles,
     x,
     y,
@@ -141,6 +143,7 @@ export const generateRooms = ({ state, ROOM_SIZE }: GeneratorConfig) => {
     height: ROOM_SIZE,
     x: roomStartX,
     y: roomStartY,
+    direction: Tiles.Empty,
     actions: [Tiles.NorthExit, Tiles.EastExit, Tiles.SouthExit, Tiles.WestExit],
   });
 
@@ -231,7 +234,7 @@ export const generateRooms = ({ state, ROOM_SIZE }: GeneratorConfig) => {
         actions.push(...some(perpendicularExits, random(0, 3)));
       }
 
-      const room = { id: `${x}_${y}`, width, height, actions, x, y, tiles: [] };
+      const room = { id: `${x}_${y}`, width, height, actions, x, y, tiles: [], direction: action };
 
       perpendicularExits.forEach((exit) => {
         if (actions.includes(exit)) {

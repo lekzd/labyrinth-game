@@ -4,12 +4,11 @@ import * as THREE from "three";
 import "./utils/threejsPatches.ts";
 
 import { generateRooms } from "./generators/generateRooms";
-import { loaders, weaponType } from "./loader.ts";
+import { loaders } from "./loader.ts";
 import {
   COLLS,
   createCampfireObject,
   createHeroObject,
-  createObject,
   createPlayerObject,
   ROWS,
   scale,
@@ -17,9 +16,6 @@ import {
 } from "./state.ts";
 import { onUpdate, send } from "./socket.ts";
 import { pickBy } from "./utils/pickBy.ts";
-import { DynamicObject } from "@/types";
-import { Tiles } from "@/config";
-import { something } from "./utils/something.ts";
 
 const ROOM_SIZE = 13;
 
@@ -58,57 +54,9 @@ onUpdate((next) => {
     ROOM_SIZE,
   });
 
-  const roomObjects: DynamicObject[] = [];
-
-  Object.values(rooms).forEach((room) => {
-    room.tiles.forEach((tile, i) => {
-      const x = (room.x + (i % room.width)) * scale;
-      const z = (room.y + Math.floor(i / room.width)) * scale;
-
-      switch (tile) {
-        case Tiles.PuzzleHandler:
-          roomObjects.push(
-            createObject({
-              type: "PuzzleHandler",
-              position: {
-                x,
-                y: 4,
-                z,
-              },
-            })
-          );
-          break;
-        case Tiles.Weapon:
-          roomObjects.push(
-            createObject({
-              type: something(Object.values(weaponType)) as weaponType,
-              position: {
-                x,
-                y: 4,
-                z,
-              },
-            })
-          );
-          break;
-        case Tiles.NorthExit:
-          roomObjects.push(
-            createObject({
-              type: "Gate",
-              position: {
-                x,
-                y: 4,
-                z,
-              },
-            })
-          );
-          break;
-      }
-    });
-  });
-
   state.setState({
     rooms,
-    objects: [createCampfireObject(), ...heroes, ...roomObjects].reduce(
+    objects: [createCampfireObject(), ...heroes].reduce(
       (acc, item) => ({ ...acc, [item.id]: item }),
       {}
     ),
