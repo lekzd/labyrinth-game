@@ -38,11 +38,12 @@ export class PuzzleHandler {
 
     this.cube.rotation.y = (Math.PI / 2) * rotation;
     this.mesh.add(this.cube);
-  }
-  update(time: number) {
+
     const obj = state.objects[this.props.id];
     this.setPosition(obj.position);
   }
+  
+  update(time: number) {}
 
   setPosition(position: Partial<THREE.Vector3Like>) {
     this.physicBody.position.set(

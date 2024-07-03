@@ -139,12 +139,12 @@ export class Room {
 
       state.listen(next => {
         if (next.objects) {
-          if (!puzzleIds.some(id => Object.keys(next.objects).includes(id))) {
+          if (!puzzleIds.some(id => next.objects?.hasOwnProperty(id))) {
             return
           }
 
           const solved = puzzleHandlers.every(object => {
-            return state.objects[object.id].state % 4 === object.id % 4
+            return state.objects[object.id].state % 4 === +object.id % 4
           })
 
           if (gateObject && !!state.objects[gateObject.id].state !== solved) {
@@ -176,9 +176,6 @@ export class Room {
     this.physicBodies.forEach((body) => {
       physicWorld.addBody(body);
     });
-  }
-  update() {
-    console.log('_debug room update')
   }
 }
 

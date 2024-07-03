@@ -60,16 +60,17 @@ export class Gate {
     this.physicBody = this.initPhysicBody();
 
     state.listen(next => {
-      if (next.objects[this.props.id]) {
+      if (next.objects?.[this.props.id]) {
         this.updateState();
       }
     })
-  }
-  update(time: number) {
+
     const obj = state.objects[this.props.id];
     this.setPosition(obj.position);
     this.setRotation(obj.rotation);
   }
+
+  update(time: number) {}
 
   setPosition(position: Partial<Vector3Like>) {
     this.physicBody.position.set(
