@@ -316,8 +316,8 @@ export const items = {
     const threeGeometry = new THREE.BoxGeometry(10, height, 10, 4, 1);
     const material = new THREE.MeshPhongMaterial({
       color: new THREE.Color('#374310'),
-      map: textureRepeat(loads.texture["Hedge_001_BaseColor.jpg"]!, 40, 40, 10, height),
-      alphaMap: textureRepeat(loads.texture["foliage.png"]!, 10, 10, 10, height),
+      map: textureRepeat(loads.texture["foliage.jpg"]!, 10, 10, 10, height),
+      alphaMap: textureRepeat(loads.texture["foliage_mask.jpg"]!, 10, 10, 10, height),
       alphaTest: 0.8,
       side: THREE.DoubleSide,
     });

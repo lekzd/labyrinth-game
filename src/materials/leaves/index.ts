@@ -22,8 +22,8 @@ animate()
 
 export class LeavesMatetial extends CustomShaderMaterial<MeshStandardMaterial> {
   constructor() {
-    const map = loads.texture['Hedge_001_BaseColor.jpg']
-    const alphaMap = loads.texture["foliage.png"]
+    const map = loads.texture['foliage.jpg']
+    const alphaMap = loads.texture["foliage_mask.jpg"]
 
     const colorComponents = [
       Math.floor(63 * frandom(0.5, 1.5)),

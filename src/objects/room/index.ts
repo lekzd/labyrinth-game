@@ -255,8 +255,8 @@ const createFoliage = () => {
   ]
   const material = new MeshPhongMaterial({
     color: new Color(`rgb(${colorComponents.join()})`),
-    map: loads.texture["Hedge_001_BaseColor.jpg"],
-    alphaMap: loads.texture["foliage.png"],
+    map: loads.texture["foliage.jpg"],
+    alphaMap: loads.texture["foliage_mask.jpg"],
     alphaTest: 0.8,
     side: DoubleSide,
   });

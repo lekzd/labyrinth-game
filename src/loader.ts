@@ -5,7 +5,8 @@ const textureLoader = new THREE.TextureLoader()
 const loader = new FBXLoader();
 
 export enum texturesType {
-  foliage = 'foliage.png',
+  foliage_mask = 'foliage_mask.jpg',
+  foliage = 'foliage.jpg',
   grass = 'grass.webp',
   runic_cube = 'runic_2.png',
   runic_normal_map = 'runic_normal_map.png',
