@@ -34,8 +34,8 @@ function createBranchGeometry({ level, length, matrix }: BranchData) {
   const mid1 = new THREE.Vector3(0, length * 0.3, 2);   // Curved part
   const mid2 = new THREE.Vector3(0, length * 0.7, 0);   // Straightening transition
   const end = new THREE.Vector3(0, length, 0);          // Straight part
-  const fromRadius = (level * level) / 5
-  const toRadius = ((level-1) * (level-1)) / 5
+  const fromRadius = (level * level) / 3
+  const toRadius = ((level-1) * (level-1)) / 3
   const geometry = createCurvedBranch(start, mid1, mid2, end, 6, fromRadius, toRadius);
   
   geometry.applyMatrix4(createMatrix(matrix))
@@ -80,7 +80,7 @@ export function createBranch(level: number, count: number, length: number, paren
     const angle = Math.PI / 2; // Угол ветвления
 
     for (let i = 0; i < count; i++) {
-      const childRotationY = parentRotation.y + (Math.PI * frandom(0, 2));
+      const childRotationY = parentRotation.y + (Math.PI * -frandom(0, 2));
       const childRotationZ = parentRotation.z + (angle * frandom(0, 1));
       const childRotation = { x: parentRotation.x, y: childRotationY, z: childRotationZ };
 

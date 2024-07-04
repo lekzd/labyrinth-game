@@ -237,7 +237,7 @@ const createPine = () => {
   const radius = frandom(1, 3)
 
   const mesh = new Mesh(
-    new CylinderGeometry(radius, radius, 80, 5),
+    new CylinderGeometry(radius, radius, 160, 5),
     material
   )
 
@@ -311,7 +311,7 @@ function createWallObjectMeshes(baseX: number, baseY: number) {
   const isTree = objecType === 0
   const cube = isTree ? clone(getTreeMemoised(random(0, 10))) : getForestObject(objecType);
 
-  assign(cube.position, { x: x * scale, z: y * scale });
+  assign(cube.position, { x: x * scale, y: -1, z: y * scale });
 
   result.push(cube);
 
