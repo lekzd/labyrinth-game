@@ -72,8 +72,6 @@ export const ObjectsSystem = () => {
           throw Error("ObjectsSystem: physical object should have physicBody!");
         }
 
-        object.physicBody.id = `${object.props.type}:${object.physicBody.id}`
-
         physicObjects.set(object.props.id, object);
         physicWorld.addBody(object.physicBody);
       }
@@ -119,12 +117,20 @@ export const ObjectsSystem = () => {
         if (intersects.length) {
           const closest = intersects.find((o) => o.data?.interactWith);
 
+          if (!closest) {
+            return
+          }
+
           const { input } = systems.inputSystem
 
-          tryRunMethod(closest?.data, 'setFocus')
+          tryRunMethod(closest.data, 'setFocus')
 
           if (input.interact) {
-            tryRunMethod(closest?.data, 'interactWith')
+            tryRunMethod(closest.data, 'interactWith')
+
+            if (closest.data?.mesh.position && closest.data?.physicBody?.position) {
+              octree.move(closest.data?.mesh.position, closest.data.physicBody.position)
+            }
           }
         }
 

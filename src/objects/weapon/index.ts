@@ -51,11 +51,11 @@ export class Weapon {
 
     this.cube = initCube();
     this.mesh.add(this.cube);
-  }
-  update(time: number) {
+
     const obj = state.objects[this.props.id];
     this.setPosition(obj.position);
   }
+  update(time: number) {}
 
   setPosition(position: Partial<Vector3Like>) {
     this.physicBody.position.set(
@@ -71,13 +71,14 @@ export class Weapon {
 
   interactWith(value: boolean) {
     if (value) {
-      console.log(currentPlayer.id, this.props.id);
       state.setState({
         objects: {
           [currentPlayer.activeObjectId]: { weapon: this.props.id },
           [this.props.id]: { position: { x: 0, y: 0, z: -1000000 } },
         },
       });
+
+      this.setPosition({ x: 0, y: 0, z: -1000000 });
     }
   }
 }
