@@ -7,6 +7,7 @@ import { systems } from '../../systems/index.ts';
 import { checkHit } from "./hit.ts";
 import { settings } from "./settings.ts";
 import { SwordTailEffect } from './SwordTailEffect.ts';
+import { DynamicObject } from '@/types/DynamicObject.ts';
 
 const sendThrottle = state.setState
 
@@ -69,9 +70,9 @@ const BasicCharacterControllerInput = (person) => {
   return {
     update: (timeInSeconds) => {
       const { input } = systems.inputSystem
-      const { id, velocity, decceleration, position, physicY, physicBody, acceleration } = person;
+      const { id, velocity, decceleration, acceleration } = person;
       const prev = state.objects[id];
-      const next = { ...prev }
+      const next: Partial<DynamicObject> = {}
 
       const acc = acceleration.clone();
 
@@ -101,7 +102,7 @@ const BasicCharacterControllerInput = (person) => {
 
         acc.multiplyScalar(input.speed ? speed * 2 : speed);
         velocity.z -= acc.z * timeInSeconds;
-      } else if ([NpcAnimationStates.run, NpcAnimationStates.walk].includes(next.state)) {
+      } else if ([NpcAnimationStates.run, NpcAnimationStates.walk].includes(prev.state)) {
         next.state = NpcAnimationStates.idle;
       }
 
@@ -132,10 +133,10 @@ const BasicCharacterControllerInput = (person) => {
       next.position = pickBy(controlObject.position, ['x', 'y', 'z']);
       next.rotation = pickBy(controlObject.rotation, ['x', 'y', 'z', 'w']);
 
-      if (!isEqualParams(prev, next)) {
+      if (!isEqualParams(prev, { ...prev, ...next })) {
         sendThrottle({ objects: { [person.id]: next } })
       }
-      state.objects[person.id] = next;
+      state.objects[person.id] = { ...prev, ...next };
     }
   };
 };

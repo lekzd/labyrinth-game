@@ -1,4 +1,4 @@
-import { modelType } from "./loader";
+import { modelType, weaponType } from "./loader";
 import { DynamicObject, Player, RoomConfig } from "@/types";
 import { something } from "./utils/something";
 import { NpcAnimationStates } from "./objects/hero/NpcAnimationStates.ts";
@@ -107,7 +107,7 @@ export const createHeroObject = (
     ...data,
     state: NpcAnimationStates.idle,
     type,
-    weapon: null,
+    weapon: weaponType.katana,
     ...settings[type],
   });
 };

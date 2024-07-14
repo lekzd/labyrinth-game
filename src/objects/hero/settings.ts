@@ -1,11 +1,11 @@
-import {modelType} from "../../loader.ts";
+import {modelType, weaponType} from "../../loader.ts";
 
 export type SettingObject = {
   health: number,
   mana: number,
   speed: number,
   mass: number,
-  weapon?: number | null,
+  weapon?: weaponType,
 }
 
 export const settings: Record<modelType, SettingObject> = {

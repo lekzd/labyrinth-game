@@ -14,7 +14,7 @@ import {
   LoopOnce,
   Vector3Like,
 } from "three";
-import { animationType, loads } from "@/loader";
+import { animationType, loads, weaponType } from "@/loader";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import * as CANNON from "cannon";
 import { createPhysicBox } from "@/cannon";
@@ -23,6 +23,7 @@ import { NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates.ts";
 import { state } from "@/state.ts";
 import { HealthBar } from "./healthbar.ts";
 import { HeroProps } from "@/types";
+import { setWeaponPosition } from "./setWeaponPosition";
 
 type Animations = Partial<Record<animationType, Group<Object3DEventMap>>>;
 
@@ -53,7 +54,7 @@ export class Hero {
   private stateMachine: any;
   private mixer: AnimationMixer;
   private healthBar;
-  
+
   readonly elementsHero: ElementsHero;
   readonly animations: AnimationClip[];
   readonly physicBody: CANNON.Body;
@@ -73,12 +74,14 @@ export class Hero {
     this.target = initTarget(model, props);
     this.mixer = new AnimationMixer(this.target);
     this.animations = initAnimations(this.target, this.mixer);
-    // console.log(this.target)
+
     this.physicBody = initPhysicBody(props.mass);
     this.elementsHero = initElementsHero(this.target);
     this.stateMachine = initStateMashine(this.animations);
     this.healthBar = HealthBar(props, this.target);
     correctionPhysicBody(this.physicBody, this.target);
+
+    this.initWeapon(this.props.weapon)
   }
 
   get id() {
@@ -104,12 +107,31 @@ export class Hero {
     return this.target?.quaternion;
   }
 
+  private initWeapon(weaponType: weaponType) {
+    const weaponRightHand = this.target.getObjectByName("WeaponR")!;
+
+    weaponRightHand.remove(...weaponRightHand.children);
+
+    const weaponObject = clone(loads.weapon[weaponType]);
+
+    setWeaponPosition(weaponObject);
+
+    weaponRightHand.add(weaponObject);
+  }
+
   setPosition(position: Partial<Vector3Like>) {
     this.physicBody.position.set(
       position.x || this.physicBody.position.x,
       position.y ? position.y + this.physicY : this.physicBody.position.y,
       position.z || this.physicBody.position.z
     );
+  }
+
+  onStateChange(prev, next) {
+    if (next.weapon) {
+      this.initWeapon(next.weapon)
+    }
+    // console.log('_debug prev', prev, next)
   }
 
   setRotation(angle: number) {
@@ -193,7 +215,7 @@ function initElementsHero(target: Object3D<Object3DEventMap>): ElementsHero {
   const weaponRightHand = target.getObjectByName("WeaponR")!;
   const torch = new Torch().sphere;
 
-  const {children} = weaponRightHand
+  const { children } = weaponRightHand
   const weaponRight = (children[0] ?? weaponRightHand) as Object3D
   const weaponVector = getWeaponVectorByName(weaponRight.name).clone()
 
@@ -306,7 +328,7 @@ function action(animations: AnimationControllers, Name: AnimationName) {
   return {
     Name,
     Enter(prevState: StateAction) {
-      const curAction = animations[Name]?.action || { play: () => {} };
+      const curAction = animations[Name]?.action || { play: () => { } };
 
       // TODO: разделить анимации на базовые из NpcBaseAnimations и дополнительные из NpcAdditionalAnimations
       // допольнительные анимации не должны вызывать crossFadeFrom
