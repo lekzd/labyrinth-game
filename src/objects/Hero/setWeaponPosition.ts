@@ -45,7 +45,7 @@ export const setWeaponPosition = (weaponObject: Object3D<Object3DEventMap>) => {
     }
     case weaponType.staff2:
     case weaponType.staff: {
-      weaponObject.position.set(-1.2, -0.5, -0.3);
+      weaponObject.position.set(0, -0, -0.05);
       weaponObject.rotateY(4.5);
       weaponObject.rotateX(2.0);
       break
