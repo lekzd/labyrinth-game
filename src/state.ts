@@ -107,7 +107,7 @@ export const createHeroObject = (
     ...data,
     state: NpcAnimationStates.idle,
     type,
-    weapon: weaponType.katana,
+    weapon: weaponType.crossbow,
     ...settings[type],
   });
 };

@@ -54,7 +54,7 @@ export enum weaponType {
   staff2 = 'staff2',
   sword = 'sword',
   swordLazer = 'swordLazer',
-  // crossbow = 'crossbow',
+  crossbow = 'crossbow',
 }
 
 type ItemsType = {

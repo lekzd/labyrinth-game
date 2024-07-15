@@ -57,6 +57,12 @@ export const setWeaponPosition = (weaponObject: Object3D<Object3DEventMap>) => {
       weaponObject.rotateZ(-2.7);
       break
     }
+    case weaponType.crossbow: {
+      weaponObject.position.set(0, 0, -0.05);
+      weaponObject.rotateY(4.4);
+      weaponObject.rotateZ(3);
+      break
+    }
   }
 
   weaponObject.scale.multiplyScalar(0.01);
