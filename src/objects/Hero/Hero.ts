@@ -30,8 +30,6 @@ type Animations = Partial<Record<animationType, Group<Object3DEventMap>>>;
 type ElementsHero = {
   leftArm: Object3D<Object3DEventMap>;
   leftHand: Object3D<Object3DEventMap>;
-  weaponRight: Object3D<Object3DEventMap>;
-  weaponTopPosition: Vector3;
   torch: Mesh<SphereGeometry, MeshBasicMaterial, Object3DEventMap>;
 };
 
@@ -54,6 +52,7 @@ export class Hero {
   private stateMachine: any;
   private mixer: AnimationMixer;
   private healthBar;
+  public weaponObject: Object3D<Object3DEventMap>;
 
   readonly elementsHero: ElementsHero;
   readonly animations: AnimationClip[];
@@ -112,11 +111,10 @@ export class Hero {
 
     weaponRightHand.remove(...weaponRightHand.children);
 
-    const weaponObject = clone(loads.weapon[weaponType]);
+    this.weaponObject = clone(loads.weapon[weaponType]);
 
-    setWeaponPosition(weaponObject);
-
-    weaponRightHand.add(weaponObject);
+    setWeaponPosition(this.weaponObject);
+    weaponRightHand.add(this.weaponObject);
   }
 
   setPosition(position: Partial<Vector3Like>) {
@@ -212,16 +210,7 @@ const getWeaponVectorByName = (name: string) => {
 function initElementsHero(target: Object3D<Object3DEventMap>): ElementsHero {
   const leftArm = target.getObjectByName("ShoulderL")!;
   const leftHand = target.getObjectByName("Fist1L")!;
-  const weaponRightHand = target.getObjectByName("WeaponR")!;
   const torch = new Torch().sphere;
-
-  const { children } = weaponRightHand
-  const weaponRight = (children[0] ?? weaponRightHand) as Object3D
-  const weaponVector = getWeaponVectorByName(weaponRight.name).clone()
-
-  const handlerPosition = weaponRight.position.clone()
-  const topDirection = weaponVector.applyQuaternion(weaponRight.quaternion); // Направление с учетом поворота меча
-  const weaponTopPosition = handlerPosition.add(topDirection);
 
   // Прикрепляем факел к руке персонажа
   if (leftHand) leftHand.add(torch);
@@ -229,8 +218,6 @@ function initElementsHero(target: Object3D<Object3DEventMap>): ElementsHero {
   return {
     leftArm,
     leftHand,
-    weaponRight,
-    weaponTopPosition,
     torch,
   };
 }
