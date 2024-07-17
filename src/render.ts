@@ -81,7 +81,10 @@ const getObjectCOntructorConfig = (type: ObjectType) => {
 
 export const addObjects = (items = {}) => {
   for (const id in items) {
-    if (id in systems.objectsSystem.objects) continue;
+    if (id in systems.objectsSystem.objects) {
+      systems.objectsSystem.objects[id]?.onStateChange?.(structuredClone(state.objects[id]), items[id])
+      continue;
+    };
     const objectConfig = items[id];
 
     const controllable = currentPlayer.activeObjectId === id;

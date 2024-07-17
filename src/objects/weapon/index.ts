@@ -73,7 +73,7 @@ export class Weapon {
     if (value) {
       state.setState({
         objects: {
-          [currentPlayer.activeObjectId]: { weapon: this.props.id },
+          [currentPlayer.activeObjectId]: { weapon: this.props.type },
           [this.props.id]: { position: { x: 0, y: 0, z: -1000000 } },
         },
       });

@@ -54,12 +54,12 @@ export enum weaponType {
   staff2 = 'staff2',
   sword = 'sword',
   swordLazer = 'swordLazer',
-  // crossbow = 'crossbow',
+  crossbow = 'crossbow',
 }
 
 type ItemsType = {
   model: Partial<Record<modelType, THREE.Group<THREE.Object3DEventMap>>>
-  weapon: Partial<Record<modelType, THREE.Group<THREE.Object3DEventMap>>>
+  weapon: Partial<Record<weaponType, THREE.Group<THREE.Object3DEventMap>>>
   animation: Partial<Record<animationType, THREE.Group<THREE.Object3DEventMap>>>
   texture: Partial<Record<texturesType, THREE.Texture>>
 }

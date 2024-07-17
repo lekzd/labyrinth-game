@@ -1,8 +1,31 @@
 import { Tween } from "@tweenjs/tween.js";
 import { Hero } from "./Hero";
-import { BufferAttribute, CatmullRomCurve3, Mesh, MeshLambertMaterial, SphereGeometry, TubeGeometry, Vector3 } from "three";
+import { BufferAttribute, CatmullRomCurve3, Mesh, TubeGeometry, Vector3 } from "three";
 import { scene } from "@/scene";
 import { SwordPathMaterial } from "@/materials/swordPath";
+import { weaponType } from "@/loader";
+
+const getWeaponVectorByType = (type: weaponType) => {
+  switch (type) {
+    case weaponType.katana:
+      return new Vector3(80, 30, -160)
+    case weaponType.dagger:
+      return new Vector3(0, 30, -120)
+    case weaponType.sword:
+      return new Vector3(-10, 0, -260)
+    case weaponType.swordLazer:
+      return new Vector3(0, 50, -190)
+    case weaponType.hammer:
+      return new Vector3(0, 50, -160)
+    case weaponType.staff:
+    case weaponType.staff2:
+      return new Vector3(0, -70, -160)
+  }
+
+  return new Vector3(0, 0, 0)
+
+  // throw Error(`No vector for weapon name "${name}"`)
+}
 
 export class SwordTailEffect {
   pointsLimit: number;
@@ -24,10 +47,12 @@ export class SwordTailEffect {
     const mountedEffects: Mesh[] = [];
     let iteration = -1;
 
-    const sphere = new Mesh(
-      new SphereGeometry(1, 10, 10),
-      new MeshLambertMaterial({ color: 0xFFFFFF })
-    )
+    const weaponRight = person.weaponObject
+    const weaponVector = getWeaponVectorByType(weaponRight.name as weaponType).clone()
+
+    const handlerPosition = weaponRight.position.clone()
+    const topDirection = weaponVector.applyQuaternion(weaponRight.quaternion); // Направление с учетом поворота меча
+    const weaponTopPosition = handlerPosition.add(topDirection);
 
     const onUpdate = () => {
       iteration++
@@ -36,7 +61,6 @@ export class SwordTailEffect {
         return
       }
 
-      const { weaponRight, weaponTopPosition } = person.elementsHero
       const worldPosition = weaponRight.localToWorld(weaponTopPosition.clone())
 
       points.unshift(worldPosition);
