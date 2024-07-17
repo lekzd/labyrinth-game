@@ -13,6 +13,7 @@ import {
   Vector3,
   LoopOnce,
   Vector3Like,
+  Euler,
 } from "three";
 import { animationType, loads, weaponType } from "@/loader";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
@@ -24,12 +25,15 @@ import { state } from "@/state.ts";
 import { HealthBar } from "./healthbar.ts";
 import { HeroProps } from "@/types";
 import { setWeaponPosition } from "./setWeaponPosition";
+import { pickBy } from "@/utils/pickBy.ts";
 
 type Animations = Partial<Record<animationType, Group<Object3DEventMap>>>;
 
 type ElementsHero = {
   leftArm: Object3D<Object3DEventMap>;
   leftHand: Object3D<Object3DEventMap>;
+  rightArm: Object3D<Object3DEventMap>;
+  rightHand: Object3D<Object3DEventMap>;
   torch: Mesh<SphereGeometry, MeshBasicMaterial, Object3DEventMap>;
 };
 
@@ -53,6 +57,8 @@ export class Hero {
   private mixer: AnimationMixer;
   private healthBar;
   public weaponObject: Object3D<Object3DEventMap>;
+  private idleRotations = new Map<string, Euler>();
+  private isRightHandFreezed = false;
 
   readonly elementsHero: ElementsHero;
   readonly animations: AnimationClip[];
@@ -79,6 +85,10 @@ export class Hero {
     this.stateMachine = initStateMashine(this.animations);
     this.healthBar = HealthBar(props, this.target);
     correctionPhysicBody(this.physicBody, this.target);
+
+    this.idleRotations.set("ShoulderR", pickBy(this.target.getObjectByName("ShoulderR")?.rotation, ['x', 'y', 'z', 'order']))
+    this.idleRotations.set("LowerArmR", pickBy(this.target.getObjectByName("LowerArmR")?.rotation, ['x', 'y', 'z', 'order']))
+    this.idleRotations.set("UpperArmR", pickBy(this.target.getObjectByName("UpperArmR")?.rotation, ['x', 'y', 'z', 'order']))
 
     this.initWeapon(this.props.weapon)
   }
@@ -129,6 +139,9 @@ export class Hero {
     if (next.weapon) {
       this.initWeapon(next.weapon)
     }
+    if (next.state) {
+      this.isRightHandFreezed = ['idle', 'run', 'walk'].includes(next.state)
+    }
     // console.log('_debug prev', prev, next)
   }
 
@@ -163,8 +176,21 @@ export class Hero {
 
     // обновляем позицию руки с факелом,
     // чтобы она не зависела от текущей анимации
-    if (this.elementsHero.leftArm)
+    if (this.elementsHero.leftArm) {
       this.elementsHero.leftArm.rotation.x = Math.PI * -0.3;
+    }
+
+    const fixRotation = (boneName: string) => {
+      const bone = this.target.getObjectByName(boneName)
+      const {x,y,z} = this.idleRotations.get(boneName)
+      bone.rotation.set(x, y, z)
+    }
+
+    if (this.elementsHero.rightArm && this.isRightHandFreezed) {
+      fixRotation("ShoulderR");
+      fixRotation("LowerArmR");
+      fixRotation("UpperArmR");
+    }
   }
 }
 
@@ -192,24 +218,11 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
   return target;
 }
 
-const getWeaponVectorByName = (name: string) => {
-  switch (name) {
-    case 'Warrior_Sword':
-      return new Vector3(-0.25, 2.7, -0.1)
-    case 'WeaponR':
-      return new Vector3(-0.7, 0, 0)
-    case 'Rogue_Dagger':
-      return new Vector3(-1.0, 0.1, -0.1)
-    case 'WeaponR_end':
-      return new Vector3(0, 0, 0)
-  }
-
-  throw Error(`No vector for weapon name "${name}"`)
-}
-
 function initElementsHero(target: Object3D<Object3DEventMap>): ElementsHero {
   const leftArm = target.getObjectByName("ShoulderL")!;
   const leftHand = target.getObjectByName("Fist1L")!;
+  const rightArm = target.getObjectByName("ShoulderR")!;
+  const rightHand = target.getObjectByName("Fist1R")!;
   const torch = new Torch().sphere;
 
   // Прикрепляем факел к руке персонажа
@@ -218,6 +231,8 @@ function initElementsHero(target: Object3D<Object3DEventMap>): ElementsHero {
   return {
     leftArm,
     leftHand,
+    rightArm,
+    rightHand,
     torch,
   };
 }

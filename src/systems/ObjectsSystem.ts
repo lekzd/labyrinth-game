@@ -129,7 +129,11 @@ export const ObjectsSystem = () => {
             tryRunMethod(closest.data, 'interactWith')
 
             if (closest.data?.mesh.position && closest.data?.physicBody?.position) {
-              octree.move(closest.data?.mesh.position, closest.data.physicBody.position)
+              const distance = closest.data?.mesh.position.distanceTo(closest.data?.physicBody?.position)
+
+              if (distance > 10) {
+                octree.move(closest.data?.mesh.position, closest.data.physicBody.position)
+              }
             }
           }
         }
