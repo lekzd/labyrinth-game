@@ -30,6 +30,7 @@ export enum animationType {
   dagger_attack2 = 'dagger_attack2',
   staff_attack = 'staff_attack',
   sword_attackfast = 'sword_attackfast',
+  hammer_attack = 'hammer_attack',
   // death = 'death',
   // run = 'run',
   // walk = 'walk',

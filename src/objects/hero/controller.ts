@@ -45,9 +45,11 @@ const getWeaponAnimations = (type?: weaponType) => {
 
     case weaponType.sword:
     case weaponType.swordLazer:
-    case weaponType.hammer:
     case weaponType.katana:
       return [NpcAnimationStates.sword_attackfast]
+
+    case weaponType.hammer:
+      return [NpcAnimationStates.hammer_attack]
 
     case weaponType.staff:
     case weaponType.staff2:
