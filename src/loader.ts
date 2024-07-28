@@ -1,8 +1,10 @@
 import * as THREE from 'three'
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const textureLoader = new THREE.TextureLoader()
-const loader = new FBXLoader();
+const fbxLoader = new FBXLoader();
+const gltfLoader = new GLTFLoader();
 
 export enum texturesType {
   foliage_mask = 'foliage_mask.jpg',
@@ -60,12 +62,14 @@ export enum weaponType {
 type ItemsType = {
   model: Partial<Record<modelType, THREE.Group<THREE.Object3DEventMap>>>
   weapon: Partial<Record<weaponType, THREE.Group<THREE.Object3DEventMap>>>
+  weapon_glb: Partial<Record<weaponType, THREE.Group<THREE.Object3DEventMap>>>
   animation: Partial<Record<animationType, THREE.Group<THREE.Object3DEventMap>>>
   texture: Partial<Record<texturesType, THREE.Texture>>
 }
 
 export const loads: ItemsType = {
   weapon: {},
+  weapon_glb: {},
   model: {},
   animation: {},
   texture: {},
@@ -91,8 +95,13 @@ const load = (
 
       loader.load(path, obj => {
         obj.name = name;
-        // @ts-expect-error
-        loads[dir][name] = obj;
+        if (obj.scene) {
+          // @ts-expect-error
+          loads[dir][name] = obj.scene;  
+        } else {
+          // @ts-expect-error
+          loads[dir][name] = obj;
+        }
         loaded++
 
         if (loaded === entries.length) {
@@ -105,9 +114,9 @@ const load = (
 
 export const loaders = [
   load(textureLoader, texturesType, 'texture'),
-  load(loader, modelType, 'model', '.fbx'),
-  load(loader, animationType, 'animation', '.fbx'),
-  load(loader, weaponType, 'weapon', '.fbx'),
+  load(fbxLoader, modelType, 'model', '.fbx'),
+  load(fbxLoader, animationType, 'animation', '.fbx'),
+  load(gltfLoader, weaponType, 'weapon_glb', '.glb'),
 ];
 
 // @ts-expect-error

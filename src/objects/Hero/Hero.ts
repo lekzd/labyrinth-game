@@ -23,7 +23,6 @@ import { NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates.ts";
 import { state } from "@/state.ts";
 import { HealthBar } from "./healthbar.ts";
 import { HeroProps } from "@/types";
-import { setWeaponPosition } from "./setWeaponPosition";
 
 type Animations = Partial<Record<animationType, Group<Object3DEventMap>>>;
 
@@ -117,9 +116,8 @@ export class Hero {
       return;
     }
 
-    this.weaponObject = clone(loads.weapon[weaponType]!);
+    this.weaponObject = clone(loads.weapon_glb[weaponType]!);
 
-    setWeaponPosition(this.weaponObject);
     weaponRightHand.add(this.weaponObject);
   }
 

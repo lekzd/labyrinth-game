@@ -32,7 +32,7 @@ export class Weapon {
   cube: Mesh<BoxGeometry, THREE.MeshLambertMaterial[], Object3DEventMap>;
 
   constructor(props: DynamicObject) {
-    const model = loads.weapon[props.type];
+    const model = loads.weapon_glb[props.type];
 
     if (!model) {
       throw Error(`No model with type "${props.type}"`);
@@ -103,24 +103,18 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
   Object.assign(containner.position, props.position);
   Object.assign(containner.quaternion, props.rotation);
 
-  // TODO: скелетоны scale.multiplyScalar(5);
-  target.scale.multiplyScalar(0.05);
+  target.rotateZ(-Math.PI/2)
+  target.scale.multiplyScalar(5);
   target.updateMatrix();
   containner.updateMatrix();
 
   target.traverse((o) => {
     if (o.isMesh) {
-      o.castShadow = true;
-      o.receiveShadow = true;
+      o.castShadow = false;
+      o.receiveShadow = false;
 
       o.material = weaponMaterial;
 
-      // o.material.wireframe = true
-      // o.material.color = 0xFFcc00
-
-      // o.material.map = new TextureLoader().load(
-      //   `model/${target.name}_Texture.png`
-      // );
       o.material.needsUpdate = true;
     }
   });
