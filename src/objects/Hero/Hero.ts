@@ -13,7 +13,6 @@ import {
   Vector3,
   LoopOnce,
   Vector3Like,
-  Euler,
 } from "three";
 import { animationType, loads, weaponType } from "@/loader";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
@@ -25,7 +24,6 @@ import { state } from "@/state.ts";
 import { HealthBar } from "./healthbar.ts";
 import { HeroProps } from "@/types";
 import { setWeaponPosition } from "./setWeaponPosition";
-import { pickBy } from "@/utils/pickBy.ts";
 
 type Animations = Partial<Record<animationType, Group<Object3DEventMap>>>;
 
@@ -57,8 +55,6 @@ export class Hero {
   private mixer: AnimationMixer;
   private healthBar;
   public weaponObject: Object3D<Object3DEventMap>;
-  private idleRotations = new Map<string, Euler>();
-  private isRightHandFreezed = false;
 
   readonly elementsHero: ElementsHero;
   readonly animations: AnimationClip[];
@@ -86,10 +82,6 @@ export class Hero {
     this.healthBar = HealthBar(props, this.target);
     correctionPhysicBody(this.physicBody, this.target);
 
-    this.idleRotations.set("ShoulderR", pickBy(this.target.getObjectByName("ShoulderR")?.rotation, ['x', 'y', 'z', 'order']))
-    this.idleRotations.set("LowerArmR", pickBy(this.target.getObjectByName("LowerArmR")?.rotation, ['x', 'y', 'z', 'order']))
-    this.idleRotations.set("UpperArmR", pickBy(this.target.getObjectByName("UpperArmR")?.rotation, ['x', 'y', 'z', 'order']))
-
     this.initWeapon(this.props.weapon)
   }
 
@@ -116,12 +108,16 @@ export class Hero {
     return this.target?.quaternion;
   }
 
-  private initWeapon(weaponType: weaponType) {
+  private initWeapon(weaponType?: weaponType) {
     const weaponRightHand = this.target.getObjectByName("WeaponR")!;
 
     weaponRightHand.remove(...weaponRightHand.children);
 
-    this.weaponObject = clone(loads.weapon[weaponType]);
+    if (!weaponType) {
+      return;
+    }
+
+    this.weaponObject = clone(loads.weapon[weaponType]!);
 
     setWeaponPosition(this.weaponObject);
     weaponRightHand.add(this.weaponObject);
@@ -178,18 +174,6 @@ export class Hero {
     // чтобы она не зависела от текущей анимации
     if (this.elementsHero.leftArm) {
       this.elementsHero.leftArm.rotation.x = Math.PI * -0.3;
-    }
-
-    const fixRotation = (boneName: string) => {
-      const bone = this.target.getObjectByName(boneName)
-      const {x,y,z} = this.idleRotations.get(boneName)
-      bone.rotation.set(x, y, z)
-    }
-
-    if (this.elementsHero.rightArm && this.isRightHandFreezed) {
-      fixRotation("ShoulderR");
-      fixRotation("LowerArmR");
-      fixRotation("UpperArmR");
     }
   }
 }
@@ -265,6 +249,7 @@ function initAnimations(
       action: mixer.clipAction(clip),
     };
   }
+
   return animations;
 }
 function pullAnimations(animation: Animations): AnimationClip[] {
