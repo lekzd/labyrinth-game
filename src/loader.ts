@@ -27,6 +27,9 @@ export enum texturesType {
 export enum animationType {
   jumping = 'jumping',
   punch = 'punch',
+  dagger_attack2 = 'dagger_attack2',
+  staff_attack = 'staff_attack',
+  sword_attackfast = 'sword_attackfast',
   // death = 'death',
   // run = 'run',
   // walk = 'walk',

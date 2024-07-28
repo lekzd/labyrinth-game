@@ -1,13 +1,14 @@
 import * as THREE from 'three';
 import { state } from "../../state.ts";
 import { pickBy } from "../../utils/pickBy.ts";
-import { NpcAnimationStates } from "./NpcAnimationStates.ts";
-import { animationType } from "../../loader.ts";
+import { NpcAdditionalAnimations, NpcAnimationStates } from "./NpcAnimationStates.ts";
+import { animationType, weaponType } from "../../loader.ts";
 import { systems } from '../../systems/index.ts';
 import { settings } from "./settings.ts";
 import { SwordTailEffect } from './SwordTailEffect.ts';
 import { DynamicObject } from '@/types/DynamicObject.ts';
 import {throttle} from "@/utils/throttle.ts";
+import { Hero } from './Hero.ts';
 
 const sendThrottle = throttle(state.setState, 500)
 const send = state.setState
@@ -31,11 +32,36 @@ const isEqualParams = (prev, { rotation, position, ...other }) => {
   return true
 }
 
-const BasicCharacterControllerInput = (person) => {
+const getWeaponAnimations = (type?: weaponType) => {
+  switch (type) {
+    case weaponType.arrow:
+    case weaponType.bow:
+    case weaponType.crossbow:
+    case weaponType.minigun:
+      return []
+
+    case weaponType.dagger:
+      return [NpcAnimationStates.dagger_attack2]
+
+    case weaponType.sword:
+    case weaponType.swordLazer:
+    case weaponType.hammer:
+    case weaponType.katana:
+      return [NpcAnimationStates.sword_attackfast]
+
+    case weaponType.staff:
+    case weaponType.staff2:
+      return [NpcAnimationStates.staff_attack]
+    default:
+      return []
+  }
+}
+
+const BasicCharacterControllerInput = (person: Hero) => {
   let timeout = null
   const { speed } = settings[person.props.type];
 
-  const animate = (anim) => {
+  const animate = (anim: NpcAdditionalAnimations) => {
     state.setState({ objects: { [person.id]: { state: anim } } })
 
     timeout = setTimeout(() => {
@@ -50,7 +76,9 @@ const BasicCharacterControllerInput = (person) => {
     if (input.attack) {
       if (timeout) clearTimeout(timeout);
 
-      for (const anim of [NpcAnimationStates.attack, NpcAnimationStates.attack2, NpcAnimationStates.sword_attackfast, NpcAnimationStates.dagger_attack2, NpcAnimationStates.spell1]) {
+      const animations = getWeaponAnimations(person.props.weapon)
+
+      for (const anim of animations) {
         if (anim in person.animations) {
 
           swordTailEffect.run(person)
@@ -141,6 +169,6 @@ const BasicCharacterControllerInput = (person) => {
   };
 };
 
-export const KeyboardCharacterController = (person) => (
+export const KeyboardCharacterController = (person: Hero) => (
   BasicCharacterControllerInput(person)
 )

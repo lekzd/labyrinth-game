@@ -50,7 +50,7 @@ interface StateAction extends ReturnType<typeof action> {
 const PHYSIC_Y = 5;
 export class Hero {
   private target: Object3D<Object3DEventMap>;
-  private stateMachine: any;
+  private stateMachine: ReturnType<typeof CharacterFSM>;
   private mixer: AnimationMixer;
   private healthBar;
   public weaponObject: Object3D<Object3DEventMap>;
@@ -140,12 +140,9 @@ export class Hero {
     if (!next) return;
 
     if (next.weapon) {
-      this.initWeapon(next.weapon)
+      this.props.weapon = next.weapon;
+      this.initWeapon(next.weapon);
     }
-    if (next.state) {
-      this.isRightHandFreezed = ['idle', 'run', 'walk'].includes(next.state)
-    }
-    // console.log('_debug prev', prev, next)
   }
 
   setRotation(angle: number) {
