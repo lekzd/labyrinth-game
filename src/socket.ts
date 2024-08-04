@@ -8,69 +8,79 @@ const channel = urlParams.get('channel') || '';
 
 updateSeed(channel)
 
-const handlers = new Map(), path = `ws${protocol === 'https:' ? 's' : ''}://${host}/ws?channel=${channel}`;
-
-handlers.set((item) => {
-  console.group('UPDATE')
-  console.log(item);
-  console.groupEnd();
-}, [])
-
-let requests: any[] = [], timeout: NodeJS.Timeout;
-
-export let ws: WebSocket;
-
 export enum socketType {
   open = 'open',
   connect = 'connect',
   close = 'close',
 }
 
-const connect = () => {
-  ws = new WebSocket(path);
+export const socket = (logs) => {
+  const handlers = new Map(), path = `ws${protocol === 'https:' ? 's' : ''}://${host}/ws?channel=${channel}`;
 
-  ws.onopen = () => {
-    if (timeout) clearTimeout(timeout);
-
-    for (const req of requests) send(req);
-
-    requests = [];
-  };
-
-  ws.onclose = () => {
-    timeout = setTimeout(connect, 5000);
-  };
-
-  ws.onmessage = async evt => {
-    const item = JSON.parse(evt.data);
-
-    for (const handler of handlers.keys()) {
-      handler(item);
+  handlers.set((item) => {
+    if (logs?.update) {
+      console.group(`${logs.name} UPDATE`)
+      console.log(item);
+      console.groupEnd();
     }
-  };
-}
+  }, [])
 
-export const send = (next = null) => {
-  if (!ws) connect();
+  let requests: any[] = [], timeout: NodeJS.Timeout;
 
-  if (!next) return;
+  let ws: WebSocket;
 
-  if (!ws || ws.readyState !== ws.OPEN) return requests.push(next);
+  const connect = () => {
+    if (ws && ws.readyState !== ws.CLOSED) return;
 
-  console.group('SEND');
-  console.log(next);
-  console.groupEnd();
+    ws = new WebSocket(path);
 
-  setTimeout(() => ws.send(JSON.stringify(next)), 0)
-}
+    ws.onopen = () => {
+      if (timeout) clearTimeout(timeout);
 
-export const onUpdate = (handle) => {
+      for (const req of requests) send(req);
 
-  if (typeof handle !== 'function') return;
+      requests = [];
+    };
 
-  handlers.set(handle, []);
+    ws.onclose = () => {
+      timeout = setTimeout(connect, 5000);
+    };
 
-  return () => {
-    handlers.delete(handle);
-  };
+    ws.onmessage = async evt => {
+      const item = JSON.parse(evt.data);
+
+      for (const handler of handlers.keys()) {
+        handler(item);
+      }
+    };
+  }
+
+  const send = (next = null) => {
+    if (!ws) connect();
+
+    if (!next) return;
+
+    if (!ws || ws.readyState !== ws.OPEN) return requests.push(next);
+
+    if (logs?.send) {
+      console.group(`${logs.name} SEND`);
+      console.log(next);
+      console.groupEnd();
+    }
+
+    ws.send(JSON.stringify(next));
+  }
+
+  const onUpdate = (handle) => {
+
+    if (typeof handle !== 'function') return;
+
+    handlers.set(handle, []);
+
+    return () => {
+      handlers.delete(handle);
+    };
+  }
+
+  return { send, connect, onUpdate }
 }

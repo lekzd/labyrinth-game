@@ -14,10 +14,13 @@ import {
   scale,
   state,
 } from "./state.ts";
-import { onUpdate, send } from "./socket.ts";
+import { socket, } from "./socket.ts";
 import { pickBy } from "./utils/pickBy.ts";
+import { Spawners } from "@/spawner.ts";
 
 const ROOM_SIZE = 13;
+
+const { send, onUpdate } = socket({ name: 'USER' });
 
 onUpdate((next) => {
   if (!next.init) {
@@ -25,7 +28,7 @@ onUpdate((next) => {
     return;
   }
 
-  const personsCount = 2;
+  const personsCount = 0;
   const heroes = [];
 
   for (let i = 0; i < personsCount; i++) {
@@ -61,6 +64,8 @@ onUpdate((next) => {
       {}
     ),
   });
+
+  Spawners()
 });
 
 const seed = Math.random().toString(36).substring(2, 6)

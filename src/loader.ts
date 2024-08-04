@@ -37,7 +37,7 @@ export enum modelType {
   Warrior = 'Warrior',
   Wizard = 'Wizard',
 
-  // Skeleton_Mage = 'Skeleton_Mage',
+  Skeleton_Mage = 'Skeleton_Mage',
   // Skeleton_Minion = 'Skeleton_Minion',
   // Skeleton_Rogue = 'Skeleton_Rogue',
   // Skeleton_Warrior = 'Skeleton_Warrior',

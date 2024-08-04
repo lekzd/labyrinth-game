@@ -123,15 +123,23 @@ export class Hero {
     weaponRightHand.add(this.weaponObject);
   }
 
-  setPosition(position: Partial<Vector3Like>) {
-    this.physicBody.position.set(
+  setPosition(position: Partial<Vector3Like>, lerpFactor = 1) {
+
+    const targetPosition = new CANNON.Vec3(
       position.x || this.physicBody.position.x,
       position.y ? position.y + this.physicY : this.physicBody.position.y,
       position.z || this.physicBody.position.z
+    )
+
+    this.physicBody.position.vadd(
+      targetPosition.vsub(this.physicBody.position).scale(lerpFactor),
+      this.physicBody.position
     );
   }
 
   onStateChange(prev, next) {
+    if (!next) return;
+
     if (next.weapon) {
       this.initWeapon(next.weapon)
     }
@@ -155,18 +163,29 @@ export class Hero {
     this.physicBody.quaternion.copy(npcRotation);
   }
 
+  die() {
+    state.setState({ objects: { [this.id]: null } });
+  }
+
   update(timeInSeconds: number) {
     if (!this.stateMachine.currentState) {
       return;
     }
     const obj = state.objects[this.id];
+
+    if (!obj) return;
+
+    if (obj.health <= 0) return this.die();
+
     this.healthBar.update(obj);
     this.stateMachine.update(timeInSeconds, obj.state);
 
-    this.setPosition(obj.position);
+    this.setPosition(obj.position, 0.01);
 
-    this.physicBody.quaternion.copy(obj.rotation);
-    Object.assign(this.target.quaternion, obj.rotation);
+    const q2 = new Quaternion().copy(obj.rotation);
+    const q1 = new Quaternion().copy(this.physicBody.quaternion).slerp(q2, .05);
+
+    this.physicBody.quaternion.copy(q1);
 
     if (this.mixer) this.mixer.update(timeInSeconds);
 
@@ -293,8 +312,6 @@ function CharacterFSM({ animations }: { animations: AnimationControllers }) {
     }
     //creating new instance of a state class
     currentState = action(animations, name);
-
-    console.log(currentState);
 
     //calling the Enter method from State
     currentState.Enter(prevState);

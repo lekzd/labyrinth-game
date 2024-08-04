@@ -92,6 +92,8 @@ export const GrassSystem = () => {
       for (const id in state.objects) {
         const object = state.objects[id];
 
+        if (!object || !object?.position) continue;
+
         const x = object.position.x / 10;
         const y = object.position.z / 10;
 

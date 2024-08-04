@@ -8,8 +8,10 @@ import { checkHit } from "./hit.ts";
 import { settings } from "./settings.ts";
 import { SwordTailEffect } from './SwordTailEffect.ts';
 import { DynamicObject } from '@/types/DynamicObject.ts';
+import {throttle} from "@/utils/throttle.ts";
 
-const sendThrottle = state.setState
+const sendThrottle = throttle(state.setState, 500)
+const send = state.setState
 
 const isEqualParams = (prev, { rotation, position, ...other }) => {
   for (const key in other) {
@@ -72,6 +74,9 @@ const BasicCharacterControllerInput = (person) => {
       const { input } = systems.inputSystem
       const { id, velocity, decceleration, acceleration } = person;
       const prev = state.objects[id];
+
+      if (!prev) return;
+
       const next: Partial<DynamicObject> = {}
 
       const acc = acceleration.clone();
@@ -82,8 +87,7 @@ const BasicCharacterControllerInput = (person) => {
         velocity.z * decceleration.z
       );
       frameDecceleration.multiplyScalar(timeInSeconds);
-      frameDecceleration.z = Math.sign(frameDecceleration.z) * Math.min(
-        Math.abs(frameDecceleration.z), Math.abs(velocity.z));
+      frameDecceleration.z = Math.sign(frameDecceleration.z) * Math.min(Math.abs(frameDecceleration.z), Math.abs(velocity.z));
 
       velocity.add(frameDecceleration);
 
@@ -127,14 +131,13 @@ const BasicCharacterControllerInput = (person) => {
       controlObject.position.add(forward);
       controlObject.position.add(sideways);
 
-      // assign(physicBody.position, controlObject.position);
-      person.setPosition(controlObject.position)
+      person.setPosition(controlObject.position, 1)
 
       next.position = pickBy(controlObject.position, ['x', 'y', 'z']);
       next.rotation = pickBy(controlObject.rotation, ['x', 'y', 'z', 'w']);
 
       if (!isEqualParams(prev, { ...prev, ...next })) {
-        sendThrottle({ objects: { [person.id]: next } })
+        (prev.state !== next.state ? send : sendThrottle)({ objects: { [person.id]: next } })
       }
       state.objects[person.id] = { ...prev, ...next };
     }

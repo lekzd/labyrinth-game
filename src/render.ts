@@ -64,6 +64,7 @@ const getObjectCOntructorConfig = (type: ObjectType) => {
     case modelType.Monk:
     case modelType.Cleric:
     case modelType.Wizard:
+    case modelType.Skeleton_Mage:
       return {
         Constructor: Hero,
         physical: true,
@@ -85,7 +86,14 @@ export const addObjects = (items = {}) => {
       systems.objectsSystem.objects[id]?.onStateChange?.(structuredClone(state.objects[id]), items[id])
       continue;
     };
+
     const objectConfig = items[id];
+
+    // Delete object
+    if (!objectConfig) {
+      systems.objectsSystem.remove(id);
+      return;
+    }
 
     const controllable = currentPlayer.activeObjectId === id;
     const { Constructor: ObjectConstructor, ...config } =

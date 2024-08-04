@@ -81,6 +81,16 @@ export const ObjectsSystem = () => {
         octree.set(object.mesh.position, object);
       }
     },
+    remove: (id) => {
+      const object = objects[id];
+
+      if (!object) return;
+
+      physicObjects.delete(id);
+      physicWorld.remove(object.physicBody);
+      interactiveObjects.delete(object.props.id);
+      octree.delete(object.mesh.position);
+    },
     update: (timeElapsedS: number) => {
       const fixedTimeStep = 1.0 / 60.0; // seconds
 

@@ -105,6 +105,22 @@ const generateRoom = ({
     }
   }
 
+  if (actions.includes(Tiles.Spawner)) {
+    let itemsNumber = 1;
+
+    while (itemsNumber) {
+      const tileX = random(0, width);
+      const tileY = random(0, height);
+      const tileIndex = tileY * width + tileX;
+
+      if (tiles[tileIndex] === Tiles.Floor) {
+        tiles[tileIndex] = Tiles.Spawner;
+        itemsNumber--;
+      }
+    }
+  }
+
+
   return {
     id: `${x}_${y}`,
     width,
@@ -227,6 +243,7 @@ export const generateRooms = ({ state, ROOM_SIZE }: GeneratorConfig) => {
       }
 
       actions.push(Tiles.Weapon);
+      actions.push(Tiles.Spawner);
 
       const perpendicularExits = getPerpendicularExits(action);
 
