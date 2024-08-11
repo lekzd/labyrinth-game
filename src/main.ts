@@ -28,7 +28,7 @@ onUpdate((next) => {
     return;
   }
 
-  const personsCount = 0;
+  const personsCount = 2;
   const heroes = [];
 
   for (let i = 0; i < personsCount; i++) {
@@ -92,7 +92,7 @@ currentPlayer.id = `${seed}:${currentPlayer.id}`
 Promise.all(loaders).then(() => {
   render(state);
 
-  state.listen((next, params) => {
+  state.listen((_, next, params) => {
     if (next.rooms) {
       items.roomChunks({ ...state });
     }

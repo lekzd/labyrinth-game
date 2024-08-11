@@ -124,6 +124,7 @@ export class Hero {
   }
 
   setPosition(position: Partial<Vector3Like>, lerpFactor = 1) {
+    if (!position || !this.physicBody.position) return;
 
     const targetPosition = new CANNON.Vec3(
       position.x || this.physicBody.position.x,
@@ -164,7 +165,18 @@ export class Hero {
   }
 
   die() {
+    console.log('Умер', this.props)
     state.setState({ objects: { [this.id]: null } });
+  }
+
+  hit(by: HeroProps) {
+    const { attack } = by;
+
+    const prev = state.objects[this.props.id] ? state.objects[this.props.id].health : 0;
+
+    if (prev <= 0) return;
+
+    state.setState({ objects: { [this.props.id]: { health: prev - attack } } })
   }
 
   update(timeInSeconds: number) {
@@ -181,6 +193,8 @@ export class Hero {
     this.stateMachine.update(timeInSeconds, obj.state);
 
     this.setPosition(obj.position, 0.01);
+
+    if (!obj.rotation) return;
 
     const q2 = new Quaternion().copy(obj.rotation);
     const q1 = new Quaternion().copy(this.physicBody.quaternion).slerp(q2, .05);
@@ -203,7 +217,6 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
   Object.assign(target.position, props.position);
   Object.assign(target.quaternion, props.rotation);
 
-  // TODO: скелетоны scale.multiplyScalar(5);
   target.scale.multiplyScalar(0.05);
   target.updateMatrix();
 

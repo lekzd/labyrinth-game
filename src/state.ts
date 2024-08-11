@@ -4,6 +4,7 @@ import { something } from "./utils/something";
 import { NpcAnimationStates } from "./objects/hero/NpcAnimationStates.ts";
 import { mergeDeep } from "./utils/mergeDeep.ts";
 import { settings } from "./objects/hero/settings.ts";
+import {pickPrev} from "@/utils/pickPrev.ts";
 
 type RecursivePartial<T> = {
   [P in keyof T]?:
@@ -26,7 +27,7 @@ export type State = {
   players: Record<string, Player>;
   activePlayerId: number;
   setState: setState;
-  listen(handler: setState): void;
+  listen(handler: (prev: RecursivePartial<State>, next: RecursivePartial<State>, params?: { server?: boolean }) => void): void;
 };
 
 export const initState = (initialState: Partial<State>): State => {
@@ -49,10 +50,12 @@ export const initState = (initialState: Partial<State>): State => {
   };
 
   const setState = (newState: Partial<State> = {}, params) => {
+    const prev = pickPrev(state, newState);
+
     mergeDeep(state, newState);
 
     subscribers.forEach((handle) => {
-      handle(newState, params);
+      handle(prev, newState, params);
     });
   };
 

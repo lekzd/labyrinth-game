@@ -46,7 +46,7 @@ export const settings: Record<modelType, SettingObject> = {
     attack: 5,
   },
   [modelType.Skeleton_Mage]: {
-    health: 30,
+    health: 10,
     mana: 10,
     speed: 2.5,
     mass: 25,

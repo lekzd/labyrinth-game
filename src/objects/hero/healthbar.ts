@@ -23,11 +23,14 @@ const updateTexture = (texture: THREE.Texture, percent: number, color: string) =
   texture.material.map = new THREE.CanvasTexture(canvas)
 }
 
-function createSprite(texture = createTexture()) {
+function createSprite({ texture = createTexture(), scale = 0.05, pos = 16 } = {}) {
   const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
-
   const sprite = new THREE.Sprite(spriteMaterial);
-  sprite.scale.set(30, 5, 30); // Настройка размера спрайта
+
+  const size = 0.25 / scale;
+
+  sprite.scale.set(6 * size, size, 6 * size); // Настройка размера спрайта
+  sprite.position.set(0, pos / scale, 0); // Настройка позиционирования
 
   return sprite;
 }
@@ -40,11 +43,9 @@ const getCanvasCtx = (texture: THREE.Texture) => {
 export const HealthBar = (props: HeroProps, target) =>  {
   let state = {}
   const base = settings[props.type];
-  const healthSprite = createSprite(); // 75% здоровья
-  healthSprite.position.set(0, 310, 0);
 
-  const manaSprite = createSprite();
-  manaSprite.position.set(0, 305, 0);
+  const healthSprite = createSprite({ scale: target.scale.x, pos: 16 }); // 75% здоровья
+  const manaSprite = createSprite({ scale: target.scale.x, pos: 15.75 });
 
   target.add(healthSprite);
   target.add(manaSprite);

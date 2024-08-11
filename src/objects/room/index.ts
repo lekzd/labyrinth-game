@@ -137,7 +137,7 @@ export class Room {
       const puzzleIds = puzzleHandlers.map(object => object.id)
       const gateObject = roomObjects.find(object => object.type === 'Gate')
 
-      state.listen(next => {
+      state.listen((_, next) => {
         if (next.objects) {
           if (!puzzleIds.some(id => next.objects?.hasOwnProperty(id))) {
             return

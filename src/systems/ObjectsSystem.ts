@@ -1,10 +1,11 @@
 import * as THREE from "three";
-import { PointOctree, RayPointIntersection } from "sparse-octree";
+import { PointOctree } from "sparse-octree";
 import { physicWorld } from "@/cannon";
 import { MapObject } from "@/types";
 import { currentPlayer } from "@/main";
 import { systems } from ".";
 import { scale, state } from "@/state";
+import { throttle } from "@/utils/throttle.ts";
 
 type ObjectAddConfig = Partial<{
   interactive: boolean;
@@ -13,7 +14,7 @@ type ObjectAddConfig = Partial<{
 
 const intervals = new Map<string, number>()
 
-const tryRunMethod = (object: MapObject | null | undefined, methodName: 'interactWith' | 'setFocus') => {
+const tryRunMethod = (object: MapObject | null | undefined, methodName: 'interactWith' | 'setFocus' | 'hit') => {
   if (!object) {
     return
   }
@@ -40,30 +41,27 @@ const tryRunMethod = (object: MapObject | null | undefined, methodName: 'interac
   intervals.set(key, intervalId)
 }
 
+const fixedTimeStep = 1.0 / 60.0; // seconds
+
+const hitItems = throttle((activeObject, itemsToHit) => {
+  for (const itemToHit of itemsToHit) {
+    const { data } = itemToHit;
+
+    data.hit(activeObject);
+  }
+}, 750);
+
 export const ObjectsSystem = () => {
   const objects: Record<string, MapObject> = {};
   const physicObjects = new Map<string, MapObject>();
-  const interactiveObjects = new Map<string, MapObject>();
-  const objectsToInteract: RayPointIntersection<MapObject>[] = [];
 
   // Создаем Octree
   const min = new THREE.Vector3(0, -1, 0);
   const max = new THREE.Vector3(state.colls * scale, 20, state.rows * scale);
   const octree = new PointOctree<MapObject>(min, max, 0, 10000);
 
-  const findActiveObject = (objects: Record<string, MapObject>) => {
-    for (const id in objects) {
-      if (currentPlayer.activeObjectId === id) {
-        return objects[id];
-      }
-    }
-
-    return null;
-  };
-
   return {
     objects,
-    objectsToInteract,
     add: (object: MapObject, config: ObjectAddConfig) => {
       objects[object.props.id] = object;
 
@@ -77,7 +75,6 @@ export const ObjectsSystem = () => {
       }
 
       if (config.interactive) {
-        interactiveObjects.set(object.props.id, object);
         octree.set(object.mesh.position, object);
       }
     },
@@ -86,70 +83,70 @@ export const ObjectsSystem = () => {
 
       if (!object) return;
 
+      octree.delete(object.mesh.position);
       physicObjects.delete(id);
       physicWorld.remove(object.physicBody);
-      interactiveObjects.delete(object.props.id);
-      octree.delete(object.mesh.position);
     },
     update: (timeElapsedS: number) => {
-      const fixedTimeStep = 1.0 / 60.0; // seconds
-
       physicWorld.step(fixedTimeStep, timeElapsedS);
 
       physicObjects.forEach((object) => {
         if (object.physicBody) {
+          const prevPos = new THREE.Vector3().copy(object.mesh.position);
+
           object.mesh.position.set(
             object.physicBody.position.x,
             object.physicBody.position.y - (object.physicY ?? 0),
             object.physicBody.position.z
           );
+
           object.mesh.quaternion.copy(object.physicBody.quaternion);
+          octree.move(prevPos, object.mesh.position);
         }
       });
 
-      const activeObject = findActiveObject(objects);
+      const activeObject = objects[currentPlayer.activeObjectId];
 
-      if (activeObject) {
-        const direction = new THREE.Vector3(0, 0, 1);
-        direction.applyQuaternion(activeObject.mesh.quaternion);
-        const raycaster = new THREE.Raycaster(
-          activeObject.mesh.position,
-          direction,
-          1,
-          10
-        );
-        raycaster.camera = systems.uiSettingsSystem.camera;
-        raycaster.params.Points.threshold = 5;
+      if (!activeObject) return;
 
-        // const intersects = octree.findPoints(activeObject.mesh.position, 10, true);
-        const intersects = octree.raycast(raycaster);
+      const direction = new THREE.Vector3(0, 0, 1);
+      direction.applyQuaternion(activeObject.mesh.quaternion);
 
-        if (intersects.length) {
-          const closest = intersects.find((o) => o.data?.interactWith);
+      const raycaster = new THREE.Raycaster(activeObject.mesh.position, direction, 1, 10);
+      raycaster.camera = systems.uiSettingsSystem.camera;
+      raycaster.params.Points.threshold = 5;
 
-          if (!closest) {
-            return
-          }
+      const intersects = octree.raycast(raycaster);
 
-          const { input } = systems.inputSystem
+      if (!intersects.length) return;
 
-          tryRunMethod(closest.data, 'setFocus')
+      const { input } = systems.inputSystem;
 
-          if (input.interact) {
-            tryRunMethod(closest.data, 'interactWith')
+      // Находим с чем можно взаимодействовать
+      const itemToInteract = intersects.find((o) => o.data?.interactWith);
+      if (itemToInteract) {
+        const { data } = itemToInteract;
 
-            if (closest.data?.mesh.position && closest.data?.physicBody?.position) {
-              const distance = closest.data?.mesh.position.distanceTo(closest.data?.physicBody?.position)
+        tryRunMethod(data, 'setFocus')
 
-              if (distance > 10) {
-                octree.move(closest.data?.mesh.position, closest.data.physicBody.position)
-              }
+        if (input.interact) {
+          tryRunMethod(data, 'interactWith')
+
+          if (data?.mesh.position && data?.physicBody?.position) {
+            const distance = data?.mesh.position.distanceTo(data?.physicBody?.position)
+
+            if (distance > 10) {
+              octree.move(data?.mesh.position, data.physicBody.position)
             }
           }
         }
+      }
 
-        objectsToInteract.length = 0;
-        objectsToInteract.push(...intersects);
+      // Находим что можно атаковать
+      const itemsToHit = intersects.filter((o) => o.data?.hit);
+
+      if (itemsToHit.length && input.attack) {
+        hitItems(activeObject.props, itemsToHit)
       }
     },
   };

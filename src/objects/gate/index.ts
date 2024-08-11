@@ -59,7 +59,7 @@ export class Gate {
 
     this.physicBody = this.initPhysicBody();
 
-    state.listen(next => {
+    state.listen((_, next) => {
       if (next.objects?.[this.props.id]) {
         this.updateState();
       }

@@ -11,7 +11,7 @@ import { pickBy } from "@/utils/pickBy.ts";
 import {settings} from "@/objects/hero/settings.ts";
 import {modelType} from "@/loader.ts";
 
-const { onUpdate, send, connect } = socket({ name: 'MOBS', update: false, send: true });
+const { onUpdate, send, connect } = socket({ name: 'MOBS', update: false, send: false  });
 
 /*
 * Не завязывается на стор и живет на своем сокете, чтобы иметь возможность переместиться с фронта на бэк
@@ -40,7 +40,7 @@ const getQuaternion = (pos1, pos2) => {
 
 
 export const Spawners = async (count = 1) => {
-  const state = {}, spawners = {};
+  const state = {}, spawners = {}, dies = {};
 
   const next = (change) => {
     mergeDeep(state, change);
@@ -64,6 +64,15 @@ export const Spawners = async (count = 1) => {
   // Подписаться на обновления сервера
   onUpdate((next) => {
     mergeDeep(state, next);
+
+    for (const id in (next.objects || {})) {
+      // console.log('id', id)
+      // TODO: почему-то не приходит null у скелетона
+      if (id.startsWith('mob') && !next.objects[id]) {
+        dies[id] = true;
+        setTimeout(() => { delete dies[id]; }, 10000)
+      }
+    }
 
     if (next.rooms) {
       init(next);
@@ -98,24 +107,22 @@ export const Spawners = async (count = 1) => {
         }
       }
 
-      if (distance > 150) continue;
+      if (distance > 150 || item?.health <= 0 || dies[id]) continue;
 
       // Если нет создаем
       if (!item) {
         const { x, y, z } = pos;
         const type = modelType.Skeleton_Mage;
-        next({
-          objects: {
-            [id]: {
-              id,
-              type,
-              ...settings[type],
-              state: NpcAnimationStates.idle,
-              position: { x, y, z },
-              rotation: { w: 0.548628892113074, x: 0, y: -0.8360659894642256, z: 0 }
-            }
-          }
-        });
+        item = {
+          id,
+          type,
+          ...settings[type],
+          state: NpcAnimationStates.idle,
+          position: { x, y, z },
+          rotation: { w: 0.548628892113074, x: 0, y: -0.8360659894642256, z: 0 }
+        };
+
+        next({ objects: { [item.id]: item } });
       }
 
       // Если кто-то рядом идем
@@ -142,7 +149,6 @@ export const Spawners = async (count = 1) => {
         });
         // Если секунду не бил то наносим урон
         if (!attackCoolDown[item.id]) {
-          console.log('item.attack', item)
           next({
             objects: {
               [person.id]: {

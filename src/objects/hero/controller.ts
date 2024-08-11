@@ -4,7 +4,6 @@ import { pickBy } from "../../utils/pickBy.ts";
 import { NpcAnimationStates } from "./NpcAnimationStates.ts";
 import { animationType } from "../../loader.ts";
 import { systems } from '../../systems/index.ts';
-import { checkHit } from "./hit.ts";
 import { settings } from "./settings.ts";
 import { SwordTailEffect } from './SwordTailEffect.ts';
 import { DynamicObject } from '@/types/DynamicObject.ts';
@@ -57,8 +56,6 @@ const BasicCharacterControllerInput = (person) => {
           swordTailEffect.run(person)
 
           animate(anim)
-          setTimeout(() => checkHit(person), 500);
-
           break;
         }
       }
