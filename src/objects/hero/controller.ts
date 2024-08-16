@@ -125,7 +125,6 @@ const BasicCharacterControllerInput = (person: Hero) => {
           effect.run(person);
 
           animate(anim);
-          // setTimeout(() => checkHit(person), 500);
 
           break;
         }
