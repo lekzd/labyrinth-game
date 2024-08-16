@@ -1,74 +1,144 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 import { state } from "../../state.ts";
 import { pickBy } from "../../utils/pickBy.ts";
-import { NpcAnimationStates } from "./NpcAnimationStates.ts";
-import { animationType } from "../../loader.ts";
+import {
+  NpcAdditionalAnimations,
+  NpcAnimationStates
+} from "./NpcAnimationStates.ts";
+import { animationType, weaponType } from "../../loader.ts";
 import { systems } from '../../systems/index.ts';
 import { settings } from "./settings.ts";
 import { SwordTailEffect } from './SwordTailEffect.ts';
 import { DynamicObject } from '@/types/DynamicObject.ts';
 import {throttle} from "@/utils/throttle.ts";
+import { Hero } from './Hero.ts';
+import { MinigunEffect } from "./MinigunEffect.ts";
+import { ArrowEffect } from "./ArrowEffect.ts";
+import { MagicBallEffect } from "./MagicBallEffect.ts";
 
 const sendThrottle = throttle(state.setState, 500)
 const send = state.setState
 
 const isEqualParams = (prev, { rotation, position, ...other }) => {
   for (const key in other) {
-    if (other[key] !== prev[key])
-      return false
+    if (other[key] !== prev[key]) return false;
   }
 
-  const points = { rotation, position }
+  const points = { rotation, position };
 
   for (const name in points) {
     for (const key in points[name]) {
       if (Math.floor(points[name][key]) !== Math.floor(prev[name][key])) {
-        return false
+        return false;
       }
     }
   }
 
-  return true
-}
+  return true;
+};
 
-const BasicCharacterControllerInput = (person) => {
-  let timeout = null
+const getWeaponAnimations = (type?: weaponType) => {
+  switch (type) {
+    case weaponType.arrow:
+      return [NpcAnimationStates.bow_attack];
+
+    case weaponType.crossbow:
+      return [];
+
+    case weaponType.minigun:
+      return [NpcAnimationStates.gunplay];
+
+    case weaponType.dagger:
+      return [NpcAnimationStates.dagger_attack2];
+
+    case weaponType.sword:
+    case weaponType.swordLazer:
+    case weaponType.katana:
+      return [NpcAnimationStates.sword_attackfast];
+
+    case weaponType.hammer:
+      return [NpcAnimationStates.hammer_attack];
+
+    case weaponType.staff:
+    case weaponType.staff2:
+      return [NpcAnimationStates.staff_attack];
+    default:
+      return [];
+  }
+};
+
+const effects = {
+  swordTail: new SwordTailEffect(),
+  minigunEffect: new MinigunEffect(),
+  arrowEffect: new ArrowEffect(),
+  magicBallEffect: new MagicBallEffect()
+};
+
+const getWeaponEffect = (type?: weaponType) => {
+  switch (type) {
+    case weaponType.arrow:
+    case weaponType.crossbow:
+      return effects.arrowEffect;
+
+    case weaponType.minigun:
+      return effects.minigunEffect;
+
+    case weaponType.staff:
+    case weaponType.staff2:
+      return effects.magicBallEffect;
+
+    case weaponType.dagger:
+    case weaponType.sword:
+    case weaponType.swordLazer:
+    case weaponType.katana:
+    case weaponType.hammer:
+      return effects.swordTail;
+    default:
+      return effects.swordTail;
+  }
+};
+
+const BasicCharacterControllerInput = (person: Hero) => {
+  let timeout = null;
   const { speed } = settings[person.props.type];
 
-  const animate = (anim) => {
-    state.setState({ objects: { [person.id]: { state: anim } } })
+  const animate = (anim: NpcAdditionalAnimations) => {
+    state.setState({ objects: { [person.id]: { state: anim } } });
 
     timeout = setTimeout(() => {
-      state.setState({ objects: { [person.id]: { state: NpcAnimationStates.idle } } })
+      state.setState({
+        objects: { [person.id]: { state: NpcAnimationStates.idle } }
+      });
       timeout = null;
-    }, 1000)
-  }
+    }, 1000);
+  };
 
-  const swordTailEffect = new SwordTailEffect()
-
-  systems.inputSystem.onKeyDown(input => {
+  systems.inputSystem.onKeyDown((input) => {
     if (input.attack) {
       if (timeout) clearTimeout(timeout);
 
-      for (const anim of [NpcAnimationStates.attack, NpcAnimationStates.attack2, NpcAnimationStates.sword_attackfast, NpcAnimationStates.dagger_attack2, NpcAnimationStates.spell1]) {
+      const animations = getWeaponAnimations(person.props.weapon);
+      const effect = getWeaponEffect(person.props.weapon);
+
+      for (const anim of animations) {
         if (anim in person.animations) {
+          effect.run(person);
 
-          swordTailEffect.run(person)
+          animate(anim);
 
-          animate(anim)
           break;
         }
       }
     }
 
     if (input.jumping) {
-      animate(animationType.jumping)
+      animate(animationType.jumping);
     }
-  })
+  });
 
   return {
     update: (timeInSeconds) => {
-      const { input } = systems.inputSystem
+      const { input } = systems.inputSystem;
       const { id, velocity, decceleration, acceleration } = person;
       const prev = state.objects[id];
 
@@ -84,7 +154,9 @@ const BasicCharacterControllerInput = (person) => {
         velocity.z * decceleration.z
       );
       frameDecceleration.multiplyScalar(timeInSeconds);
-      frameDecceleration.z = Math.sign(frameDecceleration.z) * Math.min(Math.abs(frameDecceleration.z), Math.abs(velocity.z));
+      frameDecceleration.z =
+        Math.sign(frameDecceleration.z) *
+        Math.min(Math.abs(frameDecceleration.z), Math.abs(velocity.z));
 
       velocity.add(frameDecceleration);
 
@@ -93,17 +165,23 @@ const BasicCharacterControllerInput = (person) => {
       //set user speed here
       if (input.forward) {
         if (!timeout)
-          next.state = input.speed ? NpcAnimationStates.run : NpcAnimationStates.walk;
+          next.state = input.speed
+            ? NpcAnimationStates.run
+            : NpcAnimationStates.walk;
 
         acc.multiplyScalar(input.speed ? speed * 2 : speed);
         velocity.z += acc.z * timeInSeconds;
       } else if (input.backward) {
         if (!timeout)
-          next.state = input.speed ? NpcAnimationStates.run : NpcAnimationStates.walk;
+          next.state = input.speed
+            ? NpcAnimationStates.run
+            : NpcAnimationStates.walk;
 
         acc.multiplyScalar(input.speed ? speed * 2 : speed);
         velocity.z -= acc.z * timeInSeconds;
-      } else if ([NpcAnimationStates.run, NpcAnimationStates.walk].includes(prev.state)) {
+      } else if (
+        [NpcAnimationStates.run, NpcAnimationStates.walk].includes(prev.state)
+      ) {
         next.state = NpcAnimationStates.idle;
       }
 
@@ -130,8 +208,8 @@ const BasicCharacterControllerInput = (person) => {
 
       person.setPosition(controlObject.position, 1)
 
-      next.position = pickBy(controlObject.position, ['x', 'y', 'z']);
-      next.rotation = pickBy(controlObject.rotation, ['x', 'y', 'z', 'w']);
+      next.position = pickBy(controlObject.position, ["x", "y", "z"]);
+      next.rotation = pickBy(controlObject.rotation, ["x", "y", "z", "w"]);
 
       if (!isEqualParams(prev, { ...prev, ...next })) {
         (prev.state !== next.state ? send : sendThrottle)({ objects: { [person.id]: next } })
@@ -141,6 +219,5 @@ const BasicCharacterControllerInput = (person) => {
   };
 };
 
-export const KeyboardCharacterController = (person) => (
-  BasicCharacterControllerInput(person)
-)
+export const KeyboardCharacterController = (person: Hero) =>
+  BasicCharacterControllerInput(person);

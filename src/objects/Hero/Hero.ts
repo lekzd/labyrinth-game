@@ -23,7 +23,6 @@ import { NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates.ts";
 import { state } from "@/state.ts";
 import { HealthBar } from "./healthbar.ts";
 import { HeroProps } from "@/types";
-import { setWeaponPosition } from "./setWeaponPosition";
 
 type Animations = Partial<Record<animationType, Group<Object3DEventMap>>>;
 
@@ -51,7 +50,7 @@ interface StateAction extends ReturnType<typeof action> {
 const PHYSIC_Y = 5;
 export class Hero {
   private target: Object3D<Object3DEventMap>;
-  private stateMachine: any;
+  private stateMachine: ReturnType<typeof CharacterFSM>;
   private mixer: AnimationMixer;
   private healthBar;
   public weaponObject: Object3D<Object3DEventMap>;
@@ -117,9 +116,8 @@ export class Hero {
       return;
     }
 
-    this.weaponObject = clone(loads.weapon[weaponType]!);
+    this.weaponObject = clone(loads.weapon_glb[weaponType]!);
 
-    setWeaponPosition(this.weaponObject);
     weaponRightHand.add(this.weaponObject);
   }
 
@@ -142,12 +140,9 @@ export class Hero {
     if (!next) return;
 
     if (next.weapon) {
-      this.initWeapon(next.weapon)
+      this.props.weapon = next.weapon;
+      this.initWeapon(next.weapon);
     }
-    if (next.state) {
-      this.isRightHandFreezed = ['idle', 'run', 'walk'].includes(next.state)
-    }
-    // console.log('_debug prev', prev, next)
   }
 
   setRotation(angle: number) {
@@ -205,9 +200,9 @@ export class Hero {
 
     // обновляем позицию руки с факелом,
     // чтобы она не зависела от текущей анимации
-    if (this.elementsHero.leftArm) {
-      this.elementsHero.leftArm.rotation.x = Math.PI * -0.3;
-    }
+    // if (this.elementsHero.leftArm) {
+    //   this.elementsHero.leftArm.rotation.x = Math.PI * -0.3;
+    // }
   }
 }
 

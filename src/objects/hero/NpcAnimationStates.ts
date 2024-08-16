@@ -15,6 +15,9 @@ export enum NpcAdditionalAnimations {
 
   'sword_attack' = 'sword_attack',
   'sword_attackfast' = 'sword_attackfast',
+  'hammer_attack' = 'hammer_attack',
+  'bow_attack' = 'bow_attack',
+  'gunplay' = 'gunplay',
 
   'spell1' = 'spell1',
   'spell2' = 'spell2',

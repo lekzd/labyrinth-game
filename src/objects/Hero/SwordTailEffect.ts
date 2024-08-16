@@ -3,29 +3,6 @@ import { Hero } from "./Hero";
 import { BufferAttribute, CatmullRomCurve3, Mesh, TubeGeometry, Vector3 } from "three";
 import { scene } from "@/scene";
 import { SwordPathMaterial } from "@/materials/swordPath";
-import { weaponType } from "@/loader";
-
-const getWeaponVectorByType = (type: weaponType) => {
-  switch (type) {
-    case weaponType.katana:
-      return new Vector3(80, 30, -160)
-    case weaponType.dagger:
-      return new Vector3(0, 30, -120)
-    case weaponType.sword:
-      return new Vector3(-10, 0, -260)
-    case weaponType.swordLazer:
-      return new Vector3(0, 50, -190)
-    case weaponType.hammer:
-      return new Vector3(0, 50, -160)
-    case weaponType.staff:
-    case weaponType.staff2:
-      return new Vector3(0, -70, -160)
-  }
-
-  return new Vector3(0, 0, 0)
-
-  // throw Error(`No vector for weapon name "${name}"`)
-}
 
 export class SwordTailEffect {
   pointsLimit: number;
@@ -48,11 +25,12 @@ export class SwordTailEffect {
     let iteration = -1;
 
     const weaponRight = person.weaponObject
-    const weaponVector = getWeaponVectorByType(weaponRight.name as weaponType).clone()
-
-    const handlerPosition = weaponRight.position.clone()
-    const topDirection = weaponVector.applyQuaternion(weaponRight.quaternion); // Направление с учетом поворота меча
-    const weaponTopPosition = handlerPosition.add(topDirection);
+    const peakPoint = weaponRight.getObjectByName('peak_point')
+    const weaponTopPosition = peakPoint?.position
+   
+    if (!weaponTopPosition) {
+      return;
+    }
 
     const onUpdate = () => {
       iteration++
@@ -61,7 +39,7 @@ export class SwordTailEffect {
         return
       }
 
-      const worldPosition = weaponRight.localToWorld(weaponTopPosition.clone())
+      const worldPosition = peakPoint.localToWorld(new Vector3(0, 0, 0))
 
       points.unshift(worldPosition);
 
@@ -79,7 +57,6 @@ export class SwordTailEffect {
         scene.remove(child);
       })
 
-      tube.userData.isSwordTrail = true;
       scene.add(tube);
       mountedEffects.push(tube);
     }
