@@ -1,5 +1,4 @@
 import {
-  ConeGeometry,
   Mesh,
   MeshBasicMaterial,
   Object3DEventMap,
@@ -21,24 +20,11 @@ function initSphere() {
   );
 
   sphere.position.set(0.2, 0.07, -0.07); // Позиция факела (относительно руки персонажа)
-  const cone = createCone();
   const torch = createTorch();
 
-  sphere.add(cone);
   sphere.add(torch);
 
   return sphere;
-}
-
-function createCone() {
-  const cone = new Mesh(
-    new ConeGeometry(0.25, 1, 32),
-    new MeshBasicMaterial({ color: 0x000000 })
-  );
-
-  cone.rotation.set(Math.PI, 1.3, Math.PI / 2);
-  cone.position.set(-7, -5, -20);
-  return cone;
 }
 
 function createTorch() {
