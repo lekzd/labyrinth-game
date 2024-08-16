@@ -6,21 +6,20 @@ import Stats from "@/utils/Stats.ts";
 import { Camera } from "./objects/hero/camera.ts";
 import { scale, State } from "./state.ts";
 import { scene } from "./scene.ts";
-import { ObjectType, RoomConfig } from "@/types";
+import { RoomConfig } from "@/types";
 import { createGroundBody, physicWorld } from "./cannon.ts";
 import { KeyboardCharacterController } from "./objects/hero/controller.ts";
 import { currentPlayer } from "./main.ts";
 import { systems } from "./systems/index.ts";
 import PolygonClipping from "polygon-clipping";
 import { frandom } from "./utils/random.ts";
-import { Campfire, Hero, PuzzleHandler, Room, Weapon } from "@/uses";
+import { Room } from "@/uses";
 import { App } from "./ui/App.tsx";
 import CannonDebugRenderer from "./cannonDebugRender.ts";
 
-import { loads, modelType } from "./loader.ts";
-import { Box } from "cannon";
-import { Gate } from "./objects/gate/index.ts";
+import { loads } from "./loader.ts";
 import { textureRepeat } from "./utils/textureRepeat.ts";
+import { getObjectContructorConfig } from "./utils/getObjectContructorConfig.ts";
 
 const stats = new Stats();
 
@@ -32,53 +31,6 @@ const subscribers: { update: (time: number) => void }[] = [
 ];
 const rooms: Room[] = [];
 const decorationObjects: THREE.Mesh[] = [];
-
-const getObjectCOntructorConfig = (type: ObjectType) => {
-  switch (type) {
-    case "Campfire":
-      return {
-        Constructor: Campfire,
-        physical: false,
-        interactive: true,
-      };
-    case "Box":
-      return {
-        Constructor: Box,
-        physical: true,
-        interactive: true,
-      };
-    case "Gate":
-      return {
-        Constructor: Gate,
-        physical: true,
-        interactive: false,
-      };
-    case "PuzzleHandler":
-      return {
-        Constructor: PuzzleHandler,
-        physical: true,
-        interactive: true,
-      };
-    case modelType.Warrior:
-    case modelType.Rogue:
-    case modelType.Monk:
-    case modelType.Cleric:
-    case modelType.Wizard:
-    case modelType.Skeleton_Mage:
-      return {
-        Constructor: Hero,
-        physical: true,
-        interactive: true,
-      };
-      break;
-    default:
-      return {
-        Constructor: Weapon,
-        physical: true,
-        interactive: true,
-      };
-  }
-};
 
 export const addObjects = (items = {}) => {
   for (const id in items) {
@@ -98,7 +50,7 @@ export const addObjects = (items = {}) => {
 
     const controllable = currentPlayer.activeObjectId === id;
     const { Constructor: ObjectConstructor, ...config } =
-      getObjectCOntructorConfig(objectConfig.type);
+      getObjectContructorConfig(objectConfig.type);
 
     const object = new ObjectConstructor({ ...objectConfig });
 
@@ -139,7 +91,10 @@ export const render = (state: State) => {
 
   window.addEventListener("resize", onWindowResize, false);
 
-  const cannonDebugRenderer = new CannonDebugRenderer(scene, physicWorld);
+  if (settings.game.physics_boxes) {
+    const cannonDebugRenderer = new CannonDebugRenderer(scene, physicWorld);
+    subscribers.push(cannonDebugRenderer);
+  }
 
   /*
    * Рендерит рекурсивно сцену, пробрасывая в подписчиков (персонаж, камера)
@@ -169,7 +124,6 @@ export const render = (state: State) => {
 
       if (settings.game.physics) {
         systems.objectsSystem.update(timeElapsedS);
-        // cannonDebugRenderer.update()
       }
 
       prevTime = t;
