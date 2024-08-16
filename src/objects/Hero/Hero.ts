@@ -12,7 +12,7 @@ import {
   TextureLoader,
   Vector3,
   LoopOnce,
-  Vector3Like,
+  Vector3Like
 } from "three";
 import { animationType, loads, weaponType } from "@/loader";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
@@ -81,7 +81,7 @@ export class Hero {
     this.healthBar = HealthBar(props, this.target);
     correctionPhysicBody(this.physicBody, this.target);
 
-    this.initWeapon(this.props.weapon)
+    this.initWeapon(this.props.weapon);
   }
 
   get id() {
@@ -128,7 +128,7 @@ export class Hero {
       position.x || this.physicBody.position.x,
       position.y ? position.y + this.physicY : this.physicBody.position.y,
       position.z || this.physicBody.position.z
-    )
+    );
 
     this.physicBody.position.vadd(
       targetPosition.vsub(this.physicBody.position).scale(lerpFactor),
@@ -160,18 +160,20 @@ export class Hero {
   }
 
   die() {
-    console.log('Умер', this.props)
+    console.log("Умер", this.props);
     state.setState({ objects: { [this.id]: null } });
   }
 
   hit(by: HeroProps) {
     const { attack } = by;
 
-    const prev = state.objects[this.props.id] ? state.objects[this.props.id].health : 0;
+    const prev = state.objects[this.props.id]
+      ? state.objects[this.props.id].health
+      : 0;
 
     if (prev <= 0) return;
 
-    state.setState({ objects: { [this.props.id]: { health: prev - attack } } })
+    state.setState({ objects: { [this.props.id]: { health: prev - attack } } });
   }
 
   update(timeInSeconds: number) {
@@ -192,7 +194,9 @@ export class Hero {
     if (!obj.rotation) return;
 
     const q2 = new Quaternion().copy(obj.rotation);
-    const q1 = new Quaternion().copy(this.physicBody.quaternion).slerp(q2, .05);
+    const q1 = new Quaternion()
+      .copy(this.physicBody.quaternion)
+      .slerp(q2, 0.05);
 
     this.physicBody.quaternion.copy(q1);
 
@@ -237,14 +241,16 @@ function initElementsHero(target: Object3D<Object3DEventMap>): ElementsHero {
   const torch = new Torch().sphere;
 
   // Прикрепляем факел к руке персонажа
-  if (leftHand) leftHand.add(torch);
+  if (leftHand && !target.name.startsWith("Skeleton")) {
+    leftHand.add(torch);
+  }
 
   return {
     leftArm,
     leftHand,
     rightArm,
     rightHand,
-    torch,
+    torch
   };
 }
 function initPhysicBody(mass?: number) {
@@ -264,7 +270,7 @@ function initAnimations(
 ) {
   const animations = [
     ...target.animations.map((animation) => animation.clone()),
-    ...pullAnimations(loads.animation),
+    ...pullAnimations(loads.animation)
   ];
 
   for (const clip of animations) {
@@ -273,7 +279,7 @@ function initAnimations(
       .replace("characterarmature|", "") as AnimationName;
     animations[name] = {
       clip: clip,
-      action: mixer.clipAction(clip),
+      action: mixer.clipAction(clip)
     };
   }
 
@@ -332,7 +338,7 @@ function CharacterFSM({ animations }: { animations: AnimationControllers }) {
     setState,
     update(_timeElapsed: number, next: AnimationName) {
       setState(next);
-    },
+    }
   };
 }
 
@@ -340,7 +346,7 @@ function action(animations: AnimationControllers, Name: AnimationName) {
   return {
     Name,
     Enter(prevState: StateAction) {
-      const curAction = animations[Name]?.action || { play: () => { } };
+      const curAction = animations[Name]?.action || { play: () => {} };
 
       // TODO: разделить анимации на базовые из NpcBaseAnimations и дополнительные из NpcAdditionalAnimations
       // допольнительные анимации не должны вызывать crossFadeFrom
@@ -361,6 +367,6 @@ function action(animations: AnimationControllers, Name: AnimationName) {
       } else {
         curAction.play();
       }
-    },
+    }
   };
 }

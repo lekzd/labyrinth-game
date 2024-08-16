@@ -83,7 +83,7 @@ export const ObjectsSystem = () => {
 
       if (!object) return;
 
-      octree.delete(object.mesh.position);
+      octree.remove(object.mesh.position);
       physicObjects.delete(id);
       physicWorld.remove(object.physicBody);
     },
