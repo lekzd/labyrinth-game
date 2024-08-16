@@ -31,6 +31,8 @@ export enum animationType {
   staff_attack = 'staff_attack',
   sword_attackfast = 'sword_attackfast',
   hammer_attack = 'hammer_attack',
+  bow_attack = 'bow_attack',
+  gunplay = 'gunplay',
   // death = 'death',
   // run = 'run',
   // walk = 'walk',
@@ -51,7 +53,7 @@ export enum modelType {
 
 export enum weaponType {
   arrow = 'arrow',
-  bow = 'bow',
+  // bow = 'bow',
   dagger = 'dagger',
   hammer = 'hammer',
   katana = 'katana',

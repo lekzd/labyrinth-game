@@ -200,9 +200,9 @@ export class Hero {
 
     // обновляем позицию руки с факелом,
     // чтобы она не зависела от текущей анимации
-    if (this.elementsHero.leftArm) {
-      this.elementsHero.leftArm.rotation.x = Math.PI * -0.3;
-    }
+    // if (this.elementsHero.leftArm) {
+    //   this.elementsHero.leftArm.rotation.x = Math.PI * -0.3;
+    // }
   }
 }
 

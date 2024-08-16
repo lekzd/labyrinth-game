@@ -57,7 +57,6 @@ export class SwordTailEffect {
         scene.remove(child);
       })
 
-      tube.userData.isSwordTrail = true;
       scene.add(tube);
       mountedEffects.push(tube);
     }
