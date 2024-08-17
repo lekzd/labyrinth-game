@@ -9,6 +9,7 @@ import {
   Vector3
 } from "three";
 import { scene } from "@/scene";
+import { AbstactEffect } from "./AbstactEffect";
 
 function createTorch() {
   const torch = new PointLight(0x00ccff, 2000, 100); // Цвет, интенсивность, дистанция факела
@@ -16,7 +17,7 @@ function createTorch() {
   return torch;
 }
 
-export class MagicBallEffect {
+export class MagicBallEffect implements AbstactEffect {
   constructor() {}
 
   run(person: Hero) {

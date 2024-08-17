@@ -1,29 +1,33 @@
 import * as THREE from "three";
-import { PointOctree } from "sparse-octree";
+import { PointOctree, RayPointIntersection } from "sparse-octree";
 import { physicWorld } from "@/cannon";
-import { MapObject } from "@/types";
+import { DynamicObject, MapObject } from "@/types";
 import { currentPlayer } from "@/main";
 import { systems } from ".";
 import { scale, state } from "@/state";
 import { throttle } from "@/utils/throttle.ts";
+import { WEAPONS_CONFIG } from "@/objects/weapon/WEAPONS_CONFIG";
 
 type ObjectAddConfig = Partial<{
   interactive: boolean;
   physical: boolean;
 }>;
 
-const intervals = new Map<string, number>()
+const intervals = new Map<string, number>();
 
-const tryRunMethod = (object: MapObject | null | undefined, methodName: 'interactWith' | 'setFocus' | 'hit') => {
+const tryRunMethod = (
+  object: MapObject | null | undefined,
+  methodName: "interactWith" | "setFocus" | "hit"
+) => {
   if (!object) {
-    return
+    return;
   }
 
-  const key = `${object.props.id}_${methodName}`
+  const key = `${object.props.id}_${methodName}`;
 
   if (intervals.has(key)) {
-    clearTimeout(intervals.get(key))
-    intervals.delete(key)
+    clearTimeout(intervals.get(key));
+    intervals.delete(key);
   } else {
     if (object[methodName]) {
       object[methodName]?.(true);
@@ -35,21 +39,29 @@ const tryRunMethod = (object: MapObject | null | undefined, methodName: 'interac
       object[methodName]?.(false);
     }
 
-    intervals.delete(key)
-  }, 300)
+    intervals.delete(key);
+  }, 300);
 
-  intervals.set(key, intervalId)
-}
+  intervals.set(key, intervalId);
+};
 
 const fixedTimeStep = 1.0 / 60.0; // seconds
 
-const hitItems = throttle((activeObject, itemsToHit) => {
-  for (const itemToHit of itemsToHit) {
-    const { data } = itemToHit;
+const hitItems = throttle(
+  (
+    activeObject: DynamicObject,
+    itemsToHit: RayPointIntersection<MapObject>[]
+  ) => {
+    for (const itemToHit of itemsToHit) {
+      const { data, point } = itemToHit;
 
-    data.hit(activeObject);
-  }
-}, 750);
+      if (data?.hit) {
+        data.hit(activeObject, point);
+      }
+    }
+  },
+  750
+);
 
 export const ObjectsSystem = () => {
   const objects: Record<string, MapObject> = {};
@@ -112,7 +124,16 @@ export const ObjectsSystem = () => {
       const direction = new THREE.Vector3(0, 0, 1);
       direction.applyQuaternion(activeObject.mesh.quaternion);
 
-      const raycaster = new THREE.Raycaster(activeObject.mesh.position, direction, 1, 10);
+      const far = activeObject.props.weapon
+        ? WEAPONS_CONFIG[activeObject.props.weapon].attackDistance
+        : 10;
+
+      const raycaster = new THREE.Raycaster(
+        activeObject.mesh.position,
+        direction,
+        1,
+        far
+      );
       raycaster.camera = systems.uiSettingsSystem.camera;
       raycaster.params.Points.threshold = 5;
 
@@ -123,20 +144,24 @@ export const ObjectsSystem = () => {
       const { input } = systems.inputSystem;
 
       // Находим с чем можно взаимодействовать
-      const itemToInteract = intersects.find((o) => o.data?.interactWith);
+      const itemToInteract = intersects.find(
+        (o) => o.data?.interactWith && o.distance <= 10
+      );
       if (itemToInteract) {
         const { data } = itemToInteract;
 
-        tryRunMethod(data, 'setFocus')
+        tryRunMethod(data, "setFocus");
 
         if (input.interact) {
-          tryRunMethod(data, 'interactWith')
+          tryRunMethod(data, "interactWith");
 
           if (data?.mesh.position && data?.physicBody?.position) {
-            const distance = data?.mesh.position.distanceTo(data?.physicBody?.position)
+            const distance = data?.mesh.position.distanceTo(
+              data?.physicBody?.position
+            );
 
             if (distance > 10) {
-              octree.move(data?.mesh.position, data.physicBody.position)
+              octree.move(data?.mesh.position, data.physicBody.position);
             }
           }
         }
@@ -146,8 +171,8 @@ export const ObjectsSystem = () => {
       const itemsToHit = intersects.filter((o) => o.data?.hit);
 
       if (itemsToHit.length && input.attack) {
-        hitItems(activeObject.props, itemsToHit)
+        hitItems(activeObject.props, itemsToHit);
       }
-    },
+    }
   };
 };

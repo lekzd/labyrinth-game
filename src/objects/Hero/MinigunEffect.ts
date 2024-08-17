@@ -8,8 +8,9 @@ import {
   Vector3
 } from "three";
 import { scene } from "@/scene";
+import { AbstactEffect } from "./AbstactEffect";
 
-export class MinigunEffect {
+export class MinigunEffect implements AbstactEffect {
   constructor() {}
 
   run(person: Hero) {

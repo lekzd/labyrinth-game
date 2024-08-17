@@ -12,7 +12,7 @@ import {
   TextureLoader,
   Vector3,
   LoopOnce,
-  Vector3Like
+  Vector3Like,
 } from "three";
 import { animationType, loads, weaponType } from "@/loader";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
@@ -23,6 +23,7 @@ import { NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates.ts";
 import { state } from "@/state.ts";
 import { HealthBar } from "./healthbar.ts";
 import { HeroProps } from "@/types";
+import { BloodDropsEffect } from "./BloodDropsEffect.ts";
 
 type Animations = Partial<Record<animationType, Group<Object3DEventMap>>>;
 
@@ -164,14 +165,18 @@ export class Hero {
     state.setState({ objects: { [this.id]: null } });
   }
 
-  hit(by: HeroProps) {
-    const { attack } = by;
+  hit(by: HeroProps, point: Vector3) {
+    const { attack = 0 } = by;
 
     const prev = state.objects[this.props.id]
-      ? state.objects[this.props.id].health
+      ? state.objects[this.props.id].health ?? 0
       : 0;
 
     if (prev <= 0) return;
+  
+    const effect = new BloodDropsEffect()
+
+    effect.run(by, point);
 
     state.setState({ objects: { [this.props.id]: { health: prev - attack } } });
   }

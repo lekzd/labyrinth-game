@@ -1,25 +1,19 @@
 import * as THREE from "three";
 import { state } from "../../state.ts";
 import { pickBy } from "../../utils/pickBy.ts";
-import {
-  NpcAdditionalAnimations,
-  NpcAnimationStates
-} from "./NpcAnimationStates.ts";
-import { animationType, weaponType } from "../../loader.ts";
-import { systems } from '../../systems/index.ts';
+import { NpcAnimationStates } from "./NpcAnimationStates.ts";
+import { animationType } from "../../loader.ts";
+import { systems } from "../../systems/index.ts";
 import { settings } from "./settings.ts";
-import { SwordTailEffect } from './SwordTailEffect.ts';
-import { DynamicObject } from '@/types/DynamicObject.ts';
-import {throttle} from "@/utils/throttle.ts";
-import { Hero } from './Hero.ts';
-import { MinigunEffect } from "./MinigunEffect.ts";
-import { ArrowEffect } from "./ArrowEffect.ts";
-import { MagicBallEffect } from "./MagicBallEffect.ts";
+import { DynamicObject } from "@/types/DynamicObject.ts";
+import { throttle } from "@/utils/throttle.ts";
+import { Hero } from "./Hero.ts";
+import { WEAPONS_CONFIG } from "../weapon/WEAPONS_CONFIG.ts";
 
-const sendThrottle = throttle(state.setState, 500)
-const send = state.setState
+const sendThrottle = throttle(state.setState, 500);
+const send = state.setState;
 
-const isEqualParams = (prev, { rotation, position, ...other }) => {
+const isEqualParams = (prev: DynamicObject, { rotation, position, ...other }: DynamicObject) => {
   for (const key in other) {
     if (other[key] !== prev[key]) return false;
   }
@@ -37,72 +31,11 @@ const isEqualParams = (prev, { rotation, position, ...other }) => {
   return true;
 };
 
-const getWeaponAnimations = (type?: weaponType) => {
-  switch (type) {
-    case weaponType.arrow:
-      return [NpcAnimationStates.bow_attack];
-
-    case weaponType.crossbow:
-      return [];
-
-    case weaponType.minigun:
-      return [NpcAnimationStates.gunplay];
-
-    case weaponType.dagger:
-      return [NpcAnimationStates.dagger_attack2];
-
-    case weaponType.sword:
-    case weaponType.swordLazer:
-    case weaponType.katana:
-      return [NpcAnimationStates.sword_attackfast];
-
-    case weaponType.hammer:
-      return [NpcAnimationStates.hammer_attack];
-
-    case weaponType.staff:
-    case weaponType.staff2:
-      return [NpcAnimationStates.staff_attack];
-    default:
-      return [];
-  }
-};
-
-const effects = {
-  swordTail: new SwordTailEffect(),
-  minigunEffect: new MinigunEffect(),
-  arrowEffect: new ArrowEffect(),
-  magicBallEffect: new MagicBallEffect()
-};
-
-const getWeaponEffect = (type?: weaponType) => {
-  switch (type) {
-    case weaponType.arrow:
-    case weaponType.crossbow:
-      return effects.arrowEffect;
-
-    case weaponType.minigun:
-      return effects.minigunEffect;
-
-    case weaponType.staff:
-    case weaponType.staff2:
-      return effects.magicBallEffect;
-
-    case weaponType.dagger:
-    case weaponType.sword:
-    case weaponType.swordLazer:
-    case weaponType.katana:
-    case weaponType.hammer:
-      return effects.swordTail;
-    default:
-      return effects.swordTail;
-  }
-};
-
 const BasicCharacterControllerInput = (person: Hero) => {
   let timeout = null;
   const { speed } = settings[person.props.type];
 
-  const animate = (anim: NpcAdditionalAnimations) => {
+  const animate = (anim: keyof typeof NpcAnimationStates) => {
     state.setState({ objects: { [person.id]: { state: anim } } });
 
     timeout = setTimeout(() => {
@@ -117,12 +50,18 @@ const BasicCharacterControllerInput = (person: Hero) => {
     if (input.attack) {
       if (timeout) clearTimeout(timeout);
 
-      const animations = getWeaponAnimations(person.props.weapon);
-      const effect = getWeaponEffect(person.props.weapon);
+      const animations = person.props.weapon
+        ? WEAPONS_CONFIG[person.props.weapon].animations
+        : [];
+      const effect = person.props.weapon
+        ? WEAPONS_CONFIG[person.props.weapon].attackEffect
+        : null;
 
       for (const anim of animations) {
         if (anim in person.animations) {
-          effect.run(person);
+          if (effect) {
+            effect.run(person);
+          }
 
           animate(anim);
 
@@ -137,14 +76,14 @@ const BasicCharacterControllerInput = (person: Hero) => {
   });
 
   return {
-    update: (timeInSeconds) => {
+    update: (timeInSeconds: number) => {
       const { input } = systems.inputSystem;
       const { id, velocity, decceleration, acceleration } = person;
       const prev = state.objects[id];
 
       if (!prev) return;
 
-      const next: Partial<DynamicObject> = {}
+      const next: Partial<DynamicObject> = {};
 
       const acc = acceleration.clone();
 
@@ -206,13 +145,15 @@ const BasicCharacterControllerInput = (person: Hero) => {
       controlObject.position.add(forward);
       controlObject.position.add(sideways);
 
-      person.setPosition(controlObject.position, 1)
+      person.setPosition(controlObject.position, 1);
 
       next.position = pickBy(controlObject.position, ["x", "y", "z"]);
       next.rotation = pickBy(controlObject.rotation, ["x", "y", "z", "w"]);
 
       if (!isEqualParams(prev, { ...prev, ...next })) {
-        (prev.state !== next.state ? send : sendThrottle)({ objects: { [person.id]: next } })
+        (prev.state !== next.state ? send : sendThrottle)({
+          objects: { [person.id]: next }
+        });
       }
       state.objects[person.id] = { ...prev, ...next };
     }

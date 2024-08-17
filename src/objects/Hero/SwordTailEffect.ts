@@ -3,8 +3,9 @@ import { Hero } from "./Hero";
 import { BufferAttribute, CatmullRomCurve3, Mesh, TubeGeometry, Vector3 } from "three";
 import { scene } from "@/scene";
 import { SwordPathMaterial } from "@/materials/swordPath";
+import { AbstactEffect } from "./AbstactEffect";
 
-export class SwordTailEffect {
+export class SwordTailEffect implements AbstactEffect {
   pointsLimit: number;
   tubeMaterial: SwordPathMaterial;
   pointIndices: Float32Array;
