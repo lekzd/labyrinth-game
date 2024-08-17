@@ -36,7 +36,7 @@ export class MinigunEffect implements AbstactEffect {
       tube.position.copy(worldPosition);
       const quaternion = person.rotation.clone();
       const weaponQuaternionOffset = new Quaternion().setFromAxisAngle(
-        new Vector3(0, 1, 0),
+        new Vector3(0, 1, 1),
         -0.15
       );
       tube.quaternion.copy(quaternion.multiply(weaponQuaternionOffset));

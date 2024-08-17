@@ -13,6 +13,7 @@ import {
   Vector3,
   LoopOnce,
   Vector3Like,
+  Color
 } from "three";
 import { animationType, loads, weaponType } from "@/loader";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
@@ -24,6 +25,7 @@ import { state } from "@/state.ts";
 import { HealthBar } from "./healthbar.ts";
 import { HeroProps } from "@/types";
 import { BloodDropsEffect } from "./BloodDropsEffect.ts";
+import { WEAPONS_CONFIG } from "../weapon/WEAPONS_CONFIG.ts";
 
 type Animations = Partial<Record<animationType, Group<Object3DEventMap>>>;
 
@@ -173,8 +175,12 @@ export class Hero {
       : 0;
 
     if (prev <= 0) return;
-  
-    const effect = new BloodDropsEffect()
+
+    const color = by.weapon
+      ? WEAPONS_CONFIG[by.weapon].particlesColor
+      : new Color(0xffffff);
+
+    const effect = new BloodDropsEffect(color);
 
     effect.run(by, point);
 

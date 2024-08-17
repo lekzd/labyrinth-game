@@ -122,7 +122,13 @@ export const ObjectsSystem = () => {
       if (!activeObject) return;
 
       const direction = new THREE.Vector3(0, 0, 1);
-      direction.applyQuaternion(activeObject.mesh.quaternion);
+      const quaternion = activeObject.mesh.quaternion.clone();
+      const weaponQuaternionOffset = new THREE.Quaternion().setFromAxisAngle(
+        new THREE.Vector3(0, 1, 1),
+        -0.15
+      );
+
+      direction.applyQuaternion(quaternion.multiply(weaponQuaternionOffset));
 
       const far = activeObject.props.weapon
         ? WEAPONS_CONFIG[activeObject.props.weapon].attackDistance

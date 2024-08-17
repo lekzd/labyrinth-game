@@ -41,10 +41,6 @@ export class ArrowEffect implements AbstactEffect {
     );
     tube.quaternion.copy(quaternion.multiply(weaponQuaternionOffset));
 
-    const fr = Math.PI / 150;
-
-    tube.rotateY(-fr + Math.random() * fr * 2);
-
     scene.add(tube);
     mountedEffects.push(tube);
 
