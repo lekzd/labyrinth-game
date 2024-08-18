@@ -19,7 +19,7 @@ export class BloodDropsEffect {
   particleMaterial: ShaderMaterial;
 
   constructor(color: Color) {
-    this.particleMaterial = new HitImpactMaterial(color);
+    this.particleMaterial = new HitImpactMaterial(color, 1);
   }
 
   run(person: DynamicObject, point: Vector3) {
@@ -35,9 +35,9 @@ export class BloodDropsEffect {
       positions[i + 1] = frandom(-2, 2); // Рандомное положение частицы по оси Y
       positions[i + 2] = frandom(-2, 2); // Рандомное положение частицы по оси Z
 
-      indexes[i] = i / positions.length;
-      indexes[i + 1] = frandom(0.1, 1);
-      indexes[i + 2] = frandom(0.1, 1);
+      indexes[i] = 10;
+      indexes[i + 1] = 10;
+      indexes[i + 2] = 10;
 
       directions[i] = Math.atan2(0 - positions[i + 1], 0 - positions[i]);
       directions[i + 1] = Math.hypot(0 - positions[i], 0 - positions[i + 1]);

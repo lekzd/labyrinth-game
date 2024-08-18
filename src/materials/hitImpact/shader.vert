@@ -6,6 +6,7 @@ uniform float time; // Uniform-переменная для времени
 varying float vTime;
 varying float vYFactor;
 varying vec2 vUv;
+uniform float animationEnd;
 
 void main() {
     vTime = time;
@@ -20,7 +21,9 @@ void main() {
 
     vYFactor = time * directions.y * 5.0;
 
-    gl_PointSize = max(size + (8.0 - vYFactor), 3.0); // Установка размера частицы
+    float progressFactor = time / animationEnd;
+
+    gl_PointSize = (1.0 - progressFactor) * values.x; // Установка размера частицы
 
     vec4 basePosition = projectionMatrix * modelViewPosition;
 

@@ -26,6 +26,7 @@ import { HealthBar } from "./healthbar.ts";
 import { HeroProps } from "@/types";
 import { BloodDropsEffect } from "./BloodDropsEffect.ts";
 import { WEAPONS_CONFIG } from "../weapon/WEAPONS_CONFIG.ts";
+import { DissolveEffect } from "./DissolveEffect.ts";
 
 type Animations = Partial<Record<animationType, Group<Object3DEventMap>>>;
 
@@ -164,6 +165,9 @@ export class Hero {
   }
 
   die() {
+    const effect = new DissolveEffect();
+    effect.run(this.target, new Color("#FAEB9C"), 3);
+
     state.setState({ objects: { [this.id]: null } });
   }
 
