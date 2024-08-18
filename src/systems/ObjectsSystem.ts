@@ -63,6 +63,23 @@ const hitItems = throttle(
   750
 );
 
+const interactionRaycaster = (
+  quaternion: THREE.Quaternion,
+  position: THREE.Vector3
+) => {
+  const direction = new THREE.Vector3(0, 0, 1);
+
+  direction.applyQuaternion(quaternion);
+
+  const far = 10;
+
+  const raycaster = new THREE.Raycaster(position, direction, 1, far);
+  raycaster.camera = systems.uiSettingsSystem.camera;
+  raycaster.params.Points.threshold = 5;
+
+  return raycaster;
+};
+
 export const ObjectsSystem = () => {
   const objects: Record<string, MapObject> = {};
   const physicObjects = new Map<string, MapObject>();
@@ -99,6 +116,21 @@ export const ObjectsSystem = () => {
       physicObjects.delete(id);
       physicWorld.remove(object.physicBody);
     },
+
+    checkPointHitColision: (point: THREE.Vector3) => {
+      const cloned = point.clone();
+      cloned.y = 0;
+      const object = octree.findNearestPoint(cloned, 5, true);
+
+      if (object) {
+        const activeObject = objects[currentPlayer.activeObjectId];
+
+        hitItems(activeObject.props, [object]);
+
+        return true;
+      }
+    },
+
     update: (timeElapsedS: number) => {
       physicWorld.step(fixedTimeStep, timeElapsedS);
 
@@ -121,63 +153,39 @@ export const ObjectsSystem = () => {
 
       if (!activeObject) return;
 
-      const direction = new THREE.Vector3(0, 0, 1);
-      const quaternion = activeObject.mesh.quaternion.clone();
-      const weaponQuaternionOffset = new THREE.Quaternion().setFromAxisAngle(
-        new THREE.Vector3(0, 1, 1),
-        -0.15
+      const intersects = octree.raycast(
+        interactionRaycaster(
+          activeObject.mesh.quaternion.clone(),
+          activeObject.mesh.position
+        )
       );
-
-      direction.applyQuaternion(quaternion.multiply(weaponQuaternionOffset));
-
-      const far = activeObject.props.weapon
-        ? WEAPONS_CONFIG[activeObject.props.weapon].attackDistance
-        : 10;
-
-      const raycaster = new THREE.Raycaster(
-        activeObject.mesh.position,
-        direction,
-        1,
-        far
-      );
-      raycaster.camera = systems.uiSettingsSystem.camera;
-      raycaster.params.Points.threshold = 5;
-
-      const intersects = octree.raycast(raycaster);
-
-      if (!intersects.length) return;
 
       const { input } = systems.inputSystem;
 
-      // Находим с чем можно взаимодействовать
-      const itemToInteract = intersects.find(
-        (o) => o.data?.interactWith && o.distance <= 10
-      );
-      if (itemToInteract) {
-        const { data } = itemToInteract;
+      if (intersects.length) {
+        // Находим с чем можно взаимодействовать
+        const itemToInteract = intersects.find(
+          (o) => o.data?.interactWith && o.distance <= 10
+        );
+        if (itemToInteract) {
+          const { data } = itemToInteract;
 
-        tryRunMethod(data, "setFocus");
+          tryRunMethod(data, "setFocus");
 
-        if (input.interact) {
-          tryRunMethod(data, "interactWith");
+          if (input.interact) {
+            tryRunMethod(data, "interactWith");
 
-          if (data?.mesh.position && data?.physicBody?.position) {
-            const distance = data?.mesh.position.distanceTo(
-              data?.physicBody?.position
-            );
+            if (data?.mesh.position && data?.physicBody?.position) {
+              const distance = data?.mesh.position.distanceTo(
+                data?.physicBody?.position
+              );
 
-            if (distance > 10) {
-              octree.move(data?.mesh.position, data.physicBody.position);
+              if (distance > 10) {
+                octree.move(data?.mesh.position, data.physicBody.position);
+              }
             }
           }
         }
-      }
-
-      // Находим что можно атаковать
-      const itemsToHit = intersects.filter((o) => o.data?.hit);
-
-      if (itemsToHit.length && input.attack) {
-        hitItems(activeObject.props, itemsToHit);
       }
     }
   };

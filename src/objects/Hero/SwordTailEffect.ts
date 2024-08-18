@@ -12,6 +12,7 @@ import { scene } from "@/scene";
 import { SwordPathMaterial } from "@/materials/swordPath";
 import { AbstactEffect } from "./AbstactEffect";
 import { WEAPONS_CONFIG } from "../weapon/WEAPONS_CONFIG";
+import { systems } from "@/systems";
 
 export class SwordTailEffect implements AbstactEffect {
   pointsLimit: number;
@@ -58,6 +59,18 @@ export class SwordTailEffect implements AbstactEffect {
 
       const worldPosition = peakPoint.localToWorld(new Vector3(0, 0, 0));
 
+      const result = systems.objectsSystem.checkPointHitColision(worldPosition);
+
+      if (result) {
+        animation.stop();
+        setTimeout(() => {
+          mountedEffects.forEach((child) => {
+            scene.remove(child);
+          });
+        }, 500);
+        return;
+      }
+
       points.unshift(worldPosition);
 
       if (points.length < 2) {
@@ -87,7 +100,7 @@ export class SwordTailEffect implements AbstactEffect {
       mountedEffects.push(tube);
     };
 
-    new Tween({ i: 0 })
+    const animation = new Tween({ i: 0 })
       .delay(300)
       .to({ i: 10 }, 700)
       .onUpdate(onUpdate)

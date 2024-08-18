@@ -65,13 +65,13 @@ export const WEAPONS_CONFIG: Record<weaponType, IWeaponConfig> = {
   [weaponType.hammer]: getMeleeWeaponConfig({
     type: weaponType.hammer,
     animations: [NpcAnimationStates.hammer_attack],
-    attackDistance: 20,
+    attackDistance: 25,
     attackEffect: new SwordTailEffect(),
   }),
   [weaponType.katana]: getMeleeWeaponConfig({
     type: weaponType.katana,
     animations: [NpcAnimationStates.sword_attackfast],
-    attackDistance: 15,
+    attackDistance: 17,
     attackEffect: new SwordTailEffect()
   }),
   [weaponType.minigun]: getShootingWeaponConfig({
@@ -97,13 +97,13 @@ export const WEAPONS_CONFIG: Record<weaponType, IWeaponConfig> = {
   [weaponType.sword]: getMeleeWeaponConfig({
     type: weaponType.sword,
     animations: [NpcAnimationStates.sword_attackfast],
-    attackDistance: 20,
+    attackDistance: 25,
     attackEffect: new SwordTailEffect()
   }),
   [weaponType.swordLazer]: getMeleeWeaponConfig({
     type: weaponType.swordLazer,
     animations: [NpcAnimationStates.sword_attackfast],
-    attackDistance: 15,
+    attackDistance: 17,
     attackEffect: new SwordTailEffect(),
     particlesColor: new Color('#7cf869'),
   })

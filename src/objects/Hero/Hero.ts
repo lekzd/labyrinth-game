@@ -76,6 +76,7 @@ export class Hero {
     this.props = props;
     this.target = initTarget(model, props);
     this.mixer = new AnimationMixer(this.target);
+    this.mixer.timeScale = 1.5;
     this.animations = initAnimations(this.target, this.mixer);
 
     this.physicBody = initPhysicBody(props.mass);
@@ -163,7 +164,6 @@ export class Hero {
   }
 
   die() {
-    console.log("Умер", this.props);
     state.setState({ objects: { [this.id]: null } });
   }
 

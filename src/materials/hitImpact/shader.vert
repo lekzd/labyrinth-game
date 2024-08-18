@@ -24,8 +24,11 @@ void main() {
 
     vec4 basePosition = projectionMatrix * modelViewPosition;
 
-    basePosition.x += cos(directions.x) * vYFactor * 2.0;
-    basePosition.y += max(-23.0, (sin(directions.x) * vYFactor) - (vYFactor * vYFactor));
+    basePosition.x += cos(directions.x) * (1.0 + vYFactor) * 2.0;
+
+    float yFactor = vYFactor - 2.0;
+
+    basePosition.y += max(-23.0, (sin(directions.x) * (1.0 + yFactor)) - (yFactor * yFactor));
 
     gl_Position = basePosition;
 }

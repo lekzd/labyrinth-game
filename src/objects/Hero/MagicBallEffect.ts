@@ -10,6 +10,7 @@ import {
 } from "three";
 import { scene } from "@/scene";
 import { AbstactEffect } from "./AbstactEffect";
+import { systems } from "@/systems";
 
 function createTorch() {
   const torch = new PointLight(0x00ccff, 2000, 100); // Цвет, интенсивность, дистанция факела
@@ -58,9 +59,28 @@ export class MagicBallEffect implements AbstactEffect {
 
       const shift = direction.multiplyScalar(1.1 + state.i * 0.001);
       sphere.position.add(shift);
+
+      const result = systems.objectsSystem.checkPointHitColision(sphere.position);
+
+      if (result) {
+        animation.stop();
+        
+        new Tween({ i: 1 })
+          .to({ i: 15 }, 100)
+          .onUpdate(({ i }) => {
+            sphere.scale.set(i, i, i);
+          })
+          .onComplete(() => {
+            mountedEffects.forEach((child) => {
+              scene.remove(child);
+            });
+          })
+          .start();
+        return;
+      }
     };
 
-    new Tween({ i: 0 })
+    const animation = new Tween({ i: 0 })
       .delay(300)
       .to({ i: 10 }, 1500)
       .onUpdate(onUpdate)

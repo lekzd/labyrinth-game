@@ -4,5 +4,5 @@ varying vec2 vUv;
 
 void main() {
   float dist = length(vUv.y - 0.5);
-  gl_FragColor = vec4(color, (vDistance + vDistance) * dist);
+  gl_FragColor = vec4(color, (vDistance + vDistance) * (dist * pow(vDistance, 4.0)));
 }

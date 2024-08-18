@@ -9,6 +9,7 @@ import {
 } from "three";
 import { scene } from "@/scene";
 import { AbstactEffect } from "./AbstactEffect";
+import { systems } from "@/systems";
 
 export class ArrowEffect implements AbstactEffect {
   constructor() {}
@@ -50,9 +51,21 @@ export class ArrowEffect implements AbstactEffect {
     const onUpdate = (state: { i: number }) => {
       const shift = direction.multiplyScalar(1.1 + state.i * 0.001);
       tube.position.add(shift);
+
+      const result = systems.objectsSystem.checkPointHitColision(tube.position);
+
+      if (result) {
+        animation.stop();
+        setTimeout(() => {
+          mountedEffects.forEach((child) => {
+            scene.remove(child);
+          });
+        }, 1000);
+        return;
+      }
     };
 
-    new Tween({ i: 0 })
+    const animation = new Tween({ i: 0 })
       .delay(300)
       .to({ i: 10 }, 1500)
       .onUpdate(onUpdate)

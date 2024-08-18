@@ -22,7 +22,7 @@ const isEqualParams = (prev: DynamicObject, { rotation, position, ...other }: Dy
 
   for (const name in points) {
     for (const key in points[name]) {
-      if (Math.floor(points[name][key]) !== Math.floor(prev[name][key])) {
+      if (Math.floor(points[name][key]) !== Math.floor(prev[name]?.[key])) {
         return false;
       }
     }

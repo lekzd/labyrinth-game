@@ -9,6 +9,7 @@ import {
 } from "three";
 import { scene } from "@/scene";
 import { AbstactEffect } from "./AbstactEffect";
+import { systems } from "@/systems";
 
 export class MinigunEffect implements AbstactEffect {
   constructor() {}
@@ -45,6 +46,18 @@ export class MinigunEffect implements AbstactEffect {
 
       tube.rotateY(-fr + Math.random() * fr * 2);
 
+      const result = systems.objectsSystem.checkPointHitColision(tube.position);
+
+      if (result) {
+        animation.stop();
+        setTimeout(() => {
+          mountedEffects.forEach((child) => {
+            scene.remove(child);
+          });
+        }, 1000);
+        return;
+      }
+
       mountedEffects.forEach((child) => {
         scene.remove(child);
       });
@@ -53,7 +66,7 @@ export class MinigunEffect implements AbstactEffect {
       mountedEffects.push(tube);
     };
 
-    new Tween({ i: 0 })
+    const animation = new Tween({ i: 0 })
       .delay(300)
       .to({ i: 10 }, 700)
       .onUpdate(onUpdate)
