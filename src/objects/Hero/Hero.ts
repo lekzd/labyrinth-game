@@ -12,7 +12,8 @@ import {
   TextureLoader,
   Vector3,
   LoopOnce,
-  Vector3Like
+  Vector3Like,
+  Color
 } from "three";
 import { animationType, loads, weaponType } from "@/loader";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
@@ -23,6 +24,9 @@ import { NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates.ts";
 import { state } from "@/state.ts";
 import { HealthBar } from "./healthbar.ts";
 import { HeroProps } from "@/types";
+import { BloodDropsEffect } from "./BloodDropsEffect.ts";
+import { WEAPONS_CONFIG } from "../weapon/WEAPONS_CONFIG.ts";
+import { DissolveEffect } from "./DissolveEffect.ts";
 
 type Animations = Partial<Record<animationType, Group<Object3DEventMap>>>;
 
@@ -73,6 +77,7 @@ export class Hero {
     this.props = props;
     this.target = initTarget(model, props);
     this.mixer = new AnimationMixer(this.target);
+    this.mixer.timeScale = 1.5;
     this.animations = initAnimations(this.target, this.mixer);
 
     this.physicBody = initPhysicBody(props.mass);
@@ -160,18 +165,28 @@ export class Hero {
   }
 
   die() {
-    console.log("Умер", this.props);
+    const effect = new DissolveEffect();
+    effect.run(this.target, new Color("#FAEB9C"), 3);
+
     state.setState({ objects: { [this.id]: null } });
   }
 
-  hit(by: HeroProps) {
-    const { attack } = by;
+  hit(by: HeroProps, point: Vector3) {
+    const { attack = 0 } = by;
 
     const prev = state.objects[this.props.id]
-      ? state.objects[this.props.id].health
+      ? state.objects[this.props.id].health ?? 0
       : 0;
 
     if (prev <= 0) return;
+
+    const color = by.weapon
+      ? WEAPONS_CONFIG[by.weapon].particlesColor
+      : new Color(0xffffff);
+
+    const effect = new BloodDropsEffect(color);
+
+    effect.run(by, point);
 
     state.setState({ objects: { [this.props.id]: { health: prev - attack } } });
   }

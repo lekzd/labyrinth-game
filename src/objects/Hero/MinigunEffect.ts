@@ -8,8 +8,10 @@ import {
   Vector3
 } from "three";
 import { scene } from "@/scene";
+import { AbstactEffect } from "./AbstactEffect";
+import { systems } from "@/systems";
 
-export class MinigunEffect {
+export class MinigunEffect implements AbstactEffect {
   constructor() {}
 
   run(person: Hero) {
@@ -35,7 +37,7 @@ export class MinigunEffect {
       tube.position.copy(worldPosition);
       const quaternion = person.rotation.clone();
       const weaponQuaternionOffset = new Quaternion().setFromAxisAngle(
-        new Vector3(0, 1, 0),
+        new Vector3(0, 1, 1),
         -0.15
       );
       tube.quaternion.copy(quaternion.multiply(weaponQuaternionOffset));
@@ -43,6 +45,18 @@ export class MinigunEffect {
       const fr = Math.PI / 150;
 
       tube.rotateY(-fr + Math.random() * fr * 2);
+
+      const result = systems.objectsSystem.checkPointHitColision(tube.position);
+
+      if (result) {
+        animation.stop();
+        setTimeout(() => {
+          mountedEffects.forEach((child) => {
+            scene.remove(child);
+          });
+        }, 1000);
+        return;
+      }
 
       mountedEffects.forEach((child) => {
         scene.remove(child);
@@ -52,7 +66,7 @@ export class MinigunEffect {
       mountedEffects.push(tube);
     };
 
-    new Tween({ i: 0 })
+    const animation = new Tween({ i: 0 })
       .delay(300)
       .to({ i: 10 }, 700)
       .onUpdate(onUpdate)

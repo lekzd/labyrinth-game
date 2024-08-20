@@ -1,23 +1,23 @@
-export const throttle = (func, ms) => {
+type Func = (...args: any[]) => any;
 
-  let isThrottled = false,
-    savedArgs,
-    savedThis;
+export const throttle = <T extends Func>(func: T, ms: number): (...args: Parameters<T>) => void => {
+  let isThrottled = false;
+  let savedArgs: Parameters<T> | null;
+  let savedThis: any;
 
-  function wrapper() {
-
-    if (isThrottled) { // (2)
-      savedArgs = arguments;
+  function wrapper(this: any, ...args: Parameters<T>) {
+    if (isThrottled) {
+      savedArgs = args;
       savedThis = this;
       return;
     }
 
-    func.apply(this, arguments); // (1)
+    func.apply(this, args);
 
     isThrottled = true;
 
-    setTimeout(function() {
-      isThrottled = false; // (3)
+    setTimeout(() => {
+      isThrottled = false;
       if (savedArgs) {
         wrapper.apply(savedThis, savedArgs);
         savedArgs = savedThis = null;
@@ -26,4 +26,4 @@ export const throttle = (func, ms) => {
   }
 
   return wrapper;
-}
+};

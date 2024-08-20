@@ -1,6 +1,7 @@
 import { Tween } from "@tweenjs/tween.js";
 import { Hero } from "./Hero";
 import {
+  Color,
   Mesh,
   MeshBasicMaterial,
   PointLight,
@@ -9,6 +10,9 @@ import {
   Vector3
 } from "three";
 import { scene } from "@/scene";
+import { AbstactEffect } from "./AbstactEffect";
+import { systems } from "@/systems";
+import { DissolveEffect } from "./DissolveEffect";
 
 function createTorch() {
   const torch = new PointLight(0x00ccff, 2000, 100); // Цвет, интенсивность, дистанция факела
@@ -16,7 +20,7 @@ function createTorch() {
   return torch;
 }
 
-export class MagicBallEffect {
+export class MagicBallEffect implements AbstactEffect {
   constructor() {}
 
   run(person: Hero) {
@@ -31,7 +35,7 @@ export class MagicBallEffect {
 
     const sphere = new Mesh(
       new SphereGeometry(1, 32, 32), // Геометрия сферы
-      new MeshBasicMaterial({ color: 0xffffff })
+      new MeshBasicMaterial({ color: 0x1cfff4 })
     );
 
     const torch = createTorch();
@@ -57,9 +61,36 @@ export class MagicBallEffect {
 
       const shift = direction.multiplyScalar(1.1 + state.i * 0.001);
       sphere.position.add(shift);
+
+      const result = systems.objectsSystem.checkPointHitColision(
+        sphere.position
+      );
+
+      if (result) {
+        animation.stop();
+
+        const effect = new DissolveEffect();
+        effect.run(sphere, new Color('#1cfff4'), 3);
+
+        mountedEffects.forEach((child) => {
+          scene.remove(child);
+        });
+
+        const half = 4;
+
+        new Tween({ i: 1 })
+          .to({ i: half * 2 }, 1000)
+          .onUpdate(({ i }) => {
+            const v = Math.pow(Math.min(i, 2), 2)
+            effect.target.scale.set(v, v, v);
+            effect.target.rotation.set(i, i, i);
+          })
+          .start();
+        return;
+      }
     };
 
-    new Tween({ i: 0 })
+    const animation = new Tween({ i: 0 })
       .delay(300)
       .to({ i: 10 }, 1500)
       .onUpdate(onUpdate)

@@ -10,4 +10,5 @@ export type MapObject = {
   physicY?: number
   interactWith?: (value: boolean) => void
   setFocus?: (value: boolean) => void
+  hit?: (value: DynamicObject, point: THREE.Vector3 | null) => void
 }

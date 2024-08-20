@@ -6,21 +6,20 @@ import Stats from "@/utils/Stats.ts";
 import { Camera } from "./objects/hero/camera.ts";
 import { scale, State } from "./state.ts";
 import { scene } from "./scene.ts";
-import { ObjectType, RoomConfig } from "@/types";
 import { createGroundBody, physicWorld } from "./cannon.ts";
 import { KeyboardCharacterController } from "./objects/hero/controller.ts";
 import { currentPlayer } from "./main.ts";
 import { systems } from "./systems/index.ts";
-import PolygonClipping from "polygon-clipping";
 import { frandom } from "./utils/random.ts";
-import { Campfire, Hero, PuzzleHandler, Room, Weapon } from "@/uses";
+import { Room } from "@/uses";
 import { App } from "./ui/App.tsx";
 import CannonDebugRenderer from "./cannonDebugRender.ts";
 
-import { loads, modelType } from "./loader.ts";
-import { Box } from "cannon";
-import { Gate } from "./objects/gate/index.ts";
+import { loads } from "./loader.ts";
 import { textureRepeat } from "./utils/textureRepeat.ts";
+import { getObjectContructorConfig } from "./utils/getObjectContructorConfig.ts";
+import { getWallMesh } from "./utils/getWallMesh.ts";
+import { findLineCoordinates } from "./utils/findLineCoordinates.ts";
 
 const stats = new Stats();
 
@@ -32,53 +31,6 @@ const subscribers: { update: (time: number) => void }[] = [
 ];
 const rooms: Room[] = [];
 const decorationObjects: THREE.Mesh[] = [];
-
-const getObjectCOntructorConfig = (type: ObjectType) => {
-  switch (type) {
-    case "Campfire":
-      return {
-        Constructor: Campfire,
-        physical: false,
-        interactive: true,
-      };
-    case "Box":
-      return {
-        Constructor: Box,
-        physical: true,
-        interactive: true,
-      };
-    case "Gate":
-      return {
-        Constructor: Gate,
-        physical: true,
-        interactive: false,
-      };
-    case "PuzzleHandler":
-      return {
-        Constructor: PuzzleHandler,
-        physical: true,
-        interactive: true,
-      };
-    case modelType.Warrior:
-    case modelType.Rogue:
-    case modelType.Monk:
-    case modelType.Cleric:
-    case modelType.Wizard:
-    case modelType.Skeleton_Mage:
-      return {
-        Constructor: Hero,
-        physical: true,
-        interactive: true,
-      };
-      break;
-    default:
-      return {
-        Constructor: Weapon,
-        physical: true,
-        interactive: true,
-      };
-  }
-};
 
 export const addObjects = (items = {}) => {
   for (const id in items) {
@@ -98,7 +50,7 @@ export const addObjects = (items = {}) => {
 
     const controllable = currentPlayer.activeObjectId === id;
     const { Constructor: ObjectConstructor, ...config } =
-      getObjectCOntructorConfig(objectConfig.type);
+      getObjectContructorConfig(objectConfig.type);
 
     const object = new ObjectConstructor({ ...objectConfig });
 
@@ -139,7 +91,10 @@ export const render = (state: State) => {
 
   window.addEventListener("resize", onWindowResize, false);
 
-  const cannonDebugRenderer = new CannonDebugRenderer(scene, physicWorld);
+  if (settings.game.physics_boxes) {
+    const cannonDebugRenderer = new CannonDebugRenderer(scene, physicWorld);
+    subscribers.push(cannonDebugRenderer);
+  }
 
   /*
    * Рендерит рекурсивно сцену, пробрасывая в подписчиков (персонаж, камера)
@@ -169,7 +124,6 @@ export const render = (state: State) => {
 
       if (settings.game.physics) {
         systems.objectsSystem.update(timeElapsedS);
-        // cannonDebugRenderer.update()
       }
 
       prevTime = t;
@@ -178,102 +132,6 @@ export const render = (state: State) => {
 
   renderLoop();
 };
-
-function findLineCoordinates(rooms: RoomConfig[], padding: number) {
-  const roomPoints = (room: RoomConfig) => {
-    const p = padding;
-    return [
-      [room.x - p, room.y - p],
-      [room.x + room.width + p, room.y - p],
-      [room.x + room.width + p, room.y + room.height + p],
-      [room.x - p, room.y + room.height + p],
-    ];
-  };
-
-  const polygons = rooms.map((room) => {
-    return [roomPoints(room)];
-  });
-
-  const polygon = PolygonClipping.union(...polygons);
-  const lineCoordinates = polygon[0][0].map((coords) => ({
-    x: coords[0],
-    y: coords[1],
-  }));
-
-  let prevPoint = lineCoordinates[0];
-
-  const points: { x: number; y: number }[] = [];
-
-  lineCoordinates.slice(1).forEach((point) => {
-    const prevVector = new THREE.Vector2(prevPoint.x, prevPoint.y);
-    const curVector = new THREE.Vector2(point.x, point.y);
-    const distance = prevVector.distanceTo(curVector);
-
-    const steps = Math.floor(distance / 1);
-
-    for (let i = 0; i < 1; i += 1 / steps) {
-      const newPosition = {
-        x: prevVector.x + (curVector.x - prevVector.x) * i,
-        y: prevVector.y + (curVector.y - prevVector.y) * i,
-      };
-
-      points.push(newPosition);
-    }
-
-    prevPoint = point;
-  });
-
-  return points;
-}
-
-const getWallMesh = (points: { x: number, y: number }[]) => {
-  const wallHeight = 3 * scale;
-
-  const vertices = [];
-  for (let i = 0; i < points.length; i++) {
-    const x = points[i].x * scale;
-    const y = points[i].y * scale;
-
-    vertices.push(x, y, frandom(2, 10));  // нижняя часть
-    vertices.push(x + frandom(-10, 10), y + frandom(-10, 10), wallHeight);  // верхняя часть
-  }
-
-  // Индексы для построения треугольников
-  const indices = [];
-  const pointCount = points.length;
-  for (let i = 0; i < pointCount - 1; i++) {
-    // нижний треугольник
-    indices.push(i * 2, i * 2 + 1, (i + 1) * 2);
-    // верхний треугольник
-    indices.push(i * 2 + 1, (i + 1) * 2 + 1, (i + 1) * 2);
-  }
-
-  // Создаем BufferGeometry и устанавливаем атрибуты
-  const wallGeometry = new THREE.BufferGeometry();
-  wallGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-  wallGeometry.setIndex(indices);
-
-  // Вычисляем нормали для корректного отображения освещения
-  wallGeometry.computeVertexNormals();
-
-  const wallMesh = new THREE.Mesh(
-    wallGeometry,
-    new THREE.MeshStandardMaterial({
-      color: new THREE.Color('#181c06'),
-      flatShading: true
-    })
-  )
-
-  wallMesh.position.set(
-    0,
-    wallHeight,
-    0,
-  );
-
-  wallMesh.rotation.x = Math.PI / 2;
-
-  return wallMesh
-}
 
 // TODO: стандартизировать
 export const items = {

@@ -23,5 +23,5 @@ void main() {
     ? terrainColor + (lightColor.rgb * (lightColor.g * 2.0))
     : (terrainColor * lightColor.r) + (lightColor.rgb * lightColor.a);
 
-  gl_FragColor = vec4(mix(mixedColor, fogColor, vFogFactor * 0.5) * clarity * vNoise, 1.0);
+  gl_FragColor = vec4(mix(mixedColor * clarity * vNoise, fogColor, vFogFactor), 1.0);
 }

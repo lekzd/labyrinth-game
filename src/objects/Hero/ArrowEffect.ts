@@ -8,8 +8,10 @@ import {
   Vector3
 } from "three";
 import { scene } from "@/scene";
+import { AbstactEffect } from "./AbstactEffect";
+import { systems } from "@/systems";
 
-export class ArrowEffect {
+export class ArrowEffect implements AbstactEffect {
   constructor() {}
 
   run(person: Hero) {
@@ -40,10 +42,6 @@ export class ArrowEffect {
     );
     tube.quaternion.copy(quaternion.multiply(weaponQuaternionOffset));
 
-    const fr = Math.PI / 150;
-
-    tube.rotateY(-fr + Math.random() * fr * 2);
-
     scene.add(tube);
     mountedEffects.push(tube);
 
@@ -53,9 +51,21 @@ export class ArrowEffect {
     const onUpdate = (state: { i: number }) => {
       const shift = direction.multiplyScalar(1.1 + state.i * 0.001);
       tube.position.add(shift);
+
+      const result = systems.objectsSystem.checkPointHitColision(tube.position);
+
+      if (result) {
+        animation.stop();
+        setTimeout(() => {
+          mountedEffects.forEach((child) => {
+            scene.remove(child);
+          });
+        }, 1000);
+        return;
+      }
     };
 
-    new Tween({ i: 0 })
+    const animation = new Tween({ i: 0 })
       .delay(300)
       .to({ i: 10 }, 1500)
       .onUpdate(onUpdate)
