@@ -1,5 +1,5 @@
 import { Tween } from "@tweenjs/tween.js";
-import { Hero } from "./Hero";
+import { Hero } from "../objects/hero/Hero";
 import {
   BufferAttribute,
   CatmullRomCurve3,
@@ -11,12 +11,11 @@ import {
 import { scene } from "@/scene";
 import { SwordPathMaterial } from "@/materials/swordPath";
 import { AbstactEffect } from "./AbstactEffect";
-import { WEAPONS_CONFIG } from "../weapon/WEAPONS_CONFIG";
+import { WEAPONS_CONFIG } from "../config/WEAPONS_CONFIG";
 import { systems } from "@/systems";
 
 export class SwordTailEffect implements AbstactEffect {
   pointsLimit: number;
-  tubeMaterial: SwordPathMaterial;
   pointIndices: Float32Array;
 
   constructor() {
@@ -32,6 +31,7 @@ export class SwordTailEffect implements AbstactEffect {
     const points: Vector3[] = [];
     const mountedEffects: Mesh[] = [];
     let iteration = -1;
+    const startTime = Date.now();
 
     const weaponRight = person.weaponObject;
     const peakPoint = weaponRight.getObjectByName("peak_point");
@@ -45,7 +45,7 @@ export class SwordTailEffect implements AbstactEffect {
       ? WEAPONS_CONFIG[person.props.weapon].particlesColor
       : new Color(0xffffff);
 
-    this.tubeMaterial = new SwordPathMaterial({
+    const tubeMaterial = new SwordPathMaterial({
       color,
       pointsLimit: this.pointsLimit
     });
@@ -62,7 +62,13 @@ export class SwordTailEffect implements AbstactEffect {
       const result = systems.objectsSystem.checkPointHitColision(worldPosition);
 
       if (result) {
-        animation.stop();
+        person.mixer.timeScale = 0.1;
+        setTimeout(() => {
+          animation.stop();
+          // person.mixer.stopAllAction();
+          person.mixer.timeScale = 1.5;
+        }, Math.max(0, 500 - Date.now() - startTime));
+
         setTimeout(() => {
           mountedEffects.forEach((child) => {
             scene.remove(child);
@@ -85,7 +91,7 @@ export class SwordTailEffect implements AbstactEffect {
         2,
         false
       );
-      const tube = new Mesh(tubeGeometry, this.tubeMaterial);
+      const tube = new Mesh(tubeGeometry, tubeMaterial);
 
       tubeGeometry.setAttribute(
         "pointIndex",

@@ -6,7 +6,7 @@ import { currentPlayer } from "@/main";
 import { systems } from ".";
 import { scale, state } from "@/state";
 import { throttle } from "@/utils/throttle.ts";
-import { WEAPONS_CONFIG } from "@/objects/weapon/WEAPONS_CONFIG";
+import { WEAPONS_CONFIG } from "@/config/WEAPONS_CONFIG";
 
 type ObjectAddConfig = Partial<{
   interactive: boolean;

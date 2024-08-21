@@ -1,9 +1,9 @@
-import { Color, ShaderMaterial } from "three";
+import { Color, ColorRepresentation, ShaderMaterial } from "three";
 import vertexShader from './shader.vert'
 import fragmentShader from './shader.frag'
 
 type Props = {
-  color: number
+  color: ColorRepresentation
   pointsLimit: number
 }
 
