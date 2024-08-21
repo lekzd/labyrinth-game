@@ -24,9 +24,9 @@ import { NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates.ts";
 import { state } from "@/state.ts";
 import { HealthBar } from "./healthbar.ts";
 import { HeroProps } from "@/types";
-import { BloodDropsEffect } from "./BloodDropsEffect.ts";
-import { WEAPONS_CONFIG } from "../weapon/WEAPONS_CONFIG.ts";
-import { DissolveEffect } from "./DissolveEffect.ts";
+import { BloodDropsEffect } from "../../effects/BloodDropsEffect.ts";
+import { WEAPONS_CONFIG } from "../../config/WEAPONS_CONFIG.ts";
+import { DissolveEffect } from "../../effects/DissolveEffect.ts";
 
 type Animations = Partial<Record<animationType, Group<Object3DEventMap>>>;
 
@@ -55,7 +55,7 @@ const PHYSIC_Y = 5;
 export class Hero {
   private target: Object3D<Object3DEventMap>;
   private stateMachine: ReturnType<typeof CharacterFSM>;
-  private mixer: AnimationMixer;
+  public mixer: AnimationMixer;
   private healthBar;
   public weaponObject: Object3D<Object3DEventMap>;
 

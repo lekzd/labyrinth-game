@@ -1,15 +1,15 @@
 import { weaponType } from "@/loader";
-import { ArrowEffect } from "../hero/ArrowEffect";
-import { SwordTailEffect } from "../hero/SwordTailEffect";
-import { MinigunEffect } from "../hero/MinigunEffect";
-import { MagicBallEffect } from "../hero/MagicBallEffect";
-import { AbstactEffect } from "../hero/AbstactEffect";
-import {NpcAnimationStates} from "@/objects/hero/NpcAnimationStates.ts";
+import { ArrowEffect } from "../effects/ArrowEffect";
+import { SwordTailEffect } from "../effects/SwordTailEffect";
+import { MinigunEffect } from "../effects/MinigunEffect";
+import { MagicBallEffect } from "../effects/MagicBallEffect";
+import { AbstactEffect } from "../effects/AbstactEffect";
+import { NpcAnimationStates } from "@/objects/hero/NpcAnimationStates.ts";
 import { Color } from "three";
 
 interface IWeaponConfig {
   type: weaponType;
-  animations: Array<keyof typeof NpcAnimationStates>,
+  animations: Array<keyof typeof NpcAnimationStates>;
   attackDistance: number;
   attackEffect: AbstactEffect;
   particlesColor: Color;
@@ -25,7 +25,7 @@ const getShootingWeaponConfig = (
   animations: [],
   attackDistance: 500,
   attackEffect: new ArrowEffect(),
-  particlesColor: new Color('#FAEB9C'),
+  particlesColor: new Color("#FAEB9C"),
   isShooting: true,
   isMagic: false,
   isMelee: false,
@@ -39,7 +39,7 @@ const getMeleeWeaponConfig = (
   animations: [],
   attackDistance: 10,
   attackEffect: new SwordTailEffect(),
-  particlesColor: new Color('#FAEB9C'),
+  particlesColor: new Color("#FAEB9C"),
   isShooting: false,
   isMagic: false,
   isMelee: true,
@@ -66,7 +66,7 @@ export const WEAPONS_CONFIG: Record<weaponType, IWeaponConfig> = {
     type: weaponType.hammer,
     animations: [NpcAnimationStates.hammer_attack],
     attackDistance: 25,
-    attackEffect: new SwordTailEffect(),
+    attackEffect: new SwordTailEffect()
   }),
   [weaponType.katana]: getMeleeWeaponConfig({
     type: weaponType.katana,
@@ -85,14 +85,14 @@ export const WEAPONS_CONFIG: Record<weaponType, IWeaponConfig> = {
     animations: [NpcAnimationStates.staff_attack],
     attackDistance: 500,
     attackEffect: new MagicBallEffect(),
-    particlesColor: new Color('#9cfafa'),
+    particlesColor: new Color("#9cfafa")
   }),
   [weaponType.staff2]: getShootingWeaponConfig({
     type: weaponType.staff2,
     animations: [NpcAnimationStates.staff_attack],
     attackDistance: 500,
     attackEffect: new MagicBallEffect(),
-    particlesColor: new Color('#9cfafa'),
+    particlesColor: new Color("#9cfafa")
   }),
   [weaponType.sword]: getMeleeWeaponConfig({
     type: weaponType.sword,
@@ -105,6 +105,6 @@ export const WEAPONS_CONFIG: Record<weaponType, IWeaponConfig> = {
     animations: [NpcAnimationStates.sword_attackfast],
     attackDistance: 17,
     attackEffect: new SwordTailEffect(),
-    particlesColor: new Color('#7cf869'),
+    particlesColor: new Color("#7cf869")
   })
 };

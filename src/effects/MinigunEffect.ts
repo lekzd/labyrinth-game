@@ -1,5 +1,5 @@
 import { Tween } from "@tweenjs/tween.js";
-import { Hero } from "./Hero";
+import { Hero } from "../objects/hero/Hero";
 import {
   BoxGeometry,
   Mesh,
