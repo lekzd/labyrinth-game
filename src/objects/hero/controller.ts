@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { state } from "../../state.ts";
 import { pickBy } from "../../utils/pickBy.ts";
-import { NpcAnimationStates } from "./NpcAnimationStates.ts";
+import { NpcAdditionalAnimations, NpcAnimationStates } from "./NpcAnimationStates.ts";
 import { animationType } from "../../loader.ts";
 import { systems } from "../../systems/index.ts";
 import { settings } from "./settings.ts";
@@ -13,7 +13,10 @@ import { WEAPONS_CONFIG } from "../../config/WEAPONS_CONFIG.ts";
 const sendThrottle = throttle(state.setState, 500);
 const send = state.setState;
 
-const isEqualParams = (prev: DynamicObject, { rotation, position, ...other }: DynamicObject) => {
+const isEqualParams = (
+  prev: DynamicObject,
+  { rotation, position, ...other }: DynamicObject
+) => {
   for (const key in other) {
     if (other[key] !== prev[key]) return false;
   }
@@ -35,16 +38,32 @@ const BasicCharacterControllerInput = (person: Hero) => {
   let timeout = null;
   const { speed } = settings[person.props.type];
 
-  const animate = (anim: keyof typeof NpcAnimationStates) => {
-    state.setState({ objects: { [person.id]: { state: anim } } });
+  const animate = (animationName: string, duration: number) => {
+    if (animationName in NpcAdditionalAnimations) {
+      state.setState({ objects: { [person.id]: {
+        additionsAnimation: animationName,
+      } } });
+    } else {
+      state.setState({ objects: { [person.id]: {
+        baseAnimation: animationName,
+      } } });
+    }
+
 
     timeout = setTimeout(() => {
       state.setState({
-        objects: { [person.id]: { state: NpcAnimationStates.idle } }
+        objects: { [person.id]: {
+          baseAnimation: NpcAnimationStates.idle,
+          additionsAnimation: undefined,
+        } }
       });
       timeout = null;
-    }, 1000);
+    }, 1000 * duration);
   };
+
+  const jumpingNaimtion = person.animations.find((item) =>
+    item.name === animationType.jumping
+  )!;
 
   systems.inputSystem.onKeyDown((input) => {
     if (input.attack) {
@@ -57,21 +76,21 @@ const BasicCharacterControllerInput = (person: Hero) => {
         ? WEAPONS_CONFIG[person.props.weapon].attackEffect
         : null;
 
-      for (const anim of animations) {
-        if (anim in person.animations) {
-          if (effect) {
-            effect.run(person);
-          }
+      const animation = person.animations.find((item) =>
+        animations.includes(item.name)
+      );
 
-          animate(anim);
-
-          break;
+      if (animation) {
+        if (effect) {
+          effect.run(person);
         }
+
+        animate(animation.name, animation.duration);
       }
     }
 
     if (input.jumping) {
-      animate(animationType.jumping);
+      animate(jumpingNaimtion.name, jumpingNaimtion.duration);
     }
   });
 
@@ -104,7 +123,7 @@ const BasicCharacterControllerInput = (person: Hero) => {
       //set user speed here
       if (input.forward) {
         if (!timeout)
-          next.state = input.speed
+          next.state = next.baseAnimation = input.speed
             ? NpcAnimationStates.run
             : NpcAnimationStates.walk;
 
@@ -112,7 +131,7 @@ const BasicCharacterControllerInput = (person: Hero) => {
         velocity.z += acc.z * timeInSeconds;
       } else if (input.backward) {
         if (!timeout)
-          next.state = input.speed
+          next.state = next.baseAnimation = input.speed
             ? NpcAnimationStates.run
             : NpcAnimationStates.walk;
 
@@ -121,7 +140,7 @@ const BasicCharacterControllerInput = (person: Hero) => {
       } else if (
         [NpcAnimationStates.run, NpcAnimationStates.walk].includes(prev.state)
       ) {
-        next.state = NpcAnimationStates.idle;
+        next.state = next.baseAnimation = NpcAnimationStates.idle;
       }
 
       if (input.left) {

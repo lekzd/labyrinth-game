@@ -13,14 +13,14 @@ import {
   Vector3,
   LoopOnce,
   Vector3Like,
-  Color
+  Color,
 } from "three";
 import { animationType, loads, weaponType } from "@/loader";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import * as CANNON from "cannon";
 import { createPhysicBox } from "@/cannon";
 import { Torch } from "@/uses";
-import { NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates.ts";
+import { NpcAdditionalAnimations, NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates.ts";
 import { state } from "@/state.ts";
 import { HealthBar } from "./healthbar.ts";
 import { HeroProps } from "@/types";
@@ -55,7 +55,9 @@ const PHYSIC_Y = 5;
 export class Hero {
   private target: Object3D<Object3DEventMap>;
   private stateMachine: ReturnType<typeof CharacterFSM>;
+  private stateMachine2: ReturnType<typeof CharacterFSM>;
   public mixer: AnimationMixer;
+  public animated = true;
   private healthBar;
   public weaponObject: Object3D<Object3DEventMap>;
 
@@ -83,6 +85,7 @@ export class Hero {
     this.physicBody = initPhysicBody(props.mass);
     this.elementsHero = initElementsHero(this.target);
     this.stateMachine = initStateMashine(this.animations);
+    this.stateMachine2 = initStateMashine(this.animations);
     this.healthBar = HealthBar(props, this.target);
     correctionPhysicBody(this.physicBody, this.target);
 
@@ -148,6 +151,16 @@ export class Hero {
       this.props.weapon = next.weapon;
       this.initWeapon(next.weapon);
     }
+
+    if (next.baseAnimation) {
+      this.props.baseAnimation = next.baseAnimation;
+      this.stateMachine.update(next.baseAnimation);
+    }
+
+    if (next.hasOwnProperty('additionsAnimation')) {
+      this.props.additionsAnimation = next.additionsAnimation;
+      this.stateMachine2.update(next.additionsAnimation ?? NpcAnimationStates.idle);
+    }
   }
 
   setRotation(angle: number) {
@@ -187,8 +200,9 @@ export class Hero {
     const effect = new BloodDropsEffect(color);
 
     effect.run(by, point);
-
-    state.setState({ objects: { [this.props.id]: { health: prev - attack } } });
+    state.setState({ objects: { [this.props.id]: {
+      health: prev - attack,
+    } } });
   }
 
   update(timeInSeconds: number) {
@@ -202,26 +216,21 @@ export class Hero {
     if (obj.health <= 0) return this.die();
 
     this.healthBar.update(obj);
-    this.stateMachine.update(timeInSeconds, obj.state);
 
     this.setPosition(obj.position, 0.01);
 
-    if (!obj.rotation) return;
+    if (obj.rotation) {
+      const q2 = new Quaternion().copy(obj.rotation);
+      const q1 = new Quaternion()
+        .copy(this.physicBody.quaternion)
+        .slerp(q2, 0.05);
 
-    const q2 = new Quaternion().copy(obj.rotation);
-    const q1 = new Quaternion()
-      .copy(this.physicBody.quaternion)
-      .slerp(q2, 0.05);
+      this.physicBody.quaternion.copy(q1);
+    }
 
-    this.physicBody.quaternion.copy(q1);
-
-    if (this.mixer) this.mixer.update(timeInSeconds);
-
-    // обновляем позицию руки с факелом,
-    // чтобы она не зависела от текущей анимации
-    // if (this.elementsHero.leftArm) {
-    //   this.elementsHero.leftArm.rotation.x = Math.PI * -0.3;
-    // }
+    if (this.animated) {
+      this.mixer.update(timeInSeconds);
+    }
   }
 }
 
@@ -283,6 +292,31 @@ function initAnimations(
   target: Object3D<Object3DEventMap>,
   mixer: AnimationMixer
 ) {
+  target.animations.forEach(function(clip) {
+    for(var t = clip.tracks.length - 1; t >= 0; t--) {
+      var track = clip.tracks[t];
+      var isStatic = true;
+      var inc = track.name.split(".")[1] == "quaternion" ? 4 : 3;
+
+      for(var i = 0; i < track.values.length - inc; i += inc) {
+        for(var j = 0; j < inc; j++) {
+          if(Math.abs(track.values[i + j] - track.values[i + j + inc]) > 0.000001) {
+            isStatic = false;
+            //console.log("found change: " + clip.name + " -> " + track.name);
+            break;
+          }
+        }
+
+        if(!isStatic)
+          break;
+      }
+
+      if(isStatic) {
+        clip.tracks.splice(t, 1);
+      }
+    }
+  });
+
   const animations = [
     ...target.animations.map((animation) => animation.clone()),
     ...pullAnimations(loads.animation)
@@ -351,7 +385,7 @@ function CharacterFSM({ animations }: { animations: AnimationControllers }) {
       return currentState;
     },
     setState,
-    update(_timeElapsed: number, next: AnimationName) {
+    update(next: AnimationName) {
       setState(next);
     }
   };
@@ -371,7 +405,14 @@ function action(animations: AnimationControllers, Name: AnimationName) {
 
         curAction.time = 0.0;
         curAction.enabled = true;
-        curAction.crossFadeFrom(prevAction, 0.5, true);
+        curAction.weight = Name in NpcAdditionalAnimations ? 1000 : 500;
+
+        if (Name in NpcAdditionalAnimations) {
+          prevAction.stop();
+          curAction.crossFadeFrom(prevAction, 0.1, true);
+        } else {
+          curAction.crossFadeFrom(prevAction, 0.5, true);
+        }
 
         if (Name === NpcBaseAnimations.death) {
           curAction.clampWhenFinished = true;
@@ -380,6 +421,7 @@ function action(animations: AnimationControllers, Name: AnimationName) {
 
         curAction.play();
       } else {
+        curAction.weight = Name in NpcAdditionalAnimations ? 500 : 1000;
         curAction.play();
       }
     }

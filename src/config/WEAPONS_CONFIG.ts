@@ -13,6 +13,7 @@ interface IWeaponConfig {
   attackDistance: number;
   attackEffect: AbstactEffect;
   particlesColor: Color;
+  swingTime: number;
   isShooting: boolean;
   isMagic: boolean;
   isMelee: boolean;
@@ -23,6 +24,7 @@ const getShootingWeaponConfig = (
 ): IWeaponConfig => ({
   type: weaponType.arrow,
   animations: [],
+  swingTime: 500,
   attackDistance: 500,
   attackEffect: new ArrowEffect(),
   particlesColor: new Color("#FAEB9C"),
@@ -37,6 +39,7 @@ const getMeleeWeaponConfig = (
 ): IWeaponConfig => ({
   type: weaponType.arrow,
   animations: [],
+  swingTime: 500,
   attackDistance: 10,
   attackEffect: new SwordTailEffect(),
   particlesColor: new Color("#FAEB9C"),
@@ -59,17 +62,20 @@ export const WEAPONS_CONFIG: Record<weaponType, IWeaponConfig> = {
   }),
   [weaponType.dagger]: getMeleeWeaponConfig({
     type: weaponType.dagger,
+    swingTime: 50,
     animations: [NpcAnimationStates.dagger_attack2],
     attackEffect: new SwordTailEffect()
   }),
   [weaponType.hammer]: getMeleeWeaponConfig({
     type: weaponType.hammer,
+    swingTime: 500,
     animations: [NpcAnimationStates.hammer_attack],
     attackDistance: 25,
     attackEffect: new SwordTailEffect()
   }),
   [weaponType.katana]: getMeleeWeaponConfig({
     type: weaponType.katana,
+    swingTime: 50,
     animations: [NpcAnimationStates.sword_attackfast],
     attackDistance: 17,
     attackEffect: new SwordTailEffect()
@@ -96,12 +102,14 @@ export const WEAPONS_CONFIG: Record<weaponType, IWeaponConfig> = {
   }),
   [weaponType.sword]: getMeleeWeaponConfig({
     type: weaponType.sword,
+    swingTime: 50,
     animations: [NpcAnimationStates.sword_attackfast],
     attackDistance: 25,
     attackEffect: new SwordTailEffect()
   }),
   [weaponType.swordLazer]: getMeleeWeaponConfig({
     type: weaponType.swordLazer,
+    swingTime: 50,
     animations: [NpcAnimationStates.sword_attackfast],
     attackDistance: 17,
     attackEffect: new SwordTailEffect(),

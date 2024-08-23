@@ -6,7 +6,6 @@ import { currentPlayer } from "@/main";
 import { systems } from ".";
 import { scale, state } from "@/state";
 import { throttle } from "@/utils/throttle.ts";
-import { WEAPONS_CONFIG } from "@/config/WEAPONS_CONFIG";
 
 type ObjectAddConfig = Partial<{
   interactive: boolean;
@@ -117,12 +116,12 @@ export const ObjectsSystem = () => {
       physicWorld.remove(object.physicBody);
     },
 
-    checkPointHitColision: (point: THREE.Vector3) => {
+    checkPointHitColision: (point: THREE.Vector3, fromObjectId: string) => {
       const cloned = point.clone();
       cloned.y = 0;
-      const object = octree.findNearestPoint(cloned, 5, true);
+      const object = octree.findNearestPoint(cloned, 7, true);
 
-      if (object) {
+      if (object && object.data?.props.id !== fromObjectId) {
         const activeObject = objects[currentPlayer.activeObjectId];
 
         hitItems(activeObject.props, [object]);

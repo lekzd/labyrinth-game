@@ -21,7 +21,11 @@ function createTorch() {
 }
 
 export class MagicBallEffect implements AbstactEffect {
-  constructor() {}
+  torch: PointLight;
+
+  constructor() {
+    this.torch = createTorch();
+  }
 
   run(person: Hero) {
     const mountedEffects: Mesh[] = [];
@@ -38,9 +42,7 @@ export class MagicBallEffect implements AbstactEffect {
       new MeshBasicMaterial({ color: 0x1cfff4 })
     );
 
-    const torch = createTorch();
-
-    sphere.add(torch);
+    sphere.add(this.torch);
 
     const quaternion = person.rotation.clone();
     const weaponQuaternionOffset = new Quaternion().setFromAxisAngle(
@@ -63,7 +65,8 @@ export class MagicBallEffect implements AbstactEffect {
       sphere.position.add(shift);
 
       const result = systems.objectsSystem.checkPointHitColision(
-        sphere.position
+        sphere.position,
+        person.id
       );
 
       if (result) {

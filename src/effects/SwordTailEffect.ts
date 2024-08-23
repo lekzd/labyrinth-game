@@ -45,6 +45,10 @@ export class SwordTailEffect implements AbstactEffect {
       ? WEAPONS_CONFIG[person.props.weapon].particlesColor
       : new Color(0xffffff);
 
+    const swingTime = person.props.weapon
+      ? WEAPONS_CONFIG[person.props.weapon].swingTime
+      : 500;
+
     const tubeMaterial = new SwordPathMaterial({
       color,
       pointsLimit: this.pointsLimit
@@ -53,27 +57,27 @@ export class SwordTailEffect implements AbstactEffect {
     const onUpdate = () => {
       iteration++;
 
-      if (iteration % 3 !== 0) {
+      if (Date.now() - startTime < swingTime) {
         return;
       }
 
       const worldPosition = peakPoint.localToWorld(new Vector3(0, 0, 0));
 
-      const result = systems.objectsSystem.checkPointHitColision(worldPosition);
+      const result = systems.objectsSystem.checkPointHitColision(
+        worldPosition,
+        person.id
+      );
 
       if (result) {
-        person.mixer.timeScale = 0.1;
-        setTimeout(() => {
-          animation.stop();
-          // person.mixer.stopAllAction();
-          person.mixer.timeScale = 1.5;
-        }, Math.max(0, 500 - Date.now() - startTime));
+        animation.stop();
+        person.animated = false;
 
         setTimeout(() => {
           mountedEffects.forEach((child) => {
             scene.remove(child);
           });
-        }, 500);
+          person.animated = true;
+        }, 200);
         return;
       }
 
