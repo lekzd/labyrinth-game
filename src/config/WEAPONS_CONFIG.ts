@@ -101,9 +101,12 @@ const getShootingWeaponConfig = (
   isMagic: false,
   isMelee: false,
   hitImpactFx: {
-    [HitContactType.Body]: getBloodFx({}),
-    [HitContactType.Other]: getHammerFx({
-      scale: 7
+    [HitContactType.Body]: getBloodFx({
+      color: new Color("#f63737")
+    }),
+    [HitContactType.Other]: getSwordFx({
+      scale: 7,
+      color: new Color('#FAEB9C')
     })
   },
   ...props
@@ -125,7 +128,7 @@ const getMeleeWeaponConfig = (
     [HitContactType.Body]: getBloodFx({
       scale: 5,
       rotation: Math.PI * -0.1,
-      color: new Color("#a80202")
+      color: new Color("#f63737")
     }),
     [HitContactType.Other]: getSwordFx({})
   },
@@ -152,7 +155,7 @@ export const WEAPONS_CONFIG: Record<weaponType, IWeaponConfig> = {
       [HitContactType.Body]: getBloodFx({
         scale: 10,
         rotation: Math.PI * -0.1,
-        color: new Color("#a80202")
+        color: new Color("#f63737")
       }),
       [HitContactType.Other]: getSwordFx({
         scale: 4,
@@ -168,7 +171,7 @@ export const WEAPONS_CONFIG: Record<weaponType, IWeaponConfig> = {
     attackEffect: new SwordTailEffect(),
     hitImpactFx: {
       [HitContactType.Body]: getHammerFx({
-        color: new Color("#7b0000")
+        color: new Color("#f63737")
       }),
       [HitContactType.Other]: getHammerFx({})
     }
@@ -218,7 +221,7 @@ export const WEAPONS_CONFIG: Record<weaponType, IWeaponConfig> = {
       [HitContactType.Body]: getBloodFx({
         scale: 12,
         rotation: Math.PI * -0.2,
-        color: new Color("#a80202")
+        color: new Color("#f63737")
       }),
       [HitContactType.Other]: getSwordFx({
         scale: 12,
@@ -237,7 +240,7 @@ export const WEAPONS_CONFIG: Record<weaponType, IWeaponConfig> = {
       [HitContactType.Body]: getBloodFx({
         scale: 12,
         rotation: Math.PI * -0.2,
-        color: new Color("#a80202")
+        color: new Color("#f63737")
       }),
       [HitContactType.Other]: getHitFx({
         scale: 12,
