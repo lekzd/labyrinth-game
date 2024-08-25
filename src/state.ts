@@ -133,6 +133,7 @@ export const createCampfireObject = (): DynamicObject => {
       y: 0,
       z: (ROWS * scale) >> 1,
     },
+    state: false,
   });
 };
 

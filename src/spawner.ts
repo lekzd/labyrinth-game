@@ -15,6 +15,7 @@ import { RecursivePartial } from "./types/RecursivePartial";
 import { RoomConfig } from "./types";
 import { DynamicObject } from "./types/DynamicObject";
 import { systems } from "./systems";
+import { getDistance } from "./utils/getDistance";
 
 const { onUpdate, send, connect } = socket({ name: 'MOBS', update: false, send: false  });
 
@@ -113,7 +114,7 @@ export const Spawners = async (count = 1) => {
         const pers = state.objects?.[activeObjectId];
         if (!pers) continue;
 
-        const persDistance = calculateDistance(pos, pers.position);
+        const persDistance = getDistance(pos, pers.position);
 
         if (distance > persDistance) {
           distance = persDistance;
@@ -182,17 +183,6 @@ export const Spawners = async (count = 1) => {
   }
 
   setTimeout(tick, 1000);
-}
-
-function calculateDistance(pos1: Vector3Like, pos2: Vector3Like) {
-  // Вычисляем разность координат
-  const deltaX = pos2.x - pos1.x;
-  const deltaY = pos2.z - pos1.z;
-
-  // Вычисляем квадраты разностей координат
-  const squaredDistance = deltaX * deltaX + deltaY * deltaY;
-
-  return Math.sqrt(squaredDistance);
 }
 
 function changeCoordinate(pos1: Vector3Like, pos2: Vector3Like, delta: number) {
