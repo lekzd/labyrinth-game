@@ -90,6 +90,7 @@ export const render = (state: State) => {
   };
 
   window.addEventListener("resize", onWindowResize, false);
+  container.addEventListener("contextmenu", (e) => e.preventDefault());
 
   if (settings.game.physics_boxes) {
     const cannonDebugRenderer = new CannonDebugRenderer(scene, physicWorld);

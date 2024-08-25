@@ -46,7 +46,10 @@ export class MinigunEffect implements AbstactEffect {
 
       tube.rotateY(-fr + Math.random() * fr * 2);
 
-      const result = systems.objectsSystem.checkPointHitColision(tube.position);
+      const result = systems.objectsSystem.checkPointHitColision(
+        tube.position,
+        person.id
+      );
 
       if (result) {
         animation.stop();

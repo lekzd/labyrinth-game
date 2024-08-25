@@ -108,7 +108,8 @@ export const createHeroObject = (
 
   return createObject({
     ...data,
-    state: NpcAnimationStates.idle,
+    baseAnimation: NpcAnimationStates.idle,
+    additionsAnimation: undefined,
     type,
     weapon: weaponType.dagger,
     ...settings[type],

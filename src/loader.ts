@@ -21,7 +21,11 @@ export enum texturesType {
   ground_forest_bump = 'ground_forest_bump.jpg',
   bark_base = 'Bark_06_basecolor.jpg',
   bark_normal = 'Bark_06_normal.jpg',
-  hedge = 'Hedge_001_BaseColor.jpg',
+  fx_sparks = 'fx_sparks.png',
+  fx_body_hit = 'fx_body_hit.png',
+  fx_hammer_hit = 'fx_hammer_hit.png',
+  fx_magic_splash = 'fx_magic_splash.png',
+  fx_fire_sparks = 'fx_fire_sparks.png',
 }
 
 export enum animationType {

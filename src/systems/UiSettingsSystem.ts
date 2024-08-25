@@ -23,6 +23,7 @@ const DEFAULTS = {
   game: {
     physics: true,
     physics_boxes: false,
+    enemy_ai: true,
     time: 0
   }
 };
@@ -30,7 +31,8 @@ const DEFAULTS = {
 export const UiSettingsSystem = () => {
   const gui = new dat.GUI({
     closed: true,
-    autoPlace: false
+    autoPlace: false,
+    width: 360,
   });
 
   gui.useLocalStorage = true;
@@ -203,6 +205,7 @@ export const UiSettingsSystem = () => {
 
     addRenderingParam("Физика", "physics");
     addRenderingParam("Физические_боксы", "physics_boxes");
+    addRenderingParam("ИИ врагов", "enemy_ai");
     addRenderingParam("Время", "time", 0, 24 * 60 * 60);
   };
 

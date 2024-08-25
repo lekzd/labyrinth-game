@@ -18,6 +18,8 @@ export type DynamicObject = {
   id: string;
   type: ObjectType;
   state?: any;
+  baseAnimation?: string;
+  additionsAnimation?: string;
 
   position: ObjectVector3;
   rotation: ObjectQuaternion;

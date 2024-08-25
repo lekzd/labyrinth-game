@@ -6,7 +6,40 @@ import { currentPlayer } from "@/main";
 import { systems } from ".";
 import { scale, state } from "@/state";
 import { throttle } from "@/utils/throttle.ts";
-import { WEAPONS_CONFIG } from "@/config/WEAPONS_CONFIG";
+import { AABB, Body, Vec3 } from "cannon";
+import { HitContactType } from "@/types/HitContactType";
+
+function isPointInsideBody(point: Vec3, body: Body) {
+  // Создаем AABB для физического тела
+  const aabb = new AABB();
+
+  for (let i = 0; i < body.shapes.length; i++) {
+    const shape = body.shapes[i];
+
+    if (shape.calculateWorldAABB) {
+      shape.calculateWorldAABB(
+        body.position,
+        body.quaternion,
+        aabb.lowerBound,
+        aabb.upperBound
+      );
+
+      // Проверяем, находится ли точка внутри AABB
+      if (
+        point.x > aabb.lowerBound.x &&
+        point.x < aabb.upperBound.x &&
+        point.y > aabb.lowerBound.y &&
+        point.y < aabb.upperBound.y &&
+        point.z > aabb.lowerBound.z &&
+        point.z < aabb.upperBound.z
+      ) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
 
 type ObjectAddConfig = Partial<{
   interactive: boolean;
@@ -117,18 +150,30 @@ export const ObjectsSystem = () => {
       physicWorld.remove(object.physicBody);
     },
 
-    checkPointHitColision: (point: THREE.Vector3) => {
+    checkPointHitColision: (point: THREE.Vector3, fromObjectId: string): HitContactType | null => {
       const cloned = point.clone();
       cloned.y = 0;
-      const object = octree.findNearestPoint(cloned, 5, true);
+      const object = octree.findNearestPoint(cloned, 7, true);
 
-      if (object) {
+      if (object && object.data?.props.id !== fromObjectId) {
         const activeObject = objects[currentPlayer.activeObjectId];
 
         hitItems(activeObject.props, [object]);
 
-        return true;
+        return object.data?.props.health ? HitContactType.Body : HitContactType.Other;
+      } else {
+        const cannonPoint = new Vec3(point.x, point.y, point.z);
+
+        const body = physicWorld.bodies.find((body) =>
+          isPointInsideBody(cannonPoint, body)
+        );
+
+        if (body) {
+          return HitContactType.Other;
+        }
       }
+
+      return null;
     },
 
     update: (timeElapsedS: number) => {

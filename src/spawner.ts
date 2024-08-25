@@ -1,15 +1,20 @@
 import {socket} from "@/socket.ts";
 import {mergeDeep} from "@/utils/mergeDeep.ts";
-import {scale} from "@/state.ts";
+import {State, scale} from "@/state.ts";
 import {Tiles} from "@/config";
 import {NpcAnimationStates} from "@/objects/hero/NpcAnimationStates.ts";
 import {
   Quaternion,
   Vector3,
+  Vector3Like,
 } from "three";
 import { pickBy } from "@/utils/pickBy.ts";
 import {settings} from "@/objects/hero/settings.ts";
 import {modelType} from "@/loader.ts";
+import { RecursivePartial } from "./types/RecursivePartial";
+import { RoomConfig } from "./types";
+import { DynamicObject } from "./types/DynamicObject";
+import { systems } from "./systems";
 
 const { onUpdate, send, connect } = socket({ name: 'MOBS', update: false, send: false  });
 
@@ -19,7 +24,7 @@ const { onUpdate, send, connect } = socket({ name: 'MOBS', update: false, send: 
 *
 * */
 
-const getQuaternion = (pos1, pos2) => {
+const getQuaternion = (pos1: Vector3Like, pos2: Vector3Like) => {
   // TODO: вычесления отвязать от плоскости Threejs
   const point1 = new Vector3(pos1.x, pos1.y, pos1.z); // P1
   const point2 = new Vector3(pos2.x, pos2.y, pos2.z); // P2
@@ -40,14 +45,16 @@ const getQuaternion = (pos1, pos2) => {
 
 
 export const Spawners = async (count = 1) => {
-  const state = {}, spawners = {}, dies = {};
+  const state: Partial<State> = {};
+  const spawners: Record<string, Vector3Like> = {};
+  const dies: Record<string, boolean> = {};
 
-  const next = (change) => {
+  const next = (change: RecursivePartial<State>) => {
     mergeDeep(state, change);
     send(change);
   }
 
-  const init = ({ rooms }) => {
+  const init = ({ rooms }: { rooms: RoomConfig[] }) => {
     Object.values(rooms).forEach((room) => {
       room.tiles.forEach((tile, i) => {
         const x = (room.x + (i % room.width)) * scale;
@@ -62,13 +69,13 @@ export const Spawners = async (count = 1) => {
   }
 
   // Подписаться на обновления сервера
-  onUpdate((next) => {
+  onUpdate((next: RecursivePartial<State>) => {
     mergeDeep(state, next);
 
     for (const id in (next.objects || {})) {
       // console.log('id', id)
       // TODO: почему-то не приходит null у скелетона
-      if (id.startsWith('mob') && !next.objects[id]) {
+      if (id.startsWith('mob') && !next.objects?.[id]) {
         dies[id] = true;
         setTimeout(() => { delete dies[id]; }, 10000)
       }
@@ -80,22 +87,30 @@ export const Spawners = async (count = 1) => {
   })
 
   connect();
-  const attackCoolDown = {};
+  const attackCoolDown: Record<string, boolean> = {};
 
   const tick = () => {
+    setTimeout(tick, 500);
+    
+    if (!systems.uiSettingsSystem.settings.game.enemy_ai) {
+      return;
+    }
+
     for (const key in spawners) {
       const id = `mob:${key}`;
-      let item = state.objects[id];
+      let item = state.objects?.[id]!;
 
       // Если есть моб у спавнера смотрим на него, иначе на позицию спавнера
       const pos = item?.position || spawners[key];
-      let distance = Infinity, position, person;
+      let distance = Infinity;
+      let position: Vector3Like;
+      let person: DynamicObject;
 
       // Смотрим количество персонажей у спавнера
       for (const id in (state?.players || {})) {
-        const { activeObjectId } = state?.players[id];
+        const { activeObjectId } = state.players?.[id];
 
-        const pers = state.objects[activeObjectId];
+        const pers = state.objects?.[activeObjectId];
         if (!pers) continue;
 
         const persDistance = calculateDistance(pos, pers.position);
@@ -117,7 +132,7 @@ export const Spawners = async (count = 1) => {
           id,
           type,
           ...settings[type],
-          state: NpcAnimationStates.idle,
+          baseAnimation: NpcAnimationStates.idle,
           position: { x, y, z },
           rotation: { w: 0.548628892113074, x: 0, y: -0.8360659894642256, z: 0 }
         };
@@ -130,7 +145,7 @@ export const Spawners = async (count = 1) => {
         next({
           objects: {
             [item.id]: {
-              state: NpcAnimationStates.walk,
+              baseAnimation: NpcAnimationStates.walk,
               rotation: getQuaternion(item.position, position),
               position: changeCoordinate(item.position, position, 5)
             }
@@ -143,7 +158,7 @@ export const Spawners = async (count = 1) => {
         next({
           objects: {
             [item.id]: {
-              state: NpcAnimationStates.spell1,
+              additionsAnimation: NpcAnimationStates.spell1,
             }
           }
         });
@@ -164,14 +179,12 @@ export const Spawners = async (count = 1) => {
         }
       }
     }
-
-    setTimeout(tick, 500);
   }
 
   setTimeout(tick, 1000);
 }
 
-function calculateDistance(pos1, pos2) {
+function calculateDistance(pos1: Vector3Like, pos2: Vector3Like) {
   // Вычисляем разность координат
   const deltaX = pos2.x - pos1.x;
   const deltaY = pos2.z - pos1.z;
@@ -182,7 +195,7 @@ function calculateDistance(pos1, pos2) {
   return Math.sqrt(squaredDistance);
 }
 
-function changeCoordinate(pos1, pos2, delta) {
+function changeCoordinate(pos1: Vector3Like, pos2: Vector3Like, delta: number) {
   // Вычисляем разность координат по осям x и y
   const deltaX = pos2.x - pos1.x;
   const deltaY = pos2.z - pos1.z;
