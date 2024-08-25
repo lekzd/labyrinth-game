@@ -18,7 +18,7 @@ export const createRoomTerrainCanvas = (
   const getColor = (tile: Tiles) => {
     const noise = r(noiseFactor);
     switch (tile) {
-      case Tiles.Empty:
+      case Tiles.Road:
       case Tiles.NorthExit:
       case Tiles.SouthExit:
       case Tiles.WestExit:

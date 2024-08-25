@@ -3,7 +3,7 @@ export enum Tiles {
   Wall,
   Tree,
 
-  Empty,
+  Road,
 
   NorthExit,
   WestExit,

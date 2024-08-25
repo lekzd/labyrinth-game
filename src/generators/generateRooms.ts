@@ -31,49 +31,70 @@ const generateRoom = ({
   x,
   y,
 }: Omit<RoomConfig, "tiles">): RoomConfig => {
+  // Создаем наполнитель комнаты
   const tiles = Array.from<Tiles>({ length: width * height }).fill(Tiles.Floor);
+  const room = { width, height, tiles }
 
-  const getIndex = (x: number, y: number) => {
-    return y * width + x;
-  };
+  const getIndex = (x: number, y: number) => y * width + x;
 
-  drawRect(tiles, 0, 0, width, height, width, Tiles.Wall);
-  drawRect(tiles, 1, 1, width - 2, height - 2, width, Tiles.Floor);
+  // Рисуем стены и пол
+  drawRect(room, [0, 0], [width, height], Tiles.Wall);
+  drawRect(room, [1, 1], [width - 2, height - 2], Tiles.Floor);
 
   const hc = width >> 1;
   const vc = height >> 1;
 
-  if (actions.includes(Tiles.NorthExit)) {
-    // road
-    drawRect(tiles, hc, 0, 1, vc, width, Tiles.Empty);
-    // exit gap
-    drawRect(tiles, hc - 1, 0, 3, 1, width, Tiles.Floor);
-    tiles[getIndex(hc, 0)] = Tiles.NorthExit;
+  const s = {
+    [Tiles.NorthExit]: { angle: 0 },
+    [Tiles.SouthExit]: { angle: Math.PI / 2 },
+    [Tiles.WestExit]: { angle: -1 * Math.PI / 2 },
+    [Tiles.EastExit]: { angle: Math.PI },
   }
 
-  if (actions.includes(Tiles.SouthExit)) {
-    // road
-    drawRect(tiles, hc, vc, 1, vc, width, Tiles.Empty);
-    // exit gap
-    drawRect(tiles, hc - 1, height - 1, 3, 1, width, Tiles.Floor);
-    tiles[getIndex(hc, height - 1)] = Tiles.SouthExit;
+  for (const tail in s) {
+    const { angle } = s[tail];
+    const x = hc + Math.floor(Math.cos(angle)) * hc;
+    const y = vc + Math.floor(Math.sin(angle)) * vc;
+
+    drawRect(room, [x - 1, y - 1], [x + 2, y + 2], Tiles.Floor);
+    drawRect(room, [hc, vc], [x, y], Tiles.Road);
+
+    tiles[getIndex(x, y)] = Number(tail);
   }
 
-  if (actions.includes(Tiles.WestExit)) {
-    // road
-    drawRect(tiles, 0, vc, hc, 1, width, Tiles.Empty);
-    // exit gap
-    drawRect(tiles, 0, vc - 1, 1, 3, width, Tiles.Floor);
-    tiles[getIndex(0, vc)] = Tiles.WestExit;
-  }
-
-  if (actions.includes(Tiles.EastExit)) {
-    // road
-    drawRect(tiles, hc, vc, hc, 1, width, Tiles.Empty);
-    // exit gap
-    drawRect(tiles, width - 1, vc - 1, 1, 3, width, Tiles.Floor);
-    tiles[getIndex(width - 1, vc)] = Tiles.EastExit;
-  }
+  //
+  // // Если есть выходы
+  // if (actions.includes(Tiles.NorthExit)) {
+  //   // дорога
+  //   drawRect(tiles, hc, 0, 1, vc, width, Tiles.Road);
+  //   // убираем у тропинки стену
+  //   drawRect(tiles, hc - 1, 0, 3, 1, width, Tiles.Floor);
+  //   tiles[getIndex(hc, 0)] = Tiles.NorthExit;
+  // }
+  //
+  // if (actions.includes(Tiles.SouthExit)) {
+  //   // road
+  //   drawRect(tiles, hc, vc, 1, vc, width, Tiles.Road);
+  //   // exit gap
+  //   drawRect(tiles, hc - 1, height - 1, 3, 1, width, Tiles.Floor);
+  //   tiles[getIndex(hc, height - 1)] = Tiles.SouthExit;
+  // }
+  //
+  // if (actions.includes(Tiles.WestExit)) {
+  //   // road
+  //   drawRect(tiles, 0, vc, hc, 1, width, Tiles.Road);
+  //   // exit gap
+  //   drawRect(tiles, 0, vc - 1, 1, 3, width, Tiles.Floor);
+  //   tiles[getIndex(0, vc)] = Tiles.WestExit;
+  // }
+  //
+  // if (actions.includes(Tiles.EastExit)) {
+  //   // road
+  //   drawRect(tiles, hc, vc, hc, 1, width, Tiles.Road);
+  //   // exit gap
+  //   drawRect(tiles, width - 1, vc - 1, 1, 3, width, Tiles.Floor);
+  //   tiles[getIndex(width - 1, vc)] = Tiles.EastExit;
+  // }
 
   if (actions.includes(Tiles.PuzzleHandler)) {
     let itemsNumber = 3;
@@ -159,7 +180,7 @@ export const generateRooms = ({ state, ROOM_SIZE }: GeneratorConfig) => {
     height: ROOM_SIZE,
     x: roomStartX,
     y: roomStartY,
-    direction: Tiles.Empty,
+    direction: Tiles.Road,
     actions: [Tiles.NorthExit, Tiles.EastExit, Tiles.SouthExit, Tiles.WestExit],
   });
 
