@@ -19,9 +19,8 @@ void main() {
 
     vec4 modelViewPosition = modelViewMatrix * mvPosition;
 
-    vYFactor = time * directions.y * 5.0;
-
     float progressFactor = time / animationEnd;
+    vYFactor = progressFactor * directions.y * 5.0;
 
     gl_PointSize = (1.0 - progressFactor) * values.x; // Установка размера частицы
 

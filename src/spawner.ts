@@ -14,6 +14,7 @@ import {modelType} from "@/loader.ts";
 import { RecursivePartial } from "./types/RecursivePartial";
 import { RoomConfig } from "./types";
 import { DynamicObject } from "./types/DynamicObject";
+import { systems } from "./systems";
 
 const { onUpdate, send, connect } = socket({ name: 'MOBS', update: false, send: false  });
 
@@ -89,6 +90,12 @@ export const Spawners = async (count = 1) => {
   const attackCoolDown: Record<string, boolean> = {};
 
   const tick = () => {
+    setTimeout(tick, 500);
+    
+    if (!systems.uiSettingsSystem.settings.game.enemy_ai) {
+      return;
+    }
+
     for (const key in spawners) {
       const id = `mob:${key}`;
       let item = state.objects?.[id]!;
@@ -172,8 +179,6 @@ export const Spawners = async (count = 1) => {
         }
       }
     }
-
-    setTimeout(tick, 500);
   }
 
   setTimeout(tick, 1000);

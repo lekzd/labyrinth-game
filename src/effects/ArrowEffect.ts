@@ -10,6 +10,8 @@ import {
 import { scene } from "@/scene";
 import { AbstactEffect } from "./AbstactEffect";
 import { systems } from "@/systems";
+import { WEAPONS_CONFIG } from "@/config/WEAPONS_CONFIG";
+import { weaponType } from "@/loader";
 
 export class ArrowEffect implements AbstactEffect {
   constructor() {}
@@ -25,8 +27,10 @@ export class ArrowEffect implements AbstactEffect {
     }
 
     const worldPosition = peakPoint.localToWorld(new Vector3(0, 0, 0));
-    const geometry = new BoxGeometry(0.2, 0.2, 20);
-    geometry.translate(0, 0, 20);
+    const geometry = new BoxGeometry(0.2, 0.2, 10);
+
+    const weapon = person.props.weapon ?? weaponType.arrow;
+    const hitImpactFx = WEAPONS_CONFIG[weapon].hitImpactFx;
 
     const tube = new Mesh(
       geometry,
@@ -59,11 +63,20 @@ export class ArrowEffect implements AbstactEffect {
 
       if (result) {
         animation.stop();
-        setTimeout(() => {
-          mountedEffects.forEach((child) => {
-            scene.remove(child);
-          });
-        }, 1000);
+        const fxEffect = hitImpactFx[result]?.(tube.position.sub(shift));
+
+        new Tween({ i: 0 })
+          .to({ i: 16 }, 200)
+          .onUpdate(({ i }) => {
+            fxEffect.update(Math.floor(i));
+          })
+          .onComplete(() => {
+            mountedEffects.forEach((child) => {
+              scene.remove(child);
+            });
+            fxEffect.remove();
+          })
+          .start();
         return;
       }
     };

@@ -3,7 +3,6 @@ import { Hero } from "../objects/hero/Hero";
 import {
   BufferAttribute,
   CatmullRomCurve3,
-  Color,
   Mesh,
   TubeGeometry,
   Vector3
@@ -13,6 +12,8 @@ import { SwordPathMaterial } from "@/materials/swordPath";
 import { AbstactEffect } from "./AbstactEffect";
 import { WEAPONS_CONFIG } from "../config/WEAPONS_CONFIG";
 import { systems } from "@/systems";
+import { BloodDropsEffect } from "./BloodDropsEffect";
+import { weaponType } from "@/loader";
 
 export class SwordTailEffect implements AbstactEffect {
   pointsLimit: number;
@@ -41,53 +42,19 @@ export class SwordTailEffect implements AbstactEffect {
       return;
     }
 
-    const color = person.props.weapon
-      ? WEAPONS_CONFIG[person.props.weapon].particlesColor
-      : new Color(0xffffff);
+    const weapon = person.props.weapon ?? weaponType.sword;
 
-    const swingTime = person.props.weapon
-      ? WEAPONS_CONFIG[person.props.weapon].swingTime
-      : 500;
+    const color = WEAPONS_CONFIG[weapon].particlesColor;
+    const swingTime = WEAPONS_CONFIG[weapon].swingTime;
+    const hitImpactFx = WEAPONS_CONFIG[weapon].hitImpactFx;
 
     const tubeMaterial = new SwordPathMaterial({
       color,
       pointsLimit: this.pointsLimit
     });
 
-    const onUpdate = () => {
-      iteration++;
-
-      if (Date.now() - startTime < swingTime) {
-        return;
-      }
-
-      const worldPosition = peakPoint.localToWorld(new Vector3(0, 0, 0));
-
-      const result = systems.objectsSystem.checkPointHitColision(
-        worldPosition,
-        person.id
-      );
-
-      if (result) {
-        animation.stop();
-        person.animated = false;
-
-        setTimeout(() => {
-          mountedEffects.forEach((child) => {
-            scene.remove(child);
-          });
-          person.animated = true;
-        }, 200);
-        return;
-      }
-
-      points.unshift(worldPosition);
-
-      if (points.length < 2) {
-        return;
-      }
-
-      const curve = new CatmullRomCurve3(points.slice(0, this.pointsLimit));
+    const drawSwordTail = (points: Vector3[]) => {
+      const curve = new CatmullRomCurve3(points);
       const tubeGeometry = new TubeGeometry(
         curve,
         this.pointsLimit,
@@ -110,8 +77,70 @@ export class SwordTailEffect implements AbstactEffect {
       mountedEffects.push(tube);
     };
 
+    const onUpdate = () => {
+      iteration++;
+
+      const worldPosition = peakPoint.localToWorld(new Vector3(0, 0, 0));
+
+      points.unshift(worldPosition);
+
+      if (points.length > 2) {
+        drawSwordTail(points.slice(0, this.pointsLimit));
+      }
+
+      if (Date.now() - startTime < swingTime) {
+        return;
+      }
+
+      const result = systems.objectsSystem.checkPointHitColision(
+        worldPosition,
+        person.id
+      );
+
+      if (result) {
+        animation.stop();
+      person.animated = false;
+
+        // const effect = new BloodDropsEffect(color);
+        const fxEffect = hitImpactFx[result]?.(worldPosition);
+
+        // effect.run(person.props, worldPosition);
+
+        let pointsLeft = points.length;
+
+        new Tween({ i: 0 })
+          .to({ i: 16 }, 200)
+          .onUpdate(({ i }) => {
+            fxEffect.update(Math.floor(i));
+
+            const progress = 1 - (i / 16);
+            const pointsCount = Math.floor(pointsLeft * progress)
+
+            if (pointsCount > 2) {
+              drawSwordTail(points.slice(0, pointsCount));
+              pointsLeft--;
+            }
+          })
+          .onComplete(() => {
+            fxEffect.remove();
+            mountedEffects.forEach((child) => {
+              scene.remove(child);
+            });
+          })
+          .start();
+
+        setTimeout(() => {
+          animation.stop();
+          mountedEffects.forEach((child) => {
+            scene.remove(child);
+          });
+          person.animated = true;
+        }, 200);
+        return;
+      }
+    };
+
     const animation = new Tween({ i: 0 })
-      .delay(300)
       .to({ i: 10 }, 700)
       .onUpdate(onUpdate)
       .onComplete(() => {

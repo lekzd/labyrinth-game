@@ -85,12 +85,12 @@ const BasicCharacterControllerInput = (person: Hero) => {
           effect.run(person);
         }
 
-        animate(animation.name, animation.duration);
+        animate(animation.name, animation.duration / 2);
       }
     }
 
     if (input.jumping) {
-      animate(jumpingNaimtion.name, jumpingNaimtion.duration);
+      animate(jumpingNaimtion.name, jumpingNaimtion.duration / 1.5);
     }
   });
 

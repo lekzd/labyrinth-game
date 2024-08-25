@@ -193,13 +193,6 @@ export class Hero {
 
     if (prev <= 0) return;
 
-    const color = by.weapon
-      ? WEAPONS_CONFIG[by.weapon].particlesColor
-      : new Color(0xffffff);
-
-    const effect = new BloodDropsEffect(color);
-
-    effect.run(by, point);
     state.setState({ objects: { [this.props.id]: {
       health: prev - attack,
     } } });

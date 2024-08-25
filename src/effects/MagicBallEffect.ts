@@ -13,6 +13,8 @@ import { scene } from "@/scene";
 import { AbstactEffect } from "./AbstactEffect";
 import { systems } from "@/systems";
 import { DissolveEffect } from "./DissolveEffect";
+import { WEAPONS_CONFIG } from "@/config/WEAPONS_CONFIG";
+import { weaponType } from "@/loader";
 
 function createTorch() {
   const torch = new PointLight(0x00ccff, 2000, 100); // Цвет, интенсивность, дистанция факела
@@ -54,6 +56,8 @@ export class MagicBallEffect implements AbstactEffect {
     scene.add(sphere);
     mountedEffects.push(sphere);
 
+    const hitImpactFx = WEAPONS_CONFIG[weaponType.staff].hitImpactFx;
+
     const direction = new Vector3(0, 0, 1); // направление вперед (ось Z)
     direction.applyQuaternion(sphere.quaternion); // применяем кватернион
 
@@ -72,21 +76,19 @@ export class MagicBallEffect implements AbstactEffect {
       if (result) {
         animation.stop();
 
-        const effect = new DissolveEffect();
-        effect.run(sphere, new Color('#1cfff4'), 3);
+        const effect = hitImpactFx[result](sphere.position);
 
         mountedEffects.forEach((child) => {
           scene.remove(child);
         });
 
-        const half = 4;
-
-        new Tween({ i: 1 })
-          .to({ i: half * 2 }, 1000)
+        new Tween({ i: 0 })
+          .to({ i: 16 }, 200)
           .onUpdate(({ i }) => {
-            const v = Math.pow(Math.min(i, 2), 2)
-            effect.target.scale.set(v, v, v);
-            effect.target.rotation.set(i, i, i);
+            effect.update(Math.floor(i));
+          })
+          .onComplete(() => {
+            effect.remove();
           })
           .start();
         return;

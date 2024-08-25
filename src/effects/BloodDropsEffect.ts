@@ -29,18 +29,19 @@ export class BloodDropsEffect {
     const positions = new Float32Array(PARTICLE_COUNT * 3); // 3 компоненты (x, y, z) на каждую частицу
     const indexes = new Float32Array(PARTICLE_COUNT * 3); // 3 компоненты (x, y, z) на каждую частицу
     const directions = new Float32Array(PARTICLE_COUNT * 3); // 3 компоненты (x, y, z) на каждую частицу
+    const shift = 1;
 
     for (let i = 0; i < positions.length; i += 3) {
-      positions[i] = frandom(-2, 2); // Рандомное положение частицы по оси X
-      positions[i + 1] = frandom(-2, 2); // Рандомное положение частицы по оси Y
-      positions[i + 2] = frandom(-2, 2); // Рандомное положение частицы по оси Z
+      positions[i] = frandom(-shift, shift); // Рандомное положение частицы по оси X
+      positions[i + 1] = frandom(-shift, shift); // Рандомное положение частицы по оси Y
+      positions[i + 2] = frandom(-shift, shift); // Рандомное положение частицы по оси Z
 
       indexes[i] = 10;
       indexes[i + 1] = 10;
       indexes[i + 2] = 10;
 
-      directions[i] = Math.atan2(0 - positions[i + 1], 0 - positions[i]);
-      directions[i + 1] = Math.hypot(0 - positions[i], 0 - positions[i + 1]);
+      directions[i] = Math.atan2(0 - positions[i + 1], 0 - positions[i]); // направление
+      directions[i + 1] = Math.hypot(0 - positions[i], 0 - positions[i + 1]) * 2;  // дистанция от центра
       directions[i + 2] = 0;
     }
 
@@ -56,7 +57,6 @@ export class BloodDropsEffect {
     const particleSystem = new Points(particleGeometry, this.particleMaterial);
 
     particleSystem.position.copy(point);
-    particleSystem.position.y = 10;
 
     mountedEffects.push(particleSystem);
 
