@@ -51,11 +51,20 @@ export const createFloorMaterial = (room: RoomConfig) => {
   const canvas = createRoomTerrainCanvas(room, 5, 3);
   const texture = new THREE.CanvasTexture(canvas);
 
-  return new THREE.MeshPhongMaterial({
+  return new THREE.MeshStandardMaterial({
     map: texture,
-    normalMap: textureRepeat(loads.texture['ground_forest_bump.jpg']!, 1, 1, room.width, room.height),
+    normalMap: textureRepeat(
+      loads.texture["ground_forest_bump.jpg"]!,
+      1,
+      1,
+      room.width,
+      room.height
+    ),
     normalMapType: 1,
-    color: 0xffffff,
-    fog: true,
+    color: 0x222222,
+    roughness: 1,
+    metalness: 0,
+    flatShading: true,
+    fog: true
   });
 };

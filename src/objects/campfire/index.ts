@@ -131,7 +131,7 @@ function initMesh(props: DynamicObject, particleMaterial: ShaderMaterial) {
   // Добавление эффекта частиц к костру
   base.add(sphere);
   base.add(particleSystem);
-  const torch = new PointLight(0xff4500, 400, 1000); // Цвет, интенсивность, дистанция факела
+  const torch = new PointLight(0xff4500, 2000, 400); // Цвет, интенсивность, дистанция факела
   torch.position.set(0, 5, 0); // Позиция факела (относительно руки персонажа)
   torch.castShadow = true;
   torch.shadow.mapSize.width = 100;

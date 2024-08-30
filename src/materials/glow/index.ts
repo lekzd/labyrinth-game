@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import { scene } from '../../scene'
 
 import vertexShader from './shader.vert'
 import fragmentRadialGradientShader from './radialCenterGradient.frag'
@@ -18,15 +17,7 @@ export class GlowMaterial extends THREE.ShaderMaterial {
         color: { value: new THREE.Color(color) },
         radius: { value: 5 },
         opacity: { value: opacity },
-        fogColor: {
-          value: scene.fog.color,
-        },
-        fogNear: {
-          value: scene.fog.near,
-        },
-        fogFar: {
-          value: scene.fog.far,
-        },
+        ...THREE.UniformsLib["fog"],
       },
       vertexShader,
       fragmentShader: type === 'opaque' ? fragmentOpaqueColorShader : fragmentRadialGradientShader,

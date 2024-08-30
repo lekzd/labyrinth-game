@@ -1,11 +1,8 @@
 uniform float time;
-uniform float fogNear; // Начальная дистанция тумана
-uniform float fogFar; // Конечная дистанция тумана
 
 varying float vNoise;
-varying vec2 vUv;
-varying float vFogFactor;
 varying vec3 vInstanceColor;
+varying vec2 vUv;
 
 float N(vec2 st) { // https://thebookofshaders.com/10/
   return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
@@ -32,18 +29,11 @@ void main() {
   vUv = uv;
   vInstanceColor = instanceColor;
 
-  float t = time * 2.;
-
-  // VERTEX POSITION
-
-  vec4 mvPosition = vec4(position, 1.0);
-  #ifdef USE_INSTANCING
-    mvPosition = instanceMatrix * mvPosition;
-  #endif
+  vec4 pos = instanceMatrix * vec4(position, 1.0);
 
   // DISPLACEMENT
 
-  float noise = smoothNoise(mvPosition.xz * 0.5 + vec2(0., t));
+  float noise = smoothNoise(pos.xz * 0.5 + vec2(time, time));
   noise = pow(noise * 0.5 + 0.5, 2.) * 2.;
   vNoise = noise;
 
@@ -51,13 +41,10 @@ void main() {
   float dispPower = 1. - cos(uv.y * 3.1416 * 0.5);
 
   float displacement = noise * (0.3 * dispPower);
-  mvPosition.z -= displacement;
-  mvPosition.x += displacement;
+  pos.z -= displacement;
+  pos.x += displacement;
 
-  //
+  // VERTEX POSITION
 
-  vec4 modelViewPosition = modelViewMatrix * mvPosition;
-  vFogFactor = smoothstep(fogNear, fogFar, length(modelViewPosition));
-
-  gl_Position = projectionMatrix * modelViewPosition;
+  csm_PositionRaw = projectionMatrix * modelViewMatrix * pos;
 }
