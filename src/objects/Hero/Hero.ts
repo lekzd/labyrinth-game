@@ -161,6 +161,15 @@ export class Hero {
       this.props.additionsAnimation = next.additionsAnimation;
       this.stateMachine2.update(next.additionsAnimation ?? NpcAnimationStates.idle);
     }
+
+    if (next.hasOwnProperty('health')) {
+      this.props.health = next.health;
+      this.healthBar.update(this.props);
+
+      if (next.health <= 0) {
+        return this.die();
+      }
+    }
   }
 
   setRotation(angle: number) {
@@ -205,10 +214,6 @@ export class Hero {
     const obj = state.objects[this.id];
 
     if (!obj) return;
-
-    if (obj.health <= 0) return this.die();
-
-    this.healthBar.update(obj);
 
     this.setPosition(obj.position, 0.01);
 

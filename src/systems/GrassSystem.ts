@@ -1,15 +1,11 @@
 import * as THREE from "three";
-import { loads, modelType } from "@/loader";
 import { GrassMaterial } from "@/materials/grass";
 import { state } from "@/state";
 import { makeCtx } from "@/utils/makeCtx";
 import { createTerrainCanvas } from "@/materials/terrain";
-import { scene } from "@/scene";
 import { RoomConfig } from "@/types";
-import { DynamicObject } from "@/types";
 import { Tiles } from "@/config";
 import { frandom } from "@/utils/random";
-import { systems } from ".";
 
 export const GrassSystem = () => {
   const lightsCtx = makeCtx(state.colls, state.rows);
@@ -18,120 +14,32 @@ export const GrassSystem = () => {
     time: {
       value: 0,
     },
-    directionalLightColor: {
-      value: [0.3, 0.15, 0],
-    },
-    fogColor: {
-      value: scene.fog.color,
-    },
-    fogNear: {
-      value: scene.fog.near,
-    },
-    fogFar: {
-      value: scene.fog.far,
-    },
-    textureImage: {
-      value: loads.texture["grass.webp"],
-    },
     terrainImage: {
-      value: new THREE.CanvasTexture(createTerrainCanvas(state, 10, 4)),
+      value: new THREE.Texture(),
     },
-    lightsImage: {
-      value: new THREE.CanvasTexture(lightsCtx.canvas),
-    },
-  };
-
-  const grassMaterial = new GrassMaterial(grassUniforms);
-
-  const getObjectGradient = (object: DynamicObject) => {
-    switch (object.type) {
-      case "Campfire":
-        return (x: number, y: number) => {
-          const gradient = lightsCtx.createRadialGradient(x, y, 3, x, y, 5);
-          gradient.addColorStop(0, "rgba(255, 50, 0, 0.5)");
-          gradient.addColorStop(1, "rgba(0, 0, 50, 0.1)");
-
-          return gradient;
-        };
-      case modelType.Cleric:
-      case modelType.Monk:
-      case modelType.Rogue:
-      case modelType.Warrior:
-      case modelType.Wizard:
-        return (x: number, y: number) => {
-          const gradient = lightsCtx.createRadialGradient(x, y, 1, x, y, 5);
-          gradient.addColorStop(0, "rgba(200, 150, 0, 0.3)");
-          gradient.addColorStop(1, "rgba(0, 0, 10, 0.1)");
-
-          return gradient;
-        };
-      default:
-        return null;
-    }
   };
 
   const tilesWithGrass = [Tiles.Floor, Tiles.Wall, Tiles.Tree];
 
   return {
     update: (time: number) => {
-      lightsCtx.clearRect(
-        0,
-        0,
-        lightsCtx.canvas.width,
-        lightsCtx.canvas.height
-      );
-
-      lightsCtx.fillStyle = systems.environmentSystem.values.grassColor.getStyle()
-      lightsCtx.fillRect(
-        0,
-        0,
-        lightsCtx.canvas.width,
-        lightsCtx.canvas.height
-      )
-
-      for (const id in state.objects) {
-        const object = state.objects[id];
-
-        if (!object || !object?.position) continue;
-
-        const x = object.position.x / 10;
-        const y = object.position.z / 10;
-
-        const getGradient = getObjectGradient(object);
-
-        if (!getGradient) {
-          continue;
-        }
-
-        const gradient = getGradient(x, y);
-
-        lightsCtx.beginPath();
-        lightsCtx.arc(x, y, 5, 0, 2 * Math.PI);
-
-        lightsCtx.fillStyle = gradient;
-        lightsCtx.fill();
-      }
-
-      grassUniforms.time.value += time;
-      grassUniforms.lightsImage.value.needsUpdate = true;
-      grassUniforms.textureImage.value = loads.texture["grass.webp"];
-      grassMaterial.uniformsNeedUpdate = true;
+      grassUniforms.time.value += time * 2;
     },
 
     updateTerrainTexture: () => {
-      grassMaterial.uniforms.terrainImage.value = new THREE.CanvasTexture(createTerrainCanvas(state, 10, 4))
-      grassMaterial.uniformsNeedUpdate = true
+      grassUniforms.terrainImage.value = new THREE.CanvasTexture(createTerrainCanvas(state, 10, 4))
     },
 
     createRoomMesh: (room: RoomConfig) => {
       const dummy = new THREE.Object3D();
-      const width = 2;
+      const width = 6;
       const height = 6;
-      const instancesPerTile = 75;
+      const instancesPerTile = 20;
       const instanceNumber =
         room.tiles.filter((tile) => tilesWithGrass.includes(tile)).length *
         instancesPerTile;
       const geometry = new THREE.PlaneGeometry(width, height);
+      const grassMaterial = new GrassMaterial(grassUniforms);
       const instancedMesh = new THREE.InstancedMesh(
         geometry,
         grassMaterial,
@@ -160,7 +68,7 @@ export const GrassSystem = () => {
 
           dummy.position.set(
             x * 10 + frandom(-variable, variable),
-            0,
+            2,
             y * 10 + frandom(-variable, variable)
           );
 

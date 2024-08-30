@@ -20,7 +20,7 @@ const animate = () => {
 
 animate()
 
-export class LeavesMatetial extends CustomShaderMaterial<MeshStandardMaterial> {
+export class LeavesMatetial extends CustomShaderMaterial<typeof MeshStandardMaterial> {
   constructor() {
     const map = loads.texture['foliage.jpg']
     const alphaMap = loads.texture["foliage_mask.jpg"]

@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { state } from "../../state.ts";
 import { pickBy } from "../../utils/pickBy.ts";
 import { NpcAdditionalAnimations, NpcAnimationStates } from "./NpcAnimationStates.ts";
-import { animationType } from "../../loader.ts";
+import { animationType, weaponType } from "../../loader.ts";
 import { systems } from "../../systems/index.ts";
 import { settings } from "./settings.ts";
 import { DynamicObject } from "@/types/DynamicObject.ts";
@@ -49,7 +49,6 @@ const BasicCharacterControllerInput = (person: Hero) => {
       } } });
     }
 
-
     timeout = setTimeout(() => {
       state.setState({
         objects: { [person.id]: {
@@ -85,12 +84,16 @@ const BasicCharacterControllerInput = (person: Hero) => {
           effect.run(person);
         }
 
-        animate(animation.name, animation.duration / 2);
+        if (person.props.weapon === weaponType.minigun) {
+          animate(animation.name, 2);
+        } else {
+          animate(animation.name, animation.duration / 2);
+        }
       }
     }
 
     if (input.jumping) {
-      animate(jumpingNaimtion.name, jumpingNaimtion.duration / 1.5);
+      animate(jumpingNaimtion.name, jumpingNaimtion.duration);
     }
   });
 

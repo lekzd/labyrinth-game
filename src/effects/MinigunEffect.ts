@@ -40,7 +40,9 @@ export class MinigunEffect implements AbstactEffect {
         new Vector3(0, 1, 1),
         -0.15
       );
+
       tube.quaternion.copy(quaternion.multiply(weaponQuaternionOffset));
+      // tube.quaternion.copy(quaternion.multiply(weaponRight.quaternion));
 
       const fr = Math.PI / 150;
 
@@ -70,8 +72,8 @@ export class MinigunEffect implements AbstactEffect {
     };
 
     const animation = new Tween({ i: 0 })
-      .delay(300)
-      .to({ i: 10 }, 700)
+      .delay(500)
+      .to({ i: 10 }, 1500)
       .onUpdate(onUpdate)
       .onComplete(() => {
         mountedEffects.forEach((child) => {
