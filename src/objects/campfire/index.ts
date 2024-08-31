@@ -21,6 +21,7 @@ import { settings } from "../hero/settings";
 import { throttle } from "@/utils/throttle.ts";
 import { ParticlesMaterial } from "@/materials/particles";
 import { loads } from "@/loader";
+import { shadowSetter } from "@/utils/shadowSetter";
 
 const healHealth = throttle((object: DynamicObject) => {
   state.setState({
@@ -134,7 +135,6 @@ function initMesh(props: DynamicObject, particleMaterial: ShaderMaterial) {
   base.add(particleSystem);
   const torch = new PointLight(0xff4500, 2000, 400); // Цвет, интенсивность, дистанция факела
   torch.position.set(0, 5, 0); // Позиция факела (относительно руки персонажа)
-  torch.castShadow = true;
   torch.shadow.mapSize.width = 100;
   torch.shadow.mapSize.height = 100;
   torch.shadow.camera.near = 0.5;
@@ -145,6 +145,10 @@ function initMesh(props: DynamicObject, particleMaterial: ShaderMaterial) {
   torch.shadow.camera.bottom = -10;
   torch.shadow.radius = 5;
   torch.shadow.blurSamples = 5;
+
+  shadowSetter(torch, {
+    castShadow: true,
+  })
 
   base.add(torch);
 

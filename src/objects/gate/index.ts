@@ -5,6 +5,7 @@ import { state } from "@/state";
 import { Tween } from "@tweenjs/tween.js";
 import { loads } from "@/loader";
 import { textureRepeat } from "@/utils/textureRepeat";
+import { shadowSetter } from "@/utils/shadowSetter";
 
 const PHYSIC_Y = 0;
 export class Gate {
@@ -24,16 +25,22 @@ export class Gate {
 
     const left = initTower(6, 30, 10);
     left.position.x = -10
-    left.receiveShadow = true
-    left.castShadow = true
     this.mesh.add(left)
+
+    shadowSetter(left, {
+      castShadow: true,
+      receiveShadow: true,
+    })
 
     this.leftDoor = new Mesh()
     const leftDoorMesh = initMesh(6, 20, 1);
     leftDoorMesh.position.x = -2
-    leftDoorMesh.receiveShadow = true
-    leftDoorMesh.castShadow = true
     this.leftDoor.position.x = 5
+
+    shadowSetter(leftDoorMesh, {
+      castShadow: true,
+      receiveShadow: true,
+    })
 
     this.leftDoor.add(leftDoorMesh)
     this.mesh.add(this.leftDoor)
@@ -41,18 +48,24 @@ export class Gate {
     this.rightDoor = new Mesh()
     const rightDoorMesh = initMesh(6, 20, 1);
     rightDoorMesh.position.x = 2
-    rightDoorMesh.receiveShadow = true
-    rightDoorMesh.castShadow = true
     this.rightDoor.position.x = -5
+
+    shadowSetter(rightDoorMesh, {
+      castShadow: true,
+      receiveShadow: true,
+    })
 
     this.rightDoor.add(rightDoorMesh)
     this.mesh.add(this.rightDoor)
 
     const right = initTower(6, 30, 10);
     right.position.x = 10
-    right.receiveShadow = true
-    right.castShadow = true
     this.mesh.add(right)
+
+    shadowSetter(right, {
+      castShadow: true,
+      receiveShadow: true,
+    })
 
     Object.assign(this.mesh.position, props.position);
     Object.assign(this.mesh.quaternion, props.rotation);

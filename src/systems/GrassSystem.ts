@@ -6,6 +6,7 @@ import { createTerrainCanvas } from "@/materials/terrain";
 import { RoomConfig } from "@/types";
 import { Tiles } from "@/config";
 import { frandom } from "@/utils/random";
+import { shadowSetter } from "@/utils/shadowSetter";
 
 export const GrassSystem = () => {
   const lightsCtx = makeCtx(state.colls, state.rows);
@@ -82,7 +83,11 @@ export const GrassSystem = () => {
         }
       }
 
-      instancedMesh.receiveShadow = true;
+      shadowSetter(instancedMesh, {
+        castShadow: true,
+        receiveShadow: true,
+      })
+      
       instancedMesh.instanceColor = instanceAttribute;
 
       return instancedMesh;

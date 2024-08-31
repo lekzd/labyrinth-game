@@ -8,6 +8,7 @@ import { createInteractivitySign } from "@/utils/interactivitySign.ts";
 import { createPhysicBox } from "@/cannon";
 import { DynamicObject } from "@/types";
 import { state } from "@/state";
+import { shadowSetter } from "@/utils/shadowSetter";
 
 const PHYSIC_Y = 4;
 export class PuzzleHandler {
@@ -139,9 +140,12 @@ function initCube() {
 
   const cube = new THREE.Mesh(new THREE.BoxGeometry(6, 6, 6), materials);
 
-  cube.castShadow = true;
-  cube.receiveShadow = true;
   cube.position.y = 0.5;
+
+  shadowSetter(cube, {
+    castShadow: true,
+    receiveShadow: true,
+  })
 
   return cube;
 }
