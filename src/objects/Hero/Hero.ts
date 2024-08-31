@@ -24,9 +24,8 @@ import { NpcAdditionalAnimations, NpcAnimationStates, NpcBaseAnimations } from "
 import { state } from "@/state.ts";
 import { HealthBar } from "./healthbar.ts";
 import { HeroProps } from "@/types";
-import { BloodDropsEffect } from "../../effects/BloodDropsEffect.ts";
-import { WEAPONS_CONFIG } from "../../config/WEAPONS_CONFIG.ts";
 import { DissolveEffect } from "../../effects/DissolveEffect.ts";
+import { shadowSetter } from "@/utils/shadowSetter";
 
 type Animations = Partial<Record<animationType, Group<Object3DEventMap>>>;
 
@@ -240,6 +239,7 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
 
   target.scale.multiplyScalar(0.05);
   target.updateMatrix();
+  
 
   target.traverse((o) => {
     if (o.isMesh) {
@@ -248,8 +248,10 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
       );
       o.material.needsUpdate = true;
 
-      o.castShadow = true;
-      o.receiveShadow = true;
+      shadowSetter(o, {
+        castShadow: true,
+        receiveShadow: true,
+      })
     }
   });
   return target;
