@@ -7,6 +7,8 @@ const fbxLoader = new FBXLoader();
 const gltfLoader = new GLTFLoader();
 
 export enum texturesType {
+  dot = 'dot.png',
+  plus = 'plus.png',
   foliage_mask = 'foliage_mask.jpg',
   foliage = 'foliage.jpg',
   grass = 'grass.png',

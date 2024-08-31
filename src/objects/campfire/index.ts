@@ -13,14 +13,14 @@ import {
 } from "three";
 
 import { frandom } from "@/utils/random";
-import vertexShader from "./shader.vert";
-import fragmentShader from "./shader.frag";
 import { assign } from "@/utils/assign";
 import { DynamicObject } from "@/types";
 import { state } from "@/state";
 import { getDistance } from "@/utils/getDistance";
 import { settings } from "../hero/settings";
 import { throttle } from "@/utils/throttle.ts";
+import { ParticlesMaterial } from "@/materials/particles";
+import { loads } from "@/loader";
 
 const healHealth = throttle((object: DynamicObject) => {
   state.setState({
@@ -30,24 +30,21 @@ const healHealth = throttle((object: DynamicObject) => {
   });
 }, 500);
 
-const PARTICLE_COUNT = 100;
+const PARTICLE_COUNT = 75;
 export class Campfire {
   readonly props: DynamicObject;
   readonly mesh: Object3D<Object3DEventMap>;
-  private particleMaterial: ShaderMaterial;
+  private particleMaterial: ParticlesMaterial;
   private torch: PointLight;
 
   constructor(props: DynamicObject) {
     this.healing = false;
     this.props = props;
-    this.particleMaterial = new ShaderMaterial({
-      uniforms: {
+
+    this.particleMaterial = new ParticlesMaterial({
         time: { value: 0.0 },
         size: { value: 0.1 },
         healing: { value: 0.0 }
-      },
-      vertexShader,
-      fragmentShader
     });
 
     const { base, torch } = initMesh(props, this.particleMaterial);
@@ -60,11 +57,12 @@ export class Campfire {
     if (!next) return;
 
     if (next.hasOwnProperty('state')) {
-      this.torch.color = new Color(next.state ? 0x00ff33 : 0xff4500);
+      this.torch.color = new Color(next.state ? 0x00ff33 : 'rgb(230, 73, 33)');
       this.props.state = next.state;
 
+      this.particleMaterial.color = new Color(next.state ? 0x00ff33 : 'rgb(230, 73, 33)');
+      this.particleMaterial.map = next.state ? loads.texture['plus.png'] : loads.texture['dot.png'];
       this.particleMaterial.uniforms.healing.value = +next.state;
-      this.particleMaterial.uniformsNeedUpdate = true;
     }
   }
 
@@ -115,7 +113,7 @@ function initMesh(props: DynamicObject, particleMaterial: ShaderMaterial) {
 
   for (let i = 0; i < positions.length; i += 3) {
     positions[i] = frandom(-2, 2); // Рандомное положение частицы по оси X
-    positions[i + 1] = frandom(0, 2); // Рандомное положение частицы по оси Y
+    positions[i + 1] = frandom(0, 10); // Рандомное положение частицы по оси Y
     positions[i + 2] = frandom(-2, 2); // Рандомное положение частицы по оси Z
 
     indexes[i] = i / positions.length;
@@ -128,6 +126,9 @@ function initMesh(props: DynamicObject, particleMaterial: ShaderMaterial) {
   particleGeometry.setAttribute("values", new BufferAttribute(indexes, 3));
 
   const particleSystem = new Points(particleGeometry, particleMaterial);
+
+  particleSystem.position.y = 1;
+
   // Добавление эффекта частиц к костру
   base.add(sphere);
   base.add(particleSystem);
