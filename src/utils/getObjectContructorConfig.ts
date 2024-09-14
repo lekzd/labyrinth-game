@@ -3,6 +3,7 @@ import { Campfire, Hero, PuzzleHandler, Weapon } from "@/uses";
 import { modelType } from "../loader.ts";
 import { Box } from "cannon";
 import { Gate } from "../objects/gate/index.ts";
+import {Tree} from "@/objects/tree";
 
 export const getObjectContructorConfig = (type: ObjectType) => {
   switch (type) {
@@ -11,6 +12,12 @@ export const getObjectContructorConfig = (type: ObjectType) => {
         Constructor: Campfire,
         physical: false,
         interactive: true,
+      };
+    case "Tree":
+      return {
+        Constructor: Tree,
+        physical: true,
+        interactive: false,
       };
     case "Box":
       return {

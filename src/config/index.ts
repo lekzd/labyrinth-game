@@ -13,4 +13,5 @@ export enum Tiles {
   PuzzleHandler,
   Weapon,
   Spawner,
+  Campfire,
 }

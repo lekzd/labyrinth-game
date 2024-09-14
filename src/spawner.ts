@@ -16,6 +16,7 @@ import { RoomConfig } from "./types";
 import { DynamicObject } from "./types/DynamicObject";
 import { systems } from "./systems";
 import { getDistance } from "./utils/getDistance";
+import {getWorld} from "@/generators/getWorld.ts";
 
 const { onUpdate, send, connect } = socket({ name: 'MOBS', update: false, send: false  });
 
@@ -47,26 +48,11 @@ const getQuaternion = (pos1: Vector3Like, pos2: Vector3Like) => {
 
 export const Spawners = async (count = 1) => {
   const state: Partial<State> = {};
-  const spawners: Record<string, Vector3Like> = {};
   const dies: Record<string, boolean> = {};
 
   const next = (change: RecursivePartial<State>) => {
     mergeDeep(state, change);
     send(change);
-  }
-
-  const init = ({ rooms }: { rooms: RoomConfig[] }) => {
-    Object.values(rooms).forEach((room) => {
-      room.tiles.forEach((tile, i) => {
-        const x = (room.x + (i % room.width)) * scale;
-        const y = 0;
-        const z = (room.y + Math.floor(i / room.width)) * scale;
-
-        if (tile !== Tiles.Spawner) return;
-
-        spawners[`${x}.${y}.${z}`] = { x, y, z }
-      })
-    })
   }
 
   // Подписаться на обновления сервера
@@ -81,10 +67,6 @@ export const Spawners = async (count = 1) => {
         setTimeout(() => { delete dies[id]; }, 10000)
       }
     }
-
-    if (next.rooms) {
-      init(next);
-    }
   })
 
   connect();
@@ -95,6 +77,28 @@ export const Spawners = async (count = 1) => {
     
     if (!systems.uiSettingsSystem.settings.game.enemy_ai) {
       return;
+    }
+    const spawners = {};
+
+    for (const id in (state?.players || {})) {
+      const {activeObjectId} = state.players?.[id];
+
+      const { position } = state.objects?.[activeObjectId]!;
+      const base = { x: Math.floor(position.x / scale), y: Math.floor(position.y / scale) };
+
+      for (let y = base.y -50; y < base.y +50; y++) {
+        for (let x = base.x -50; x < base.x +50; x++) {
+          const tile = getWorld(x, y);
+
+          if (tile === Tiles.Spawner) {
+            spawners[`${x}:${y}`] = {
+              x: x * scale,
+              y: 0,
+              z: y * scale
+            };
+          }
+        }
+      }
     }
 
     for (const key in spawners) {

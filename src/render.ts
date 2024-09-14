@@ -4,22 +4,17 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import Stats from "@/utils/Stats.ts";
 import { Camera } from "./objects/hero/camera.ts";
-import { scale, State } from "./state.ts";
+import {scale, state} from "./state.ts";
 import { scene } from "./scene.ts";
 import { createGroundBody, physicWorld } from "./cannon.ts";
 import { KeyboardCharacterController } from "./objects/hero/controller.ts";
 import { currentPlayer } from "./main.ts";
 import { systems } from "./systems/index.ts";
-import { frandom } from "./utils/random.ts";
 import { Room } from "@/uses";
 import { App } from "./ui/App.tsx";
 import CannonDebugRenderer from "./cannonDebugRender.ts";
-
-import { loads } from "./loader.ts";
-import { textureRepeat } from "./utils/textureRepeat.ts";
 import { getObjectContructorConfig } from "./utils/getObjectContructorConfig.ts";
-import { getWallMesh } from "./utils/getWallMesh.ts";
-import { findLineCoordinates } from "./utils/findLineCoordinates.ts";
+import {getWorld} from "@/generators/getWorld.ts";
 
 const stats = new Stats();
 
@@ -29,10 +24,12 @@ const subscribers: { update: (time: number) => void }[] = [
   systems.inputSystem,
   systems.environmentSystem
 ];
-const rooms: Room[] = [];
+
 const decorationObjects: THREE.Mesh[] = [];
 
 export const addObjects = (items = {}) => {
+  const res = {};
+
   for (const id in items) {
     const objectConfig = items[id];
 
@@ -53,6 +50,7 @@ export const addObjects = (items = {}) => {
       getObjectContructorConfig(objectConfig.type);
 
     const object = new ObjectConstructor({ ...objectConfig });
+    res[id] = object;
 
     systems.objectsSystem.add(object, config);
     subscribers.push(object);
@@ -64,9 +62,14 @@ export const addObjects = (items = {}) => {
       subscribers.push(KeyboardCharacterController(object));
     }
   }
+
+  return res;
 };
 
-export const render = (state: State) => {
+
+const all = {};
+
+export const render = () => {
   const container = document.getElementById("app")!;
   const root = ReactDOM.createRoot(document.getElementById("react-root")!);
   root.render(React.createElement(App));
@@ -120,7 +123,17 @@ export const render = (state: State) => {
 
       const { objects } = systems.objectsSystem;
 
-      systems.cullingSystem.update(camera, rooms, objects, decorationObjects);
+      const rooms = roomChunks(state.objects[currentPlayer.activeObjectId].position);
+
+      for (const id in all) {
+        const room = all[id];
+
+        if (id in rooms)
+          room.online();
+        else
+          room.offline();
+      }
+
       TWEEN.update();
 
       if (settings.game.physics) {
@@ -134,79 +147,61 @@ export const render = (state: State) => {
   renderLoop();
 };
 
-// TODO: стандартизировать
-export const items = {
-  roomChunks: (state: State) => {
-    const roomsArray = Object.values(state.rooms);
+export const roomChunks = (pos, slice = 12) => {
+  const rooms: Record<string, Room> = {};
+  const s = slice;
 
-    roomsArray.forEach((room) => {
-      const roomObject = new Room(room);
+  let x = Math.floor(pos.x / scale), z = Math.floor(pos.z / scale);
 
-      rooms.push(roomObject);
+  x-= x % slice;
+  z-= z % slice;
 
-      scene.add(roomObject.mesh);
-    });
+  const roomsArray = getRoomsRadius({ x, z }, slice, 3);
 
-    systems.grassSystem.updateTerrainTexture()
+  for (const pos of roomsArray) {
+    const { x, y } = pos;
+    const id = `${x}_${y}`;
 
-    const treesLine = findLineCoordinates(roomsArray, 0).map(point => ({
-      x: frandom(-0.3, 0.3) + point.x,
-      y: frandom(-0.3, 0.3) + point.y,
-    }));
+    if (!(id in all)) {
+      // Если комната еще не распаршена добавляем
+      const room = {
+        id,
+        width: s,
+        height: s,
+        actions: [],
+        tiles: [],
+        x: x,
+        y: y,
+      }
 
-    const wallLine = findLineCoordinates(roomsArray, 1).map(point => ({
-      x: frandom(-0.3, 0.3) + point.x,
-      y: frandom(-0.3, 0.3) + point.y,
-    }));;
+      // Парсим тили
+      for (let y = pos.y; y < pos.y + s; y++) {
+        for (let x = pos.x; x < pos.x + s; x++) {
+          const tile = getWorld(x, y);
 
-    const planeWidth = state.colls * scale
-    const planeHeight = state.rows * scale
+          room.tiles.push(tile);
+        }
+      }
 
-    const floorMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(planeWidth, planeHeight),
-      new THREE.MeshStandardMaterial({
-        color: new THREE.Color('#131209'),
-      })
-    );
+      all[id] = new Room(room);
 
-    floorMesh.rotation.x = -Math.PI / 2;
+      scene.add(all[id].mesh);
+    }
 
-    floorMesh.position.set(
-      planeWidth / 2,
-      -1,
-      planeHeight / 2,
-    );
+    rooms[id] = all[id];
+  }
 
-    scene.add(floorMesh);
+  return rooms;
+}
 
-    scene.add(getWallMesh(wallLine));
+const getRoomsRadius = (base, size, radius = 1) => {
+  const items = [];
 
-    const matrix = new THREE.Matrix4();
-    const height = 40;
-    const instanceNumber = treesLine.length;
-    const threeGeometry = new THREE.BoxGeometry(10, height, 10, 4, 1);
-    const material = new THREE.MeshPhongMaterial({
-      color: new THREE.Color('#374310'),
-      map: textureRepeat(loads.texture["foliage.jpg"]!, 10, 10, 10, height),
-      alphaMap: textureRepeat(loads.texture["foliage_mask.jpg"]!, 10, 10, 10, height),
-      alphaTest: 0.8,
-      side: THREE.DoubleSide,
-    });
-    const instancedMesh = new THREE.InstancedMesh(
-      threeGeometry,
-      material,
-      instanceNumber
-    );
+  for (let x = base.x - size * radius; x <= base.x + size * radius; x+=size) {
+    for (let y = base.z - size * radius; y <= base.z + size * radius; y+=size) {
+      items.push({ x, y });
+    }
+  }
 
-    treesLine.forEach((point, instanceIndex) => {
-      matrix.makeRotationY(Math.PI / 4)
-      matrix.setPosition(point.x * scale, height * frandom(0.2, 0.4), point.y * scale);
-
-      instancedMesh.setMatrixAt(instanceIndex, matrix);
-    });
-
-    instancedMesh.name = "Scene Border Pines";
-
-    scene.add(instancedMesh);
-  },
-};
+  return items;
+}

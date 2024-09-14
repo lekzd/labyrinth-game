@@ -1,3 +1,5 @@
+import { createNoise2D } from 'simplex-noise';
+
 function seedRandom(seed: string): () => number {
   // Используем хеш-функцию для преобразования seed строки в число
   const xmur3 = (str: string) => {
@@ -37,11 +39,11 @@ function seedRandom(seed: string): () => number {
   return sfc32(a, b, c, d);
 }
 
-const seed = "Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn";
-export let pseudoRandom = seedRandom(seed);
+export let pseudoRandom = () => 1, noise;
 
 export const updateSeed = (seed: string) => {
   pseudoRandom = seedRandom(seed);
+  noise = createNoise2D(pseudoRandom);
 }
 
 export const random = (from: number, to: number) => {

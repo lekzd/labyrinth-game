@@ -131,12 +131,15 @@ export const GrassSystem = () => {
       const instanceNumber =
         room.tiles.filter((tile) => tilesWithGrass.includes(tile)).length *
         instancesPerTile;
+
       const geometry = new THREE.PlaneGeometry(width, height);
+
       const instancedMesh = new THREE.InstancedMesh(
         geometry,
         grassMaterial,
         instanceNumber
       );
+
       const instanceAttribute = new THREE.InstancedBufferAttribute(
         new Float32Array(instanceNumber * 3),
         3
@@ -144,33 +147,37 @@ export const GrassSystem = () => {
 
       let instanceIndex = 0;
 
-      for (let j = 0; j < room.tiles.length; j++) {
-        const tile = room.tiles[j];
-        const x = j % room.width;
-        const y = Math.floor(j / room.width);
-        const shaderX = (room.x + x) / lightsCtx.canvas.width;
-        const shaderY = 1 - (room.y + y) / lightsCtx.canvas.height;
+      for (let y = 0; y < room.height; y++) {
+        for (let x = 0; x < room.width; x++) {
+          const j = x + y * room.width;
+          const tile = room.tiles[j];
+          // console.log(x, y, j)
 
-        if (!tilesWithGrass.includes(tile)) {
-          continue;
-        }
+          const shaderX = (room.x + x) / lightsCtx.canvas.width;
+          const shaderY = (room.y + y) / lightsCtx.canvas.height;
 
-        for (let i = 0; i < instancesPerTile; i++) {
-          const variable = 5 + (j % 5.5);
+          if (!tilesWithGrass.includes(tile)) {
+            continue;
+          }
 
-          dummy.position.set(
-            x * 10 + frandom(-variable, variable),
-            0,
-            y * 10 + frandom(-variable, variable)
-          );
 
-          dummy.rotation.y = frandom(0, Math.PI);
+          for (let i = 0; i < instancesPerTile; i++) {
+            const variable = 5 + (j % 5.5);
 
-          dummy.updateMatrix();
-          instancedMesh.setMatrixAt(instanceIndex, dummy.matrix);
-          instanceAttribute.setXYZ(instanceIndex, shaderX, shaderY, 0);
+            dummy.position.set(
+              x * 10 + frandom(-variable, variable),
+              0,
+              y * 10 + frandom(-variable, variable)
+            );
 
-          instanceIndex++;
+            dummy.rotation.y = frandom(0, Math.PI);
+
+            dummy.updateMatrix();
+            instancedMesh.setMatrixAt(instanceIndex, dummy.matrix);
+            instanceAttribute.setXYZ(instanceIndex, shaderX, shaderY, 0);
+
+            instanceIndex++;
+          }
         }
       }
 

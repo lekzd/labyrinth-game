@@ -1,11 +1,15 @@
+import * as CANNON from "cannon";
 import * as THREE from "three";
 import { loads } from "@/loader";
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import { createMatrix } from "@/utils/createMatrix";
 import { LeavesMatetial } from "@/materials/leaves";
 import { CustomTubeGeometry } from "./CustomTubeGeometry";
-import { frandom, random } from "@/utils/random";
+import {frandom, random} from "@/utils/random";
 import { pickBy } from "@/utils/pickBy";
+import {assign} from "@/utils/assign.ts";
+import {DynamicObject} from "@/types";
+import {createPhysicBox} from "@/cannon.ts";
 
 const radiusFunction = (from: number, to: number) => (t: number) => {
   return from - (t * (from - to));
@@ -37,7 +41,7 @@ function createBranchGeometry({ level, length, matrix }: BranchData) {
   const fromRadius = (level * level) / 3
   const toRadius = ((level-1) * (level-1)) / 3
   const geometry = createCurvedBranch(start, mid1, mid2, end, 6, fromRadius, toRadius);
-  
+
   geometry.applyMatrix4(createMatrix(matrix))
 
   return geometry
@@ -98,7 +102,7 @@ export const createTree = () => {
   const branchGeometries = branches.map(createBranchGeometry)
 
   const woodGeometry = BufferGeometryUtils.mergeGeometries(branchGeometries)
-  
+
   const foliageGeometries = branches.slice(1).map(createFoliageGeometry).flat()
   const croneGeometry = BufferGeometryUtils.mergeGeometries(foliageGeometries)
 
@@ -128,4 +132,52 @@ export const createTree = () => {
 
   return mesh
 }
+const PHYSIC_Y = 4;
 
+const memoRandom = (func, numb) => {
+  const items = [];
+
+  return () => {
+    if (items.length < numb) {
+      const item = func();
+      items.push(item);
+      return item;
+    }
+
+    return items[random(0, numb)]
+  }
+}
+
+const memoTree = memoRandom(createTree, 20);
+
+export class Tree {
+  readonly props: DynamicObject;
+  readonly mesh: Object3D<Object3DEventMap>;
+  readonly physicBody: CANNON.Body;
+  readonly physicY = PHYSIC_Y;
+
+  constructor(props) {
+    this.props = props;
+    this.mesh = memoTree().clone();
+    assign(this.mesh.position, props.position);
+    this.physicBody = initPhysicBody();
+
+    this.physicBody.position.set(
+      props.position.x,
+      props.position.y,
+      props.position.z,
+    )
+  }
+  update(timeDelta: number) {
+
+  }
+
+}
+
+function initPhysicBody() {
+  const physicRadius = 4;
+  return createPhysicBox(
+    { x: physicRadius, y: 30, z: physicRadius },
+    { mass: 0, type: CANNON.Body.STATIC }
+  );
+}

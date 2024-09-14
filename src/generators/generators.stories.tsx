@@ -1,11 +1,8 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { Meta, StoryObj } from "@storybook/react";
-import { initState } from "@/state";
-import { generateRooms } from "./generateRooms";
 import { Tiles } from "@/config";
-import  {updateSeed } from "@/utils/random.ts";
-
-const ROOM_SIZE = 13;
+import { updateSeed } from "@/utils/random.ts";
+import { getWorld } from "@/generators/getWorld.ts";
 
 const getColor = (tile: Tiles) => {
   switch (tile) {
@@ -30,28 +27,20 @@ const getColor = (tile: Tiles) => {
   }
 };
 
-const PreviewCanvas = ({ rows, channel, colls, withTiles }) => {
+const PreviewCanvas = ({ radius, x: cx = 0, y: cy = 0, channel }) => {
   const ref = useRef<HTMLCanvasElement>(null);
 
-  const state = useMemo(() => {
-    const state = initState({ rows, colls });
+  useEffect(() => {
     updateSeed(channel)
-    state.setState(
-      generateRooms({
-        state,
-        ROOM_SIZE,
-      })
-    );
-    return state;
-  }, [rows, channel, colls])
+  }, [channel]);
 
   useEffect(() => {
     const canvas = ref.current!;
     const ctx = canvas.getContext("2d")!;
     const tileSize = 3;
 
-    canvas.width = colls * tileSize;
-    canvas.height = rows * tileSize;
+    canvas.width = 2 * radius * tileSize;
+    canvas.height = 2 * radius * tileSize;
 
     canvas.style.width = `${canvas.width}px`;
     canvas.style.height = `${canvas.height}px`;
@@ -59,35 +48,16 @@ const PreviewCanvas = ({ rows, channel, colls, withTiles }) => {
     ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    for (const key in state.rooms) {
-      const room = state.rooms[key];
+    for (let y = 0; y < cy + 2 * radius; y++) {
+      for (let x = 0; x < cx + 2 * radius; x++) {
+        const tail = getWorld(cx + (x - radius), cy + (y - radius));
 
-      // console.log(room)
-
-      ctx.fillStyle = 'gray';
-      ctx.fillRect(room.x * tileSize, room.y * tileSize, room.width * tileSize, room.height * tileSize);
-
-      if (withTiles) {
-        // Проходимся по координатам
-        for (let y = 0; y < room.height; y++) {
-          for (let x = 0; x < room.width; x++) {
-            const tile = room.tiles[y * room.height + x];
-            const color = getColor(tile);
-
-            if (color) {
-              ctx.fillStyle = getColor(tile);
-              ctx.fillRect(
-                (room.x + x) * tileSize,
-                (room.y + y) * tileSize,
-                tileSize,
-                tileSize
-              );
-            }
-          }
-        }
-        }
+        ctx.fillStyle = getColor(tail);
+        ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+      }
     }
-  }, [state, withTiles, ref]);
+
+  }, [channel, cx, cy, radius]);
 
   return <canvas ref={ref} />;
 };
@@ -104,9 +74,9 @@ type Story = StoryObj<typeof meta>;
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
 export const Primary: Story = {
   args: {
-    rows: 150,
-    colls: 150,
-    withTiles: true,
+    radius: 100,
     channel: '',
+    x: 0,
+    y: 0,
   },
 };
