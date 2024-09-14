@@ -1,3 +1,4 @@
+import { shadowSetter } from "@/utils/shadowSetter";
 import {
   Mesh,
   MeshBasicMaterial,
@@ -43,5 +44,10 @@ function createTorch() {
   });
   torch.shadow.radius = 5;
   torch.shadow.blurSamples = 5;
+
+  shadowSetter(torch, {
+    castShadow: true,
+  })
+
   return torch;
 }

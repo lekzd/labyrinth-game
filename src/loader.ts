@@ -7,9 +7,11 @@ const fbxLoader = new FBXLoader();
 const gltfLoader = new GLTFLoader();
 
 export enum texturesType {
+  dot = 'dot.png',
+  plus = 'plus.png',
   foliage_mask = 'foliage_mask.jpg',
   foliage = 'foliage.jpg',
-  grass = 'grass.webp',
+  grass = 'grass.png',
   runic_cube = 'runic_2.png',
   runic_normal_map = 'runic_normal_map.png',
   runic_metalness_map = 'runic_metalness_map.png',

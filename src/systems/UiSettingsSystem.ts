@@ -1,7 +1,7 @@
+import { Emitter } from "strict-event-emitter";
 import * as THREE from "three";
 import * as dat from "dat.gui";
 import { mergeDeep } from "../utils/mergeDeep";
-import { scene } from "../scene";
 import { systems } from ".";
 
 const DEFAULTS = {
@@ -28,12 +28,22 @@ const DEFAULTS = {
   }
 };
 
+type Settings = typeof DEFAULTS;
+
+type Transform<T> = {
+  [K in keyof T]: [T[K]]
+};
+
+type EventsMap = Transform<Settings>;
+
 export const UiSettingsSystem = () => {
   const gui = new dat.GUI({
     closed: true,
     autoPlace: false,
-    width: 360,
+    width: 360
   });
+
+  const events = new Emitter<EventsMap>();
 
   gui.useLocalStorage = true;
   gui.domElement.style.position = "fixed";
@@ -81,14 +91,21 @@ export const UiSettingsSystem = () => {
         // @ts-expect-error
         .add(store[dir], name, ...rest)
         .name(label)
-        .onChange(applyChange.bind(0, name, applyFunction))
+        .onChange(applyChange.bind(0, name, applyFunction, dir))
     );
   };
 
-  const applyChange = (attr: string, applyFunction: ApplyFn, value: any) => {
+  const applyChange = (
+    attr: string,
+    applyFunction: ApplyFn,
+    dir: keyof EventsMap,
+    value: any
+  ) => {
     localStorage.setItem("savedSettings", JSON.stringify(store));
 
     applyFunction(attr, value);
+
+    events.emit(dir, store[dir]);
   };
 
   const addRenderingControlls = () => {
@@ -118,11 +135,6 @@ export const UiSettingsSystem = () => {
           break;
         case "shadows":
           renderer.shadowMap.enabled = value as boolean;
-          scene.traverse(function (node) {
-            if (node instanceof THREE.Light) {
-              node.castShadow = value;
-            }
-          });
           break;
         default:
           // @ts-expect-error
@@ -217,6 +229,7 @@ export const UiSettingsSystem = () => {
     settings: store,
     renderer,
     camera,
-    dom: gui.domElement
+    dom: gui.domElement,
+    events
   };
 };

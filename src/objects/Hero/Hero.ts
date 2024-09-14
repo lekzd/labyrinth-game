@@ -24,9 +24,8 @@ import { NpcAdditionalAnimations, NpcAnimationStates, NpcBaseAnimations } from "
 import { state } from "@/state.ts";
 import { HealthBar } from "./healthbar.ts";
 import { HeroProps } from "@/types";
-import { BloodDropsEffect } from "../../effects/BloodDropsEffect.ts";
-import { WEAPONS_CONFIG } from "../../config/WEAPONS_CONFIG.ts";
 import { DissolveEffect } from "../../effects/DissolveEffect.ts";
+import { shadowSetter } from "@/utils/shadowSetter";
 
 type Animations = Partial<Record<animationType, Group<Object3DEventMap>>>;
 
@@ -161,6 +160,15 @@ export class Hero {
       this.props.additionsAnimation = next.additionsAnimation;
       this.stateMachine2.update(next.additionsAnimation ?? NpcAnimationStates.idle);
     }
+
+    if (next.hasOwnProperty('health')) {
+      this.props.health = next.health;
+      this.healthBar.update(this.props);
+
+      if (next.health <= 0) {
+        return this.die();
+      }
+    }
   }
 
   setRotation(angle: number) {
@@ -206,10 +214,6 @@ export class Hero {
 
     if (!obj) return;
 
-    if (obj.health <= 0) return this.die();
-
-    this.healthBar.update(obj);
-
     this.setPosition(obj.position, 0.01);
 
     if (obj.rotation) {
@@ -235,6 +239,7 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
 
   target.scale.multiplyScalar(0.05);
   target.updateMatrix();
+  
 
   target.traverse((o) => {
     if (o.isMesh) {
@@ -243,8 +248,10 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
       );
       o.material.needsUpdate = true;
 
-      o.castShadow = true;
-      o.receiveShadow = true;
+      shadowSetter(o, {
+        castShadow: true,
+        receiveShadow: true,
+      })
     }
   });
   return target;
