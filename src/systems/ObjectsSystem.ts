@@ -115,12 +115,29 @@ const interactionRaycaster = (
 
 export const ObjectsSystem = () => {
   const objects: Record<string, MapObject> = {};
+  const interactive: Record<string, MapObject> = {};
+
   const physicObjects = new Map<string, MapObject>();
 
   // Создаем Octree
-  const min = new THREE.Vector3(0, -1, 0);
-  const max = new THREE.Vector3(state.colls * scale, 20, state.rows * scale);
-  const octree = new PointOctree<MapObject>(min, max, 0, 10000);
+  const min = new THREE.Vector3(-100, -100, -100);
+  const max = new THREE.Vector3(100, 100, 100);
+  const octree = new PointOctree<MapObject>(min, max, 0, 100);
+
+  const position = {
+    previous: { x: 0, y: 0, z: 0 },
+    current: { x: 0, y: 0, z: 0 },
+  };
+
+  const relativePosition = (point, state: keyof typeof position = 'current') => {
+    const vector = point.clone();
+
+    vector.x -= position[state].x;
+    vector.y -= position[state].y;
+    vector.z -= position[state].z;
+
+    return vector;
+  }
 
   return {
     objects,
@@ -137,7 +154,7 @@ export const ObjectsSystem = () => {
       }
 
       if (config.interactive) {
-        octree.set(object.mesh.position, object);
+        interactive[object.props.id] = object;
       }
     },
     remove: (id) => {
@@ -145,7 +162,9 @@ export const ObjectsSystem = () => {
 
       if (!object) return;
 
-      octree.remove(object.mesh.position);
+      if (interactive[id])
+        octree.remove(relativePosition(object.mesh.position));
+
       physicObjects.delete(id);
       physicWorld.remove(object.physicBody);
     },
@@ -177,11 +196,16 @@ export const ObjectsSystem = () => {
     },
 
     update: (timeElapsedS: number) => {
+      const { position: next } = state.objects[currentPlayer.activeObjectId] || { position };
+
+      position.previous = position.current;
+      position.current = next;
+
       physicWorld.step(fixedTimeStep, timeElapsedS);
 
       physicObjects.forEach((object) => {
         if (object.physicBody) {
-          const prevPos = new THREE.Vector3().copy(object.mesh.position);
+          const prev = relativePosition(object.mesh.position, 'previous');
 
           object.mesh.position.set(
             object.physicBody.position.x,
@@ -190,7 +214,24 @@ export const ObjectsSystem = () => {
           );
 
           object.mesh.quaternion.copy(object.physicBody.quaternion);
-          octree.move(prevPos, object.mesh.position);
+
+          const next = relativePosition(object.mesh.position);
+
+          if (interactive[object.props.id] && object.props.id !== currentPlayer.activeObjectId) {
+            // Если рядом добавляем, если нет - удаляем
+            if (next.x < 100 && next.y < 100 && next.z < 100) {
+
+              // Двигаем если есть, если нет добавляем
+              if (octree.get(prev))
+                octree.move(prev, next);
+              else
+                octree.set(next, object);
+
+            } else {
+              if (octree.get(prev))
+                octree.remove(prev);
+            }
+          }
         }
       });
 
@@ -201,7 +242,7 @@ export const ObjectsSystem = () => {
       const intersects = octree.raycast(
         interactionRaycaster(
           activeObject.mesh.quaternion.clone(),
-          activeObject.mesh.position
+          new THREE.Vector3(0, 0, 0)
         )
       );
 
@@ -226,7 +267,10 @@ export const ObjectsSystem = () => {
               );
 
               if (distance > 10) {
-                octree.move(data?.mesh.position, data.physicBody.position);
+                octree.move(
+                  relativePosition(data?.mesh.position),
+                  relativePosition(data.physicBody.position)
+                );
               }
             }
           }

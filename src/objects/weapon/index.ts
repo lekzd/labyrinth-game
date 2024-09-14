@@ -17,6 +17,7 @@ import { currentPlayer } from "@/main.ts";
 import { state } from "@/state.ts";
 import { GlowMaterial } from "@/materials/glow/index.ts";
 import { HeroProps } from "@/types";
+import {getObjectState} from "@/objects/room";
 
 const PHYSIC_Y = 4;
 export class Weapon {
@@ -52,7 +53,7 @@ export class Weapon {
     this.cube = initCube();
     this.mesh.add(this.cube);
 
-    const obj = state.objects[this.props.id];
+    const obj = getObjectState(this.props.id);
     this.setPosition(obj.position);
   }
   update(time: number) {}

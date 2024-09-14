@@ -36,19 +36,20 @@ export const createRoomTerrainCanvas = (
   ctx.fillStyle = BACKGROUND_COLOR;
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-  room.tiles.forEach((tile, i) => {
-    const x = (i % room.width) * tileSize;
-    const y = Math.floor(i / room.width) * tileSize;
+  for (let y = 0; y < room.height; y++) {
+    for (let x = 0; x < room.width; x++) {
+      const tile = room.tiles[x + y * room.width];
 
-    ctx.fillStyle = getColor(tile);
-    ctx.fillRect(x, y, tileSize, tileSize);
-  });
+      ctx.fillStyle = getColor(tile);
+      ctx.fillRect(x, y, tileSize, tileSize);
+    }
+  }
 
   return ctx.canvas;
 };
 
 export const createFloorMaterial = (room: RoomConfig) => {
-  const canvas = createRoomTerrainCanvas(room, 5, 3);
+  const canvas = createRoomTerrainCanvas(room, 5, 1);
   const texture = new THREE.CanvasTexture(canvas);
 
   return new THREE.MeshStandardMaterial({

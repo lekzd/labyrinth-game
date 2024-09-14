@@ -25,59 +25,42 @@ export const CullingSystem = () => {
       frustum.setFromProjectionMatrix(cameraViewProjectionMatrix)
 
       rooms.forEach(room => {
-        const position = new THREE.Vector3(
-          room.mesh.position.x + (room.config.width >> 1) * scale,
-          room.mesh.position.y,
-          room.mesh.position.z + (room.config.height >> 1) * scale,
-        )
-        const distance = position.distanceTo(camera.position)
 
-        if (distance > settings.camera.far) {
-          room.mesh.visible = false
-        } else {
-          room.mesh.visible = frustum.intersectsObject(room.floorMesh)
-        }
-
-        if (distance > 200) {
-          room.offline()
-        } else {
-          room.online()
-        }
       })
 
-      for (const id in objects) {
-        const { mesh } = objects[id];
-        const g = mesh.geometry ? mesh : mesh.children[0]
-        const distance = mesh.position.distanceTo(camera.position)
+      // for (const id in objects) {
+      //   const { mesh } = objects[id];
+      //   const g = mesh.geometry ? mesh : mesh.children[0]
+      //   const distance = mesh.position.distanceTo(camera.position)
+      //
+      //   if (!g.geometry) {
+      //     continue
+      //   }
+      //
+      //   if (distance > settings.camera.far) {
+      //     mesh.visible = false
+      //   } else {
+      //     if (!frustum.intersectsObject(g)) {
+      //       mesh.visible = distance < 50
+      //     } else {
+      //       mesh.visible = true
+      //     }
+      //   }
+      //
+      //   mesh.matrixAutoUpdate = mesh.visible
+      // }
 
-        if (!g.geometry) {
-          continue
-        }
-
-        if (distance > settings.camera.far) {
-          mesh.visible = false
-        } else {
-          if (!frustum.intersectsObject(g)) {
-            mesh.visible = distance < 50
-          } else {
-            mesh.visible = true
-          }
-        }
-
-        mesh.matrixAutoUpdate = mesh.visible
-      }
-
-      decorationObjects.forEach(mesh => {
-        const distance = mesh.position.distanceTo(camera.position)
-
-        if (distance > settings.camera.far >> 1) {
-          mesh.visible = false
-        } else {
-          mesh.visible = frustum.intersectsObject(mesh)
-        }
-
-        mesh.matrixAutoUpdate = mesh.visible
-      })
+      // decorationObjects.forEach(mesh => {
+      //   const distance = mesh.position.distanceTo(camera.position)
+      //
+      //   if (distance > settings.camera.far >> 1) {
+      //     mesh.visible = false
+      //   } else {
+      //     mesh.visible = frustum.intersectsObject(mesh)
+      //   }
+      //
+      //   mesh.matrixAutoUpdate = mesh.visible
+      // })
 
     },
   }

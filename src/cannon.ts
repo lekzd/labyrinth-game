@@ -2,7 +2,11 @@ import * as CANNON from 'cannon'
 import { Vector3Like } from 'three';
 
 export const physicWorld = new CANNON.World();
+window.physicWorld = physicWorld;
+
 physicWorld.gravity.set(0, -9.82, 0); // m/s²
+
+console.log('physicWorld', physicWorld)
 
 export const createPhysicBox = (dimensions: Vector3Like, options: CANNON.IBodyOptions) => {
   const { x, y, z } = dimensions;

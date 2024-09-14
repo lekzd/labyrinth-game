@@ -13,3 +13,5 @@ export const systems = {
   objectsSystem: ObjectsSystem(),
   environmentSystem: EnvironmentSystem(),
 }
+
+window.systems = systems;

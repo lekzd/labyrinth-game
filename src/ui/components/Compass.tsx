@@ -82,7 +82,7 @@ export const Compass: FC<IProps> = (props: IProps) => {
   useEffect(() => {
     const { camera } = systems.uiSettingsSystem
 
-    const target = new THREE.Vector3((state.colls >> 1) * scale, 0, (state.rows >> 1) * scale);
+    const target = new THREE.Vector3(0, 0, 0);
 
     const animate = () => {
       requestAnimationFrame(animate)
