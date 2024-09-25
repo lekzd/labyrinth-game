@@ -61,8 +61,7 @@ export const createFloorMaterial = (room: RoomConfig) => {
       room.width,
       room.height
     ),
-    normalMapType: 1,
-    color: 0x222222,
+    color: 0x777777,
     roughness: 1,
     metalness: 0,
     flatShading: true,

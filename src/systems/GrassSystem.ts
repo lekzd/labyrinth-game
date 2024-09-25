@@ -2,7 +2,6 @@ import * as THREE from "three";
 import { GrassMaterial } from "@/materials/grass";
 import { state } from "@/state";
 import { makeCtx } from "@/utils/makeCtx";
-import { createTerrainCanvas } from "@/materials/terrain";
 import { RoomConfig } from "@/types";
 import { Tiles } from "@/config";
 import { frandom } from "@/utils/random";
@@ -25,10 +24,6 @@ export const GrassSystem = () => {
   return {
     update: (time: number) => {
       grassUniforms.time.value += time * 2;
-    },
-
-    updateTerrainTexture: () => {
-      grassUniforms.terrainImage.value = new THREE.CanvasTexture(createTerrainCanvas(state, 10, 4))
     },
 
     createRoomMesh: (room: RoomConfig) => {
@@ -59,15 +54,12 @@ export const GrassSystem = () => {
         for (let x = 0; x < room.width; x++) {
           const j = x + y * room.width;
           const tile = room.tiles[j];
-          // console.log(x, y, j)
-
           const shaderX = (room.x + x) / lightsCtx.canvas.width;
           const shaderY = (room.y + y) / lightsCtx.canvas.height;
 
           if (!tilesWithGrass.includes(tile)) {
             continue;
           }
-
 
           for (let i = 0; i < instancesPerTile; i++) {
             const variable = 5 + (j % 5.5);

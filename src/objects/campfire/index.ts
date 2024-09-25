@@ -9,7 +9,9 @@ import {
   PointLight,
   Points,
   ShaderMaterial,
-  SphereGeometry
+  SphereGeometry,
+  Sprite,
+  SpriteMaterial
 } from "three";
 
 import { frandom } from "@/utils/random";
@@ -69,6 +71,9 @@ export class Campfire {
 
   update(timeDelta: number) {
     let healing = false;
+
+    this.torch.position.x = Math.sin(performance.now() / 50) * 0.5;
+    this.torch.intensity = 3000 + (Math.sin(performance.now() / 50) * 500) + (Math.sin(performance.now() / 10) * 100);
 
     Object.entries(state.objects).forEach(([id, object]) => {
       if (id === this.props.id) {
@@ -133,7 +138,7 @@ function initMesh(props: DynamicObject, particleMaterial: ShaderMaterial) {
   // Добавление эффекта частиц к костру
   base.add(sphere);
   base.add(particleSystem);
-  const torch = new PointLight(0xff4500, 2000, 400); // Цвет, интенсивность, дистанция факела
+  const torch = new PointLight(0xff4500, 2000, 70); // Цвет, интенсивность, дистанция факела
   torch.position.set(0, 5, 0); // Позиция факела (относительно руки персонажа)
   torch.shadow.mapSize.width = 100;
   torch.shadow.mapSize.height = 100;
@@ -150,7 +155,19 @@ function initMesh(props: DynamicObject, particleMaterial: ShaderMaterial) {
     castShadow: true,
   })
 
+  const ball = new Sprite(
+    new SpriteMaterial({
+      map: loads.texture["dot.png"],
+      color: new Color('rgb(200, 99, 31)'),
+      opacity: 0.5,
+    })
+  );
+
+  ball.position.y = 7;
+  ball.scale.set(30, 30, 20);
+
   base.add(torch);
+  base.add(ball);
 
   assign(base.position, props.position);
   return { base, torch };

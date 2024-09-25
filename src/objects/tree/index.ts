@@ -134,8 +134,8 @@ export const createTree = () => {
 }
 const PHYSIC_Y = 4;
 
-const memoRandom = (func, numb) => {
-  const items = [];
+const memoRandom = (func: () => THREE.Mesh, numb: number) => {
+  const items: THREE.Mesh[] = [];
 
   return () => {
     if (items.length < numb) {
@@ -152,11 +152,11 @@ const memoTree = memoRandom(createTree, 20);
 
 export class Tree {
   readonly props: DynamicObject;
-  readonly mesh: Object3D<Object3DEventMap>;
+  readonly mesh: THREE.Object3D<THREE.Object3DEventMap>;
   readonly physicBody: CANNON.Body;
   readonly physicY = PHYSIC_Y;
 
-  constructor(props) {
+  constructor(props: DynamicObject) {
     this.props = props;
     this.mesh = memoTree().clone();
     assign(this.mesh.position, props.position);

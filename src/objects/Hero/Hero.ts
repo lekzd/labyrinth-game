@@ -239,10 +239,9 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
 
   target.scale.multiplyScalar(0.05);
   target.updateMatrix();
-  
 
   target.traverse((o) => {
-    if (o.isMesh) {
+    if (o instanceof Mesh) {
       o.material.map = new TextureLoader().load(
         `model/${target.name}_Texture.png`
       );
@@ -254,6 +253,7 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
       })
     }
   });
+
   return target;
 }
 

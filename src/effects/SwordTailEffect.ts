@@ -4,7 +4,6 @@ import {
   BufferAttribute,
   CatmullRomCurve3,
   Mesh,
-  TubeGeometry,
   Vector3
 } from "three";
 import { scene } from "@/scene";
@@ -12,8 +11,8 @@ import { SwordPathMaterial } from "@/materials/swordPath";
 import { AbstactEffect } from "./AbstactEffect";
 import { WEAPONS_CONFIG } from "../config/WEAPONS_CONFIG";
 import { systems } from "@/systems";
-import { BloodDropsEffect } from "./BloodDropsEffect";
 import { weaponType } from "@/loader";
+import { CustomTubeGeometry } from "@/objects/tree/CustomTubeGeometry";
 
 export class SwordTailEffect implements AbstactEffect {
   pointsLimit: number;
@@ -53,12 +52,16 @@ export class SwordTailEffect implements AbstactEffect {
       pointsLimit: this.pointsLimit
     });
 
+    const radiusFunction = (from: number, to: number) => (t: number) => {
+      return from - (t * (from - to));
+    };
+
     const drawSwordTail = (points: Vector3[]) => {
       const curve = new CatmullRomCurve3(points);
-      const tubeGeometry = new TubeGeometry(
+      const tubeGeometry = new CustomTubeGeometry(
         curve,
         this.pointsLimit,
-        0.2,
+        radiusFunction(0.4, 0),
         2,
         false
       );

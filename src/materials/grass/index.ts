@@ -33,6 +33,7 @@ export class GrassMaterial extends CustomShaderMaterial<typeof THREE.MeshStandar
       metalness: 0.1,
       flatShading: true,
       side: 2,
+      silent: true,
     })
   }
 }

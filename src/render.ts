@@ -15,6 +15,9 @@ import { App } from "./ui/App.tsx";
 import CannonDebugRenderer from "./cannonDebugRender.ts";
 import { getObjectContructorConfig } from "./utils/getObjectContructorConfig.ts";
 import {getWorld} from "@/generators/getWorld.ts";
+import { DynamicObject } from "./types/DynamicObject.ts";
+import { MapObject } from "./types/MapObject.ts";
+import { RoomConfig } from "./types/index";
 
 const stats = new Stats();
 
@@ -25,10 +28,8 @@ const subscribers: { update: (time: number) => void }[] = [
   systems.environmentSystem
 ];
 
-const decorationObjects: THREE.Mesh[] = [];
-
-export const addObjects = (items = {}) => {
-  const res = {};
+export const addObjects = (items: Record<string, DynamicObject>) => {
+  const res: Record<string, MapObject> = {};
 
   for (const id in items) {
     const objectConfig = items[id];
@@ -49,7 +50,7 @@ export const addObjects = (items = {}) => {
     const { Constructor: ObjectConstructor, ...config } =
       getObjectContructorConfig(objectConfig.type);
 
-    const object = new ObjectConstructor({ ...objectConfig });
+    const object = new ObjectConstructor({ ...objectConfig }) as MapObject;
     res[id] = object;
 
     systems.objectsSystem.add(object, config);
@@ -67,7 +68,7 @@ export const addObjects = (items = {}) => {
 };
 
 
-const all = {};
+const all: Record<string, Room> = {};
 
 export const render = () => {
   const container = document.getElementById("app")!;
@@ -147,7 +148,7 @@ export const render = () => {
   renderLoop();
 };
 
-export const roomChunks = (pos, slice = 12) => {
+export const roomChunks = (pos: THREE.Vector3Like, slice = 12) => {
   const rooms: Record<string, Room> = {};
   const s = slice;
 
@@ -164,7 +165,7 @@ export const roomChunks = (pos, slice = 12) => {
 
     if (!(id in all)) {
       // Если комната еще не распаршена добавляем
-      const room = {
+      const room: RoomConfig = {
         id,
         width: s,
         height: s,
@@ -185,7 +186,7 @@ export const roomChunks = (pos, slice = 12) => {
 
       all[id] = new Room(room);
 
-      scene.add(all[id].mesh);
+      // scene.add(all[id].mesh);
     }
 
     rooms[id] = all[id];
@@ -194,7 +195,7 @@ export const roomChunks = (pos, slice = 12) => {
   return rooms;
 }
 
-const getRoomsRadius = (base, size, radius = 1) => {
+const getRoomsRadius = (base: THREE.Vector3Like, size: number, radius = 1) => {
   const items = [];
 
   for (let x = base.x - size * radius; x <= base.x + size * radius; x+=size) {

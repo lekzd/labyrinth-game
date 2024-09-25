@@ -44,6 +44,7 @@ export const UiSettingsSystem = () => {
   });
 
   const events = new Emitter<EventsMap>();
+  events.setMaxListeners(1000);
 
   gui.useLocalStorage = true;
   gui.domElement.style.position = "fixed";

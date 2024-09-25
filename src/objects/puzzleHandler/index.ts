@@ -163,7 +163,9 @@ function initMesh(props: DynamicObject, color: THREE.Color) {
     new THREE.MeshPhongMaterial({ color })
   );
 
-  base.receiveShadow = true;
+  shadowSetter(base, {
+    receiveShadow: true,
+  })
 
   base.position.y = -3;
 

@@ -4,13 +4,14 @@ import { loads } from "@/loader";
 import { jitterGeometry } from "@/utils/jitterGeometry";
 
 export const createStone = () => {
-  const radius = frandom(3, 7)
+  const radius = frandom(5, 9)
   const geometry = jitterGeometry(
     new THREE.SphereGeometry(radius, 5, 5),
     radius / 3
   )
   
   geometry.scale(1, 1, 2)
+  geometry.rotateX(Math.PI / 2)
 
   const randomGray = () => {
     const base = random(75, 130)
@@ -25,7 +26,7 @@ export const createStone = () => {
   });
   const stone = new THREE.Mesh(geometry, material);
 
-  stone.rotation.x = Math.PI / 2
+  // stone.rotation.x = Math.PI / 2
 
   return stone;
 }

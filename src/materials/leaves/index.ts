@@ -40,6 +40,7 @@ export class LeavesMatetial extends CustomShaderMaterial<typeof MeshStandardMate
       uniforms: uniforms,
       vertexShader: vert,
       side: 2,
+      silent: true,
     })
   }
 }
