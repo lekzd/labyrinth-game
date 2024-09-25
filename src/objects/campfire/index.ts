@@ -2,8 +2,10 @@ import {
   BufferAttribute,
   BufferGeometry,
   Color,
+  CylinderGeometry,
   Mesh,
   MeshBasicMaterial,
+  MeshStandardMaterial,
   Object3D,
   Object3DEventMap,
   PointLight,
@@ -11,7 +13,8 @@ import {
   ShaderMaterial,
   SphereGeometry,
   Sprite,
-  SpriteMaterial
+  SpriteMaterial,
+  Vector2
 } from "three";
 
 import { frandom } from "@/utils/random";
@@ -24,6 +27,8 @@ import { throttle } from "@/utils/throttle.ts";
 import { ParticlesMaterial } from "@/materials/particles";
 import { loads } from "@/loader";
 import { shadowSetter } from "@/utils/shadowSetter";
+import { textureRepeat } from "@/utils/textureRepeat";
+import { GlowMaterial } from "@/materials/glow";
 
 const healHealth = throttle((object: DynamicObject) => {
   state.setState({
@@ -45,9 +50,9 @@ export class Campfire {
     this.props = props;
 
     this.particleMaterial = new ParticlesMaterial({
-        time: { value: 0.0 },
-        size: { value: 0.1 },
-        healing: { value: 0.0 }
+      time: { value: 0.0 },
+      size: { value: 0.1 },
+      healing: { value: 0.0 }
     });
 
     const { base, torch } = initMesh(props, this.particleMaterial);
@@ -59,12 +64,16 @@ export class Campfire {
   onStateChange(prev, next) {
     if (!next) return;
 
-    if (next.hasOwnProperty('state')) {
-      this.torch.color = new Color(next.state ? 0x00ff33 : 'rgb(230, 73, 33)');
+    if (next.hasOwnProperty("state")) {
+      this.torch.color = new Color(next.state ? 0x00ff33 : "rgb(230, 73, 33)");
       this.props.state = next.state;
 
-      this.particleMaterial.color = new Color(next.state ? 0x00ff33 : 'rgb(230, 73, 33)');
-      this.particleMaterial.map = next.state ? loads.texture['plus.png'] : loads.texture['dot.png'];
+      this.particleMaterial.color = new Color(
+        next.state ? 0x00ff33 : "rgb(230, 73, 33)"
+      );
+      this.particleMaterial.map = next.state
+        ? loads.texture["plus.png"]
+        : loads.texture["dot.png"];
       this.particleMaterial.uniforms.healing.value = +next.state;
     }
   }
@@ -73,7 +82,10 @@ export class Campfire {
     let healing = false;
 
     this.torch.position.x = Math.sin(performance.now() / 50) * 0.5;
-    this.torch.intensity = 3000 + (Math.sin(performance.now() / 50) * 500) + (Math.sin(performance.now() / 10) * 100);
+    this.torch.intensity =
+      3000 +
+      Math.sin(performance.now() / 50) * 500 +
+      Math.sin(performance.now() / 10) * 100;
 
     Object.entries(state.objects).forEach(([id, object]) => {
       if (id === this.props.id) {
@@ -107,12 +119,7 @@ export class Campfire {
   }
 }
 
-function initMesh(props: DynamicObject, particleMaterial: ShaderMaterial) {
-  const base = new Object3D();
-  const sphere = new Mesh(
-    new SphereGeometry(1, 32, 32), // Геометрия сферы
-    new MeshBasicMaterial({ color: 0xff4500 })
-  );
+const ParticleSystem = (particleMaterial: ShaderMaterial) => {
   // Создание массивов для хранения позиций частиц
   const positions = new Float32Array(PARTICLE_COUNT * 3); // 3 компоненты (x, y, z) на каждую частицу
   const indexes = new Float32Array(PARTICLE_COUNT * 3); // 3 компоненты (x, y, z) на каждую частицу
@@ -133,11 +140,12 @@ function initMesh(props: DynamicObject, particleMaterial: ShaderMaterial) {
 
   const particleSystem = new Points(particleGeometry, particleMaterial);
 
-  particleSystem.position.y = 1;
+  particleSystem.position.y = 3;
 
-  // Добавление эффекта частиц к костру
-  base.add(sphere);
-  base.add(particleSystem);
+  return particleSystem;
+};
+
+const Torch = () => {
   const torch = new PointLight(0xff4500, 2000, 70); // Цвет, интенсивность, дистанция факела
   torch.position.set(0, 5, 0); // Позиция факела (относительно руки персонажа)
   torch.shadow.mapSize.width = 100;
@@ -148,26 +156,123 @@ function initMesh(props: DynamicObject, particleMaterial: ShaderMaterial) {
   torch.shadow.camera.right = 10;
   torch.shadow.camera.top = 10;
   torch.shadow.camera.bottom = -10;
-  torch.shadow.radius = 5;
-  torch.shadow.blurSamples = 5;
 
   shadowSetter(torch, {
-    castShadow: true,
-  })
+    castShadow: true
+  });
 
-  const ball = new Sprite(
+  return torch;
+};
+
+const Shine = () => {
+  const shine = new Sprite(
     new SpriteMaterial({
       map: loads.texture["dot.png"],
-      color: new Color('rgb(200, 99, 31)'),
-      opacity: 0.5,
+      color: new Color("rgb(200, 99, 31)"),
+      opacity: 0.5
     })
   );
 
-  ball.position.y = 7;
-  ball.scale.set(30, 30, 20);
+  shine.position.y = 7;
+  shine.scale.set(30, 30, 20);
 
+  return shine;
+};
+
+const Altar = () => {
+  const altar = new Mesh(
+    new CylinderGeometry(30, 30, 1, 6, 1), // Геометрия сферы
+    new MeshStandardMaterial({
+      color: new Color("rgb(24, 24, 24)"),
+      map: textureRepeat(loads.texture["stone_wall_map.jpg"]!, 1, 1, 3, 3),
+      normalMap: textureRepeat(loads.texture["stone_wall_bump.jpg"]!, 1, 1, 3, 3),
+      normalScale: new Vector2(2, 2),
+      metalness: 0,
+      roughness: 0.6,
+    })
+  );
+
+  shadowSetter(altar, {
+    receiveShadow: true
+  });
+
+  const base = new Mesh(
+    new CylinderGeometry(5, 5, 3, 6, 1),
+    new MeshStandardMaterial({
+      color: new Color("rgb(24, 24, 24)"),
+      // map: textureRepeat(loads.texture["stone_wall_map.jpg"]!, 1, 1, 3, 3),
+      // normalMap: textureRepeat(loads.texture["stone_wall_bump.jpg"]!, 1, 1, 3, 3),
+      normalScale: new Vector2(2, 2),
+      metalness: 0,
+      roughness: 0.6,
+    })
+  );
+
+  shadowSetter(base, {
+    receiveShadow: true,
+    castShadow: true,
+  });
+
+  const count = 3;
+
+  for (let i = 0; i < count; i++) {
+    const angle = (i * Math.PI * 2) / count;
+    const x = Math.cos(angle) * 30;
+    const z = Math.sin(angle) * 30;
+
+    const cylinder = new Mesh(
+      new CylinderGeometry(5, 5, 5, 6, 1),
+      new MeshStandardMaterial({
+        color: new Color("rgb(24, 24, 24)"),
+        map: textureRepeat(loads.texture["stone_wall_map.jpg"]!, 1, 1, 0.5, 0.5),
+        normalMap: textureRepeat(loads.texture["stone_wall_bump.jpg"]!, 1, 1, 0.5, 0.5),
+        metalness: 0,
+        roughness: 0.6,
+      })
+    );
+
+    shadowSetter(cylinder, {
+      receiveShadow: true,
+    });
+
+    cylinder.position.set(x, 2.5, z);
+
+    const cylinder2 = new Mesh(
+      new CylinderGeometry(5, 5, 10, 6, 1),
+      new GlowMaterial({
+        type: "opaque",
+        opacity: 0.5,
+      })
+    );
+
+    cylinder2.position.set(x, 10.1, z);
+
+    altar.add(cylinder2);
+    altar.add(cylinder);
+  }
+
+  altar.add(base);
+
+  return altar;
+};
+
+function initMesh(props: DynamicObject, particleMaterial: ShaderMaterial) {
+  const base = new Object3D();
+  const sphere = new Mesh(
+    new SphereGeometry(1, 32, 32), // Геометрия сферы
+    new MeshBasicMaterial({ color: 0xff4500 })
+  );
+
+  const particleSystem = ParticleSystem(particleMaterial);
+  const torch = Torch();
+  const shine = Shine();
+
+  // Добавление эффекта частиц к костру
+  base.add(sphere);
+  base.add(particleSystem);
   base.add(torch);
-  base.add(ball);
+  base.add(shine);
+  base.add(Altar());
 
   assign(base.position, props.position);
   return { base, torch };

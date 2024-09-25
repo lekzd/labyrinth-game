@@ -16,7 +16,7 @@ export const getWorld = (x: number, y: number, n = 25, k = 0.7) => {
 
   if (x === 0 && y === 0) return Tiles.Campfire;
 
-  if (ptInCircle(x, y, 0, 0, 2)) return Tiles.Road;
+  if (ptInCircle(x, y, 0, 0, 3)) return Tiles.Road;
 
   if (Math.sin(ground * 15) < -0.6) return Tiles.Road;
 
