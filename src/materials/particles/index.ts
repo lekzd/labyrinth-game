@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import fragmentShader from "./shader.frag";
 import vertexShader from './vertex.glsl'
 import { loads } from "@/loader";
 import CustomShaderMaterial from 'three-custom-shader-material/vanilla'
@@ -20,7 +19,6 @@ export class ParticlesMaterial extends CustomShaderMaterial<typeof THREE.PointsM
       color: new THREE.Color(`rgb(230, 73, 33)`),
       uniforms: uniforms,
       vertexShader,
-      // fragmentShader,
       blending: THREE.AdditiveBlending,
       depthTest: true,
       depthWrite: false,

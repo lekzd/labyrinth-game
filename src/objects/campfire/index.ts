@@ -11,7 +11,6 @@ import {
   Object3DEventMap,
   PointLight,
   Points,
-  ShaderMaterial,
   SphereGeometry,
   Sprite,
   SpriteMaterial,
@@ -29,14 +28,14 @@ import { ParticlesMaterial } from "@/materials/particles";
 import { loads } from "@/loader";
 import { shadowSetter } from "@/utils/shadowSetter";
 import { textureRepeat } from "@/utils/textureRepeat";
-import { GlowMaterial } from "@/materials/glow";
 import { createMatrix } from "@/utils/createMatrix";
-import { jitterGeometry } from "@/utils/jitterGeometry";
+import { physicWorld } from "@/cannon";
+import * as CANNON from "cannon";
 
 const healHealth = throttle((object: DynamicObject) => {
   state.setState({
     objects: {
-      [object.id]: { health: object.health + 1 }
+      [object.id]: { health: (object.health || 0) + 1 }
     }
   });
 }, 500);
@@ -49,13 +48,10 @@ export class Campfire {
   private torch: PointLight;
 
   constructor(props: DynamicObject) {
-    this.healing = false;
     this.props = props;
 
     this.particleMaterial = new ParticlesMaterial({
       time: { value: 0.0 },
-      size: { value: 0.1 },
-      healing: { value: 0.0 }
     });
 
     const { base, torch } = initMesh(props, this.particleMaterial);
@@ -64,7 +60,7 @@ export class Campfire {
     this.mesh = base;
   }
 
-  onStateChange(prev, next) {
+  onStateChange(prev: DynamicObject, next: DynamicObject) {
     if (!next) return;
 
     if (next.hasOwnProperty("state")) {
@@ -77,7 +73,6 @@ export class Campfire {
       this.particleMaterial.map = next.state
         ? loads.texture["plus.png"]
         : loads.texture["dot.png"];
-      this.particleMaterial.uniforms.healing.value = +next.state;
     }
   }
 
@@ -103,7 +98,7 @@ export class Campfire {
 
       const distance = getDistance(this.props.position, object.position);
 
-      if (distance < 30 && object.health < settings[object.type].health) {
+      if (distance < 30 && (object.health || 0) < settings[object.type].health) {
         healHealth(object);
         healing = true;
       }
@@ -122,7 +117,7 @@ export class Campfire {
   }
 }
 
-const ParticleSystem = (particleMaterial: ShaderMaterial) => {
+const ParticleSystem = (particleMaterial: ParticlesMaterial) => {
   // Создание массивов для хранения позиций частиц
   const positions = new Float32Array(PARTICLE_COUNT * 3); // 3 компоненты (x, y, z) на каждую частицу
   const indexes = new Float32Array(PARTICLE_COUNT * 3); // 3 компоненты (x, y, z) на каждую частицу
@@ -221,6 +216,7 @@ const Altar = () => {
   const count = 24;
   const radius = 100;
   const geometry = new CylinderGeometry(5, 5, 30, 4, 1);
+  const stoneShape = new CANNON.Box(new CANNON.Vec3(5, 30, 5));
   const material = new MeshStandardMaterial({
     color: new Color("rgb(69, 69, 69)"),
     metalness: 0,
@@ -244,6 +240,8 @@ const Altar = () => {
     instanceNumber
   );
 
+  const boxBody = new CANNON.Body({ mass: 0, type: CANNON.Body.STATIC });
+
   for (let i = 0; i < count; i++) {
     const angle = (i * Math.PI * 2) / count;
     const x = Math.cos(angle) * radius;
@@ -258,8 +256,15 @@ const Altar = () => {
       }
     });
 
+    boxBody.addShape(
+      stoneShape,
+      new CANNON.Vec3(x, 0, z)
+    );
+
     instancedMesh.setMatrixAt(i, matrix);
   }
+
+  physicWorld.addBody(boxBody);
 
   for (let i = 0; i < count; i++) {
     const angle = (i * Math.PI * 2) / count;
@@ -285,7 +290,7 @@ const Altar = () => {
   return altar;
 };
 
-function initMesh(props: DynamicObject, particleMaterial: ShaderMaterial) {
+function initMesh(props: DynamicObject, particleMaterial: ParticlesMaterial) {
   const base = new Object3D();
   const sphere = new Mesh(
     new SphereGeometry(1, 32, 32), // Геометрия сферы
