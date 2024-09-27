@@ -28,6 +28,7 @@ export enum texturesType {
   fx_hammer_hit = 'fx_hammer_hit.png',
   fx_magic_splash = 'fx_magic_splash.png',
   fx_fire_sparks = 'fx_fire_sparks.png',
+  fx_portal = 'fx_portal.png',
 }
 
 export enum animationType {

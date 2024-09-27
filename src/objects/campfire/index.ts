@@ -1,4 +1,6 @@
 import {
+  AdditiveBlending,
+  BoxGeometry,
   BufferAttribute,
   BufferGeometry,
   Color,
@@ -14,7 +16,8 @@ import {
   SphereGeometry,
   Sprite,
   SpriteMaterial,
-  Vector2
+  Vector2,
+  Vector3
 } from "three";
 
 import { frandom } from "@/utils/random";
@@ -31,6 +34,8 @@ import { textureRepeat } from "@/utils/textureRepeat";
 import { createMatrix } from "@/utils/createMatrix";
 import { physicWorld } from "@/cannon";
 import * as CANNON from "cannon";
+import { GlowMaterial } from "@/materials/glow";
+import { SpriteEffect } from "@/effects/SpriteEffect";
 
 const healHealth = throttle((object: DynamicObject) => {
   state.setState({
@@ -105,7 +110,6 @@ export class Campfire {
     });
 
     this.particleMaterial.uniforms.time.value += timeDelta * 2;
-    this.particleMaterial.uniformsNeedUpdate = true;
 
     if (this.props.state !== healing) {
       state.setState({
@@ -150,10 +154,6 @@ const Torch = () => {
   torch.shadow.mapSize.height = 100;
   torch.shadow.camera.near = 0.5;
   torch.shadow.camera.far = 25;
-  torch.shadow.camera.left = -10;
-  torch.shadow.camera.right = 10;
-  torch.shadow.camera.top = 10;
-  torch.shadow.camera.bottom = -10;
 
   shadowSetter(torch, {
     castShadow: true
@@ -290,6 +290,78 @@ const Altar = () => {
   return altar;
 };
 
+const Ring = () => {
+  const count = 24;
+  const radius = 15;
+  const geometry = new BoxGeometry(3.5, 3.5, 3.5);
+  // const material = new MeshStandardMaterial({
+  //   color: new Color("rgb(69, 69, 69)"),
+  //   metalness: 0,
+  //   roughness: 0.8,
+  //   map: textureRepeat(loads.texture["stone_wall_map.jpg"]!, 1, 1, 0.3, 0.3),
+  //   normalMap: textureRepeat(
+  //     loads.texture["stone_wall_bump.jpg"]!,
+  //     1,
+  //     1,
+  //     0.3,
+  //     0.3
+  //   ),
+  //   normalScale: new Vector2(1, 1),
+  // });
+
+  const material = new MeshBasicMaterial({
+    color: new Color("rgb(36, 198, 168)"),
+    wireframe: true,
+    side: 2,
+  });
+
+  const instanceNumber = count * 2;
+
+  const instancedMesh = new InstancedMesh(
+    geometry,
+    material,
+    instanceNumber
+  );
+
+  for (let i = 0; i < count; i++) {
+    const angle = (i * Math.PI * 2) / count;
+    const x = Math.cos(angle) * radius;
+    const y = Math.sin(angle) * radius;
+
+    const matrix = createMatrix({
+      translation: {
+        x, y: y + radius, z: 0,
+      },
+      rotation: {
+        z: angle + (Math.PI / 2),
+      },
+      scale: {
+        x: 1, 
+        y: frandom(0.5, 1.5),
+        z: frandom(0.5, 1.5),
+      }
+    });
+
+    instancedMesh.setMatrixAt(i, matrix);
+  }
+
+  const effect = SpriteEffect({
+    texture: loads.texture["fx_portal.png"],
+    position: new Vector3(0, radius, 0),
+    size: new Vector2(5, 6),
+    scale: 30,
+    rotation: 0,
+  });
+
+  setInterval(() => {
+    effect.update(Math.floor((0.5 + (Math.sin(performance.now() / 200) * .5)) * 28));
+  }, 40);
+
+  instancedMesh.rotateY(Math.PI / 2);
+
+  return instancedMesh
+}
+
 function initMesh(props: DynamicObject, particleMaterial: ParticlesMaterial) {
   const base = new Object3D();
   const sphere = new Mesh(
@@ -307,6 +379,7 @@ function initMesh(props: DynamicObject, particleMaterial: ParticlesMaterial) {
   base.add(torch);
   base.add(shine);
   base.add(Altar());
+  base.add(Ring());
 
   base.updateMatrixWorld(true);
   base.matrixAutoUpdate = false;
