@@ -3,6 +3,7 @@ import {
   BufferGeometry,
   Color,
   CylinderGeometry,
+  InstancedMesh,
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
@@ -29,6 +30,8 @@ import { loads } from "@/loader";
 import { shadowSetter } from "@/utils/shadowSetter";
 import { textureRepeat } from "@/utils/textureRepeat";
 import { GlowMaterial } from "@/materials/glow";
+import { createMatrix } from "@/utils/createMatrix";
+import { jitterGeometry } from "@/utils/jitterGeometry";
 
 const healHealth = throttle((object: DynamicObject) => {
   state.setState({
@@ -185,10 +188,16 @@ const Altar = () => {
     new MeshStandardMaterial({
       color: new Color("rgb(24, 24, 24)"),
       map: textureRepeat(loads.texture["stone_wall_map.jpg"]!, 1, 1, 3, 3),
-      normalMap: textureRepeat(loads.texture["stone_wall_bump.jpg"]!, 1, 1, 3, 3),
+      normalMap: textureRepeat(
+        loads.texture["stone_wall_bump.jpg"]!,
+        1,
+        1,
+        3,
+        3
+      ),
       normalScale: new Vector2(2, 2),
       metalness: 0,
-      roughness: 0.6,
+      roughness: 0.6
     })
   );
 
@@ -200,57 +209,77 @@ const Altar = () => {
     new CylinderGeometry(5, 5, 3, 6, 1),
     new MeshStandardMaterial({
       color: new Color("rgb(24, 24, 24)"),
-      // map: textureRepeat(loads.texture["stone_wall_map.jpg"]!, 1, 1, 3, 3),
-      // normalMap: textureRepeat(loads.texture["stone_wall_bump.jpg"]!, 1, 1, 3, 3),
-      normalScale: new Vector2(2, 2),
       metalness: 0,
-      roughness: 0.6,
+      roughness: 0.6
     })
   );
 
   shadowSetter(base, {
-    receiveShadow: true,
-    castShadow: true,
+    castShadow: true
   });
 
-  const count = 3;
+  const count = 24;
+  const radius = 100;
+  const geometry = new CylinderGeometry(5, 5, 30, 4, 1);
+  const material = new MeshStandardMaterial({
+    color: new Color("rgb(69, 69, 69)"),
+    metalness: 0,
+    roughness: 0.8,
+    map: textureRepeat(loads.texture["stone_wall_map.jpg"]!, 1, 1, 0.3, 0.3),
+    normalMap: textureRepeat(
+      loads.texture["stone_wall_bump.jpg"]!,
+      1,
+      1,
+      0.3,
+      0.3
+    ),
+    normalScale: new Vector2(5, 5),
+  });
+
+  const instanceNumber = count * 2;
+
+  const instancedMesh = new InstancedMesh(
+    geometry,
+    material,
+    instanceNumber
+  );
 
   for (let i = 0; i < count; i++) {
     const angle = (i * Math.PI * 2) / count;
-    const x = Math.cos(angle) * 30;
-    const z = Math.sin(angle) * 30;
+    const x = Math.cos(angle) * radius;
+    const z = Math.sin(angle) * radius;
 
-    const cylinder = new Mesh(
-      new CylinderGeometry(5, 5, 5, 6, 1),
-      new MeshStandardMaterial({
-        color: new Color("rgb(24, 24, 24)"),
-        map: textureRepeat(loads.texture["stone_wall_map.jpg"]!, 1, 1, 0.5, 0.5),
-        normalMap: textureRepeat(loads.texture["stone_wall_bump.jpg"]!, 1, 1, 0.5, 0.5),
-        metalness: 0,
-        roughness: 0.6,
-      })
-    );
-
-    shadowSetter(cylinder, {
-      receiveShadow: true,
+    const matrix = createMatrix({
+      translation: {
+        x, y: 15, z,
+      },
+      rotation: {
+        y: -angle - (Math.PI / 2) * (i % 4),
+      }
     });
 
-    cylinder.position.set(x, 2.5, z);
-
-    const cylinder2 = new Mesh(
-      new CylinderGeometry(5, 5, 10, 6, 1),
-      new GlowMaterial({
-        type: "opaque",
-        opacity: 0.5,
-      })
-    );
-
-    cylinder2.position.set(x, 10.1, z);
-
-    altar.add(cylinder2);
-    altar.add(cylinder);
+    instancedMesh.setMatrixAt(i, matrix);
   }
 
+  for (let i = 0; i < count; i++) {
+    const angle = (i * Math.PI * 2) / count;
+    const x = Math.cos(angle) * radius;
+    const z = Math.sin(angle) * radius;
+
+    const matrix = createMatrix({
+      translation: {
+        x, y: 30, z,
+      },
+      rotation: {
+        y: -angle - Math.PI / 2,
+        z: Math.PI / 2,
+      }
+    })
+
+    instancedMesh.setMatrixAt(count + i, matrix);
+  }
+
+  altar.add(instancedMesh);
   altar.add(base);
 
   return altar;
@@ -273,6 +302,9 @@ function initMesh(props: DynamicObject, particleMaterial: ShaderMaterial) {
   base.add(torch);
   base.add(shine);
   base.add(Altar());
+
+  base.updateMatrixWorld(true);
+  base.matrixAutoUpdate = false;
 
   assign(base.position, props.position);
   return { base, torch };
