@@ -45,17 +45,17 @@ const timePointsConfig: Record<number, EnvironmentPointConfig> = {
   [time(10, 0)]: {
     name: '10:00',
     lightColor: new Color('#FFFFFF'),
-    lightIntensity: 1.0,
+    lightIntensity: 5.0,
     skyColor: new Color('#759fe8'),
     fogColor: new Color('#6391e0'),
     grassColor: new Color('#132602'),
   },
   [time(17, 0)]: {
     name: '17:00',
-    lightColor: new Color('#FFFFFF'),
-    lightIntensity: 1.0,
-    skyColor: new Color('#67b2db'),
-    fogColor: new Color('#3162b5'),
+    lightColor: new Color('#f9f218'),
+    lightIntensity: 3.0,
+    skyColor: new Color('#dde176'),
+    fogColor: new Color('#957b1c'),
     grassColor: new Color('#132602'),
   },
   [time(18, 0)]: {
