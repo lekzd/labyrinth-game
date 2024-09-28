@@ -2,6 +2,7 @@ import * as CANNON from "cannon";
 import { DynamicObject } from "@/types";
 import {
   Color,
+  ConeGeometry,
   CylinderGeometry,
   Mesh,
   MeshPhongMaterial,
@@ -14,9 +15,12 @@ import { createPhysicBox } from "@/cannon";
 import { textureRepeat } from "@/utils/textureRepeat";
 import { loads } from "@/loader";
 import { frandom } from "@/utils/random";
+import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
+import { jitterGeometry } from "@/utils/jitterGeometry";
+import { rotateUvs } from "@/utils/rotateUvs";
 
 function initPhysicBody() {
-  const physicRadius = 6;
+  const physicRadius = 10;
   return createPhysicBox(
     { x: physicRadius, y: 30, z: physicRadius },
     { mass: 0, type: CANNON.Body.STATIC }
@@ -40,11 +44,14 @@ const createPine = () => {
   });
 
   const radius = frandom(4, 8);
+  const base = jitterGeometry(rotateUvs(new ConeGeometry(radius * 2, radius * 10, 40)), 5);
+  base.translate(0, radius * 4, 0);
+
   const geometry = new CylinderGeometry(radius, radius, 300, 16);
 
   geometry.translate(0, 150, 0);
 
-  const mesh = new Mesh(geometry, material);
+  const mesh = new Mesh(BufferGeometryUtils.mergeGeometries([base, geometry]), material);
 
   return mesh;
 };

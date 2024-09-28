@@ -18,6 +18,10 @@ export const getWorld = (x: number, y: number, n = 25, k = 0.7) => {
 
   if (ptInCircle(x, y, 0, 0, 3)) return Tiles.Road;
 
+  if (ptInCircle(x, y, 0, 0, 11)) {
+    if ((x > -2 && x < 2) || (y > -2 && y < 2)) return Tiles.Road;
+  }
+
   if (Math.sin(ground * 15) < -0.6) return Tiles.Road;
 
   if (ptInCircle(x, y)) return Tiles.Floor;
