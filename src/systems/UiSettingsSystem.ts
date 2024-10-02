@@ -3,6 +3,11 @@ import * as THREE from "three";
 import * as dat from "dat.gui";
 import { mergeDeep } from "../utils/mergeDeep";
 import { systems } from ".";
+import {scene} from "@/scene.ts";
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
+
 
 const DEFAULTS = {
   renderer: {
@@ -74,6 +79,24 @@ export const UiSettingsSystem = () => {
     store.camera.near,
     store.camera.far
   );
+
+// Compose rendering passes
+  const composer = new EffectComposer(renderer);
+  const renderPass = new RenderPass(scene, camera);
+  composer.setSize(window.innerWidth, window.innerHeight);
+
+  composer.addPass(renderPass);
+
+// Add Bokeh pass
+  const bokehPass = new BokehPass(scene, camera, {
+    focus: 1.0,
+    aperture: 0.00004,
+    maxblur: 0.01,
+
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+  composer.addPass(bokehPass);
 
   type ApplyFn = (attr: string, value: any) => void;
 
@@ -229,6 +252,8 @@ export const UiSettingsSystem = () => {
   return {
     settings: store,
     renderer,
+    composer,
+    bokehPass,
     camera,
     dom: gui.domElement,
     events

@@ -77,7 +77,7 @@ export const render = () => {
 
   physicWorld.addBody(createGroundBody());
 
-  const { renderer, camera, settings } = systems.uiSettingsSystem;
+  const { composer, bokehPass, renderer, camera, settings } = systems.uiSettingsSystem;
 
   // Stats
   container.appendChild(stats.dom);
@@ -113,7 +113,14 @@ export const render = () => {
 
       renderLoop();
 
-      renderer.render(scene, camera);
+      const { objects } = systems.objectsSystem;
+
+      // renderer.render(scene, camera);
+      const focusVector = objects[currentPlayer.activeObjectId].position;
+      const distance = camera.position.distanceTo(focusVector);
+      bokehPass.uniforms['focus'].value = distance;
+
+      composer.render();
 
       const timeElapsedS = (t - prevTime) * 0.001;
 
@@ -121,8 +128,6 @@ export const render = () => {
       for (const item of subscribers) {
         item.update(timeElapsedS);
       }
-
-      const { objects } = systems.objectsSystem;
 
       const rooms = roomChunks(state.objects[currentPlayer.activeObjectId].position);
 
