@@ -19,6 +19,8 @@ export const createRoomTerrainCanvas = (
   ctx.fillStyle = BACKGROUND_COLOR;
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
+  const baseColor = new THREE.Color(`#2b2e13`)
+
   for (let y = 0; y < room.height; y++) {
     for (let x = 0; x < room.width; x++) {
       const absolutePoint = { x: room.x + x, z: room.y + y, y: 0 };
@@ -28,8 +30,7 @@ export const createRoomTerrainCanvas = (
           : -1;
       const shadowPower = ground < -0.6 ? 0 : Math.min(1, (ground + 0.5) * 5);
 
-      // const baseColor = new THREE.Color(`rgb(20, 39, 2)`)
-      const baseColor = new THREE.Color(`#2b2e13`)
+      const randomColor = baseColor.clone()
         .offsetHSL(
           frandom(-0.01, 0.01),
           frandom(-0.01, 0.01),
@@ -37,10 +38,13 @@ export const createRoomTerrainCanvas = (
         )
         .lerp(new THREE.Color(`rgb(5, 6, 0)`), shadowPower);
 
-      ctx.fillStyle = baseColor.getStyle();
+      ctx.fillStyle = randomColor.getStyle();
       ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
     }
   }
+
+  ctx.strokeStyle = baseColor.getStyle();
+  ctx.strokeRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
   return ctx.canvas;
 };

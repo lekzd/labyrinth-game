@@ -6,6 +6,7 @@ import { frandom, noise } from "@/utils/random";
 import { shadowSetter } from "@/utils/shadowSetter";
 import { createMatrix } from "@/utils/createMatrix";
 import { getDistance } from "@/utils/getDistance";
+import { something } from "@/utils/something";
 
 export const GrassSystem = () => {
   const grassUniforms = {
@@ -22,8 +23,8 @@ export const GrassSystem = () => {
     },
 
     createRoomMesh: (room: RoomConfig) => {
-      const width = 6;
-      const height = 6;
+      const width = 12;
+      const height = 12;
       const instancesPerTile = 20;
       const instanceNumber =
         room.tiles.filter((tile) => tilesWithGrass.includes(tile)).length *
@@ -67,11 +68,22 @@ export const GrassSystem = () => {
             const matrix = createMatrix({
               translation: {
                 x: x * 10 + frandom(-variable, variable),
-                y: 2,
+                y: -2,
                 z: y * 10 + frandom(-variable, variable)
               },
               rotation: {
-                y: frandom(0, Math.PI)
+                y: frandom(0, Math.PI),
+                z:
+                  ground < -0.7
+                    ? something([
+                        -Math.PI / 2,
+                        Math.PI / 2,
+                        -Math.PI / 2,
+                        Math.PI / 2,
+                        // цветок
+                        Math.PI * 2
+                      ])
+                    : something([-Math.PI / 2, Math.PI / 2])
               }
             });
 

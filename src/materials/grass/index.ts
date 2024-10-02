@@ -23,7 +23,7 @@ export class GrassMaterial extends CustomShaderMaterial<
       alphaMap,
       alphaTest: 0.01,
       color: baseColor.offsetHSL(
-        frandom(-0.1, 0.1),
+        frandom(-0.05, 0.05),
         frandom(-0.1, 0.1),
         frandom(-0.01, 0.01)
       ),
