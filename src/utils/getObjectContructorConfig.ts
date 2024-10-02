@@ -34,6 +34,12 @@ export const getObjectContructorConfig = (type: ObjectType) => {
         physical: true,
         interactive: false
       };
+    case "MagicTree":
+      return {
+        Constructor: Pine,
+        physical: true,
+        interactive: false
+      };
     case "Foliage":
       return {
         Constructor: Foliage,

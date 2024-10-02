@@ -102,6 +102,19 @@ export class Room {
             });
           }
         }
+        if (tile === Tiles.MagicTree) {
+          objectsToAdd[id] = createObject({
+            id,
+            type: 'MagicTree',
+            position: {
+              x: (props.x + x) * scale,
+              z: (props.y + y) * scale,
+              y: 4
+            }
+          });
+
+          console.log('_debug', objectsToAdd[id]);
+        }
       }
     }
 
