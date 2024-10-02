@@ -1,10 +1,11 @@
 import * as THREE from "three";
 import { Tiles } from "@/config";
-import { frandom } from "@/utils/random";
+import { frandom, noise } from "@/utils/random";
 import { makeCtx } from "@/utils/makeCtx";
 import { RoomConfig } from "@/types";
 import { loads } from "@/loader";
 import { textureRepeat } from "@/utils/textureRepeat";
+import { getDistance } from "@/utils/getDistance";
 
 const BACKGROUND_COLOR = `rgb(255,0,0)`;
 
@@ -13,24 +14,6 @@ export const createRoomTerrainCanvas = (
   noiseFactor: number,
   tileSize: number
 ) => {
-  const r = (v: number) => frandom(-noiseFactor, noiseFactor);
-
-  const getColor = (tile: Tiles) => {
-    const noise = r(noiseFactor);
-    switch (tile) {
-      case Tiles.Road:
-      case Tiles.NorthExit:
-      case Tiles.SouthExit:
-      case Tiles.WestExit:
-      case Tiles.EastExit:
-        return `rgb(${20 + noise},${10 + noise},0)`;
-      case Tiles.Wall:
-        return `rgb(0,0,0)`;
-      default:
-        return `rgb(${2 + noise},${4 + noise},0)`;
-    }
-  };
-
   const ctx = makeCtx(room.width * tileSize, room.height * tileSize);
 
   ctx.fillStyle = BACKGROUND_COLOR;
@@ -38,10 +21,24 @@ export const createRoomTerrainCanvas = (
 
   for (let y = 0; y < room.height; y++) {
     for (let x = 0; x < room.width; x++) {
-      const tile = room.tiles[x + y * room.width];
+      const absolutePoint = { x: room.x + x, z: room.y + y, y: 0 };
+      const ground =
+        getDistance({ x: 0, y: 0, z: 0 }, absolutePoint) > 20
+          ? noise((-6 + room.x + x) / 25, (-6 + room.y + y) / 25)
+          : -1;
+      const shadowPower = ground < -0.6 ? 0 : Math.min(1, (ground + 0.5) * 5);
 
-      ctx.fillStyle = getColor(tile);
-      ctx.fillRect(x, y, tileSize, tileSize);
+      // const baseColor = new THREE.Color(`rgb(20, 39, 2)`)
+      const baseColor = new THREE.Color(`#2b2e13`)
+        .offsetHSL(
+          frandom(-0.01, 0.01),
+          frandom(-0.01, 0.01),
+          frandom(-0.01, 0.01)
+        )
+        .lerp(new THREE.Color(`rgb(5, 6, 0)`), shadowPower);
+
+      ctx.fillStyle = baseColor.getStyle();
+      ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
     }
   }
 
@@ -49,7 +46,7 @@ export const createRoomTerrainCanvas = (
 };
 
 export const createFloorMaterial = (room: RoomConfig) => {
-  const canvas = createRoomTerrainCanvas(room, 5, 1);
+  const canvas = createRoomTerrainCanvas(room, 1, 2);
   const texture = new THREE.CanvasTexture(canvas);
 
   return new THREE.MeshStandardMaterial({

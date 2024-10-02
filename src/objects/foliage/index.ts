@@ -7,13 +7,13 @@ import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
 
 const createFoliage = () => {
   const height = random(10, 20);
-  const colorComponents = [
-    Math.floor(63 * frandom(0.5, 1.5)),
-    Math.floor(109 * frandom(0.5, 1.0)),
-    Math.floor(33 * frandom(0.5, 1.5))
-  ];
+  const baseColor = new Color(`#344a20`).offsetHSL(
+    frandom(-0.1, 0.1),
+    frandom(-0.1, 0.1),
+    frandom(-0.01, 0.01)
+  );
   const material = new MeshPhongMaterial({
-    color: new Color(`rgb(${colorComponents.join()})`),
+    color: baseColor,
     map: loads.texture["foliage.jpg"],
     alphaMap: loads.texture["foliage_mask.jpg"],
     alphaTest: 0.8,

@@ -29,7 +29,7 @@ function initPhysicBody() {
 
 const createPine = () => {
   const material = new MeshPhongMaterial({
-    color: new Color("#4c3e34"),
+    color: new Color("#2c231c"),
     side: 0,
     shininess: 1,
     map: textureRepeat(loads.texture["Bark_06_basecolor.jpg"]!, 1, 1, 1.6, 8),

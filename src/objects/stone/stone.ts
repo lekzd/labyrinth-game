@@ -14,7 +14,7 @@ export const createStone = () => {
   geometry.rotateX(Math.PI / 2)
 
   const randomGray = () => {
-    const base = random(75, 130)
+    const base = random(50, 80)
     return (base << 16) + (base << 8) + base
   }
 

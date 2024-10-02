@@ -12,7 +12,6 @@ import { pickBy } from "@/utils/pickBy.ts";
 import {settings} from "@/objects/hero/settings.ts";
 import {modelType} from "@/loader.ts";
 import { RecursivePartial } from "./types/RecursivePartial";
-import { RoomConfig } from "./types";
 import { DynamicObject } from "./types/DynamicObject";
 import { systems } from "./systems";
 import { getDistance } from "./utils/getDistance";

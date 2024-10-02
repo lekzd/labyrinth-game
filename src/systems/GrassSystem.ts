@@ -1,22 +1,17 @@
 import * as THREE from "three";
 import { GrassMaterial } from "@/materials/grass";
-import { state } from "@/state";
-import { makeCtx } from "@/utils/makeCtx";
 import { RoomConfig } from "@/types";
 import { Tiles } from "@/config";
-import { frandom } from "@/utils/random";
+import { frandom, noise } from "@/utils/random";
 import { shadowSetter } from "@/utils/shadowSetter";
+import { createMatrix } from "@/utils/createMatrix";
+import { getDistance } from "@/utils/getDistance";
 
 export const GrassSystem = () => {
-  const lightsCtx = makeCtx(state.colls, state.rows);
-
   const grassUniforms = {
     time: {
-      value: 0,
-    },
-    terrainImage: {
-      value: new THREE.Texture(),
-    },
+      value: 0
+    }
   };
 
   const tilesWithGrass = [Tiles.Floor, Tiles.Wall, Tiles.Tree];
@@ -27,7 +22,6 @@ export const GrassSystem = () => {
     },
 
     createRoomMesh: (room: RoomConfig) => {
-      const dummy = new THREE.Object3D();
       const width = 6;
       const height = 6;
       const instancesPerTile = 20;
@@ -54,8 +48,14 @@ export const GrassSystem = () => {
         for (let x = 0; x < room.width; x++) {
           const j = x + y * room.width;
           const tile = room.tiles[j];
-          const shaderX = (room.x + x) / lightsCtx.canvas.width;
-          const shaderY = (room.y + y) / lightsCtx.canvas.height;
+          const absolutePoint = { x: room.x + x, z: room.y + y, y: 0 };
+          const ground =
+            getDistance({ x: 0, y: 0, z: 0 }, absolutePoint) > 20
+              ? noise((room.x + x) / 25, (room.y + y) / 25)
+              : -1;
+          const shadowPower =
+            ground < -0.5 ? 0 : Math.min(0.9, (ground + 0.5) * 3);
+          const lightPower = 0;
 
           if (!tilesWithGrass.includes(tile)) {
             continue;
@@ -64,17 +64,19 @@ export const GrassSystem = () => {
           for (let i = 0; i < instancesPerTile; i++) {
             const variable = 5 + (j % 5.5);
 
-            dummy.position.set(
-              x * 10 + frandom(-variable, variable),
-              2,
-              y * 10 + frandom(-variable, variable)
-            );
+            const matrix = createMatrix({
+              translation: {
+                x: x * 10 + frandom(-variable, variable),
+                y: 2,
+                z: y * 10 + frandom(-variable, variable)
+              },
+              rotation: {
+                y: frandom(0, Math.PI)
+              }
+            });
 
-            dummy.rotation.y = frandom(0, Math.PI);
-
-            dummy.updateMatrix();
-            instancedMesh.setMatrixAt(instanceIndex, dummy.matrix);
-            instanceAttribute.setXYZ(instanceIndex, shaderX, shaderY, 0);
+            instancedMesh.setMatrixAt(instanceIndex, matrix);
+            instanceAttribute.setXYZ(instanceIndex, shadowPower, lightPower, 0);
 
             instanceIndex++;
           }
@@ -83,12 +85,12 @@ export const GrassSystem = () => {
 
       shadowSetter(instancedMesh, {
         castShadow: true,
-        receiveShadow: true,
-      })
+        receiveShadow: true
+      });
 
       instancedMesh.instanceColor = instanceAttribute;
 
       return instancedMesh;
-    },
+    }
   };
 };

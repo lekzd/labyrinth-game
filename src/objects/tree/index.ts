@@ -178,7 +178,7 @@ export const createTree = () => {
   };
 
   const material = new THREE.MeshPhongMaterial({
-    color: 0x704f37,
+    color: new THREE.Color('#452d1c'),
     side: 0,
     shininess: 1,
     map: prepareTexture(loads.texture["Bark_06_basecolor.jpg"]!),

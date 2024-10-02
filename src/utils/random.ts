@@ -39,7 +39,8 @@ function seedRandom(seed: string): () => number {
   return sfc32(a, b, c, d);
 }
 
-export let pseudoRandom = () => 1, noise;
+export let pseudoRandom = () => 1;
+export let noise: (x: number, y: number) => number;
 
 export const updateSeed = (seed: string) => {
   pseudoRandom = seedRandom(seed);

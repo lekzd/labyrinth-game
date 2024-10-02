@@ -17,6 +17,7 @@ export enum texturesType {
   runic_metalness_map = 'runic_metalness_map.png',
   stone_wall_map = 'stone_wall_map.jpg',
   stone_wall_bump = 'stone_wall_bump.jpg',
+  stone_wall_ao = 'stone_wall_ao.jpg',
   wood_gate_map = 'wood_gate_map.jpg',
   wood_gate_bump = 'wood_gate_bump.jpg',
   wood_gate_metalness_map = 'wood_gate_metalness_map.jpg',

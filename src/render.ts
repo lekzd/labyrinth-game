@@ -185,8 +185,6 @@ export const roomChunks = (pos: THREE.Vector3Like, slice = 12) => {
       }
 
       all[id] = new Room(room);
-
-      // scene.add(all[id].mesh);
     }
 
     rooms[id] = all[id];

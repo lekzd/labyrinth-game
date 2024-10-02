@@ -218,10 +218,11 @@ const Altar = () => {
   const geometry = new CylinderGeometry(5, 5, 30, 4, 1);
   const stoneShape = new CANNON.Box(new CANNON.Vec3(5, 30, 5));
   const material = new MeshStandardMaterial({
-    color: new Color("rgb(69, 69, 69)"),
+    color: new Color("rgb(132, 124, 84)"),
     metalness: 0,
     roughness: 0.8,
     map: textureRepeat(loads.texture["stone_wall_map.jpg"]!, 1, 1, 0.3, 0.3),
+    aoMap: textureRepeat(loads.texture["stone_wall_ao.jpg"]!, 1, 1, 0.3, 0.3),
     normalMap: textureRepeat(
       loads.texture["stone_wall_bump.jpg"]!,
       1,
