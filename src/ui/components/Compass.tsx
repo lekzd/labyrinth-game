@@ -2,11 +2,17 @@ import * as THREE from 'three'
 import React, { FC, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { systems } from '../../systems'
-import { scale, state } from '../../state'
 
 const Container = styled.div`
   display: flex;
   width: 100vw;
+`
+
+const Coordinates = styled.div`
+  position: absolute;
+  left: 0;
+  top: 20px;
+  color: white;
 `
 
 const Line = styled.div`
@@ -78,10 +84,10 @@ export const Compass: FC<IProps> = (props: IProps) => {
   const eRef = useRef<HTMLDivElement>(null)
   const sRef = useRef<HTMLDivElement>(null)
   const wRef = useRef<HTMLDivElement>(null)
+  const { camera } = systems.uiSettingsSystem
+  const coordinatesRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const { camera } = systems.uiSettingsSystem
-
     const target = new THREE.Vector3(0, 0, 0);
 
     const animate = () => {
@@ -115,6 +121,14 @@ export const Compass: FC<IProps> = (props: IProps) => {
         const offset = (((cameraDegrees - 180) < -180 ? cameraDegrees + 180 : cameraDegrees - 180) / 90) * center
         sRef.current.style.transform = `translateX(${center + offset}px)`;
       }
+
+      if (coordinatesRef.current) {
+        coordinatesRef.current.innerHTML = `
+          <div>X: ${Math.round(camera.position.x)}</div>
+          <div>Y: ${Math.round(camera.position.y)}</div>
+          <div>Z: ${Math.round(camera.position.z)}</div>
+        `
+      }
     }
 
     animate()
@@ -145,6 +159,8 @@ export const Compass: FC<IProps> = (props: IProps) => {
       <CardinalDirectionIcon ref={wRef}>
         W
       </CardinalDirectionIcon>
+
+      <Coordinates ref={coordinatesRef} />
     </Container>
   )
 }
