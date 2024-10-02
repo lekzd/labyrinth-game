@@ -10,8 +10,12 @@ const getColor = (tile: Tiles) => {
     case Tiles.SouthExit:
     case Tiles.WestExit:
     case Tiles.EastExit:
-    case Tiles.Road:
+    // case Tiles.Road:
       return `#651218`;
+    case Tiles.Stump:
+    case Tiles.MagicTree:
+    case Tiles.Grave:
+      return `#5affe1`;
     case Tiles.Wall:
       return `#2f4e2f`;
     case Tiles.PuzzleHandler:

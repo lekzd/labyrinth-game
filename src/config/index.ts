@@ -14,4 +14,9 @@ export enum Tiles {
   Weapon,
   Spawner,
   Campfire,
+
+  // dungeons
+  Stump,
+  MagicTree,
+  Grave,
 }
