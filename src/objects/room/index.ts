@@ -109,7 +109,7 @@ export class Room {
             position: {
               x: (props.x + x) * scale,
               z: (props.y + y) * scale,
-              y: 4
+              y: 0
             }
           });
 

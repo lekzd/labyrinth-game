@@ -17,7 +17,7 @@ const radiusFunction = (from: number, to: number) => (t: number) => {
 };
 
 // Function to create a curved branch that straightens out
-function createCurvedBranch(
+export function createCurvedBranch(
   start: THREE.Vector3,
   mid1: THREE.Vector3,
   mid2: THREE.Vector3,
@@ -48,7 +48,7 @@ type BranchData = {
   };
 };
 
-function createBranchGeometry({ level, length, matrix }: BranchData) {
+export function createBranchGeometry({ level, length, matrix }: BranchData) {
   const start = new THREE.Vector3(0, 0, 0);
   const mid1 = new THREE.Vector3(0, length * 0.3, 2); // Curved part
   const mid2 = new THREE.Vector3(0, length * 0.7, 0); // Straightening transition
@@ -70,7 +70,7 @@ function createBranchGeometry({ level, length, matrix }: BranchData) {
   return geometry;
 }
 
-function createFoliageGeometry({ length, matrix, endPosition }: BranchData) {
+export function createFoliageGeometry({ length, matrix, endPosition }: BranchData) {
   const baseMatrix = createMatrix({ ...matrix, translation: endPosition });
 
   return [

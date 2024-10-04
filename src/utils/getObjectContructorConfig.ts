@@ -4,6 +4,7 @@ import { modelType } from "../loader.ts";
 import { Box } from "cannon";
 import { Gate } from "../objects/gate/index.ts";
 import { Tree } from "@/objects/tree";
+import { MagicTree } from "@/objects/tree/MagicTree";
 import { Stone } from "@/objects/stone/index.ts";
 import { Pine } from "@/objects/pine/index.ts";
 import { Foliage } from "@/objects/foliage/index.ts";
@@ -36,7 +37,7 @@ export const getObjectContructorConfig = (type: ObjectType) => {
       };
     case "MagicTree":
       return {
-        Constructor: Pine,
+        Constructor: MagicTree,
         physical: true,
         interactive: false
       };

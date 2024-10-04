@@ -3,11 +3,14 @@ import * as THREE from "three";
 import * as dat from "dat.gui";
 import { mergeDeep } from "../utils/mergeDeep";
 import { systems } from ".";
-import {scene} from "@/scene.ts";
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
-
+import { scene } from "@/scene.ts";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass.js";
+import {
+  GammaCorrectionShader,
+  ShaderPass
+} from "three/examples/jsm/Addons.js";
 
 const DEFAULTS = {
   renderer: {
@@ -36,7 +39,7 @@ const DEFAULTS = {
 type Settings = typeof DEFAULTS;
 
 type Transform<T> = {
-  [K in keyof T]: [T[K]]
+  [K in keyof T]: [T[K]];
 };
 
 type EventsMap = Transform<Settings>;
@@ -80,23 +83,26 @@ export const UiSettingsSystem = () => {
     store.camera.far
   );
 
-// Compose rendering passes
+  // Compose rendering passes
   const composer = new EffectComposer(renderer);
   const renderPass = new RenderPass(scene, camera);
   composer.setSize(window.innerWidth, window.innerHeight);
 
   composer.addPass(renderPass);
 
-// Add Bokeh pass
+  // Add Bokeh pass
   const bokehPass = new BokehPass(scene, camera, {
     focus: 1.0,
     aperture: 0.00004,
     maxblur: 0.01,
 
     width: window.innerWidth,
-    height: window.innerHeight,
+    height: window.innerHeight
   });
   composer.addPass(bokehPass);
+
+  const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader);
+  composer.addPass(gammaCorrectionPass);
 
   type ApplyFn = (attr: string, value: any) => void;
 
