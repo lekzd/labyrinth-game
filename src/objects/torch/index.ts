@@ -29,9 +29,8 @@ function initSphere() {
 }
 
 function createTorch() {
-  const torch = new PointLight(0xffcc00, 1000, 500); // Цвет, интенсивность, дистанция факела
+  const torch = new PointLight(0xffcc00, 1000, 50); // Цвет, интенсивность, дистанция факела
   torch.position.set(0, 0, 0); // Позиция факела (относительно руки персонажа)
-  torch.castShadow = true;
   torch.shadow.mapSize.width = 100;
   torch.shadow.mapSize.height = 100;
   torch.shadow.camera.near = 0.5;

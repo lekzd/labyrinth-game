@@ -20,6 +20,7 @@ const DEFAULTS = {
     pixelRatio: window.devicePixelRatio,
     toneMapping: THREE.NoToneMapping,
     toneMappingExposure: 1.0,
+    checkShaderErrors: false,
     shadows: true
   },
   camera: {
@@ -93,7 +94,7 @@ export const UiSettingsSystem = () => {
   // Add Bokeh pass
   const bokehPass = new BokehPass(scene, camera, {
     focus: 1.0,
-    aperture: 0.00004,
+    aperture: 0.00001,
     maxblur: 0.01,
 
     width: window.innerWidth,
@@ -166,6 +167,9 @@ export const UiSettingsSystem = () => {
         case "shadows":
           renderer.shadowMap.enabled = value as boolean;
           break;
+        case "checkShaderErrors":
+          renderer.debug.checkShaderErrors = value as boolean;
+          break;
         default:
           // @ts-expect-error
           renderer[attr] = value;
@@ -196,6 +200,7 @@ export const UiSettingsSystem = () => {
     );
     addRenderingParam("Яркость", "toneMappingExposure", 0, 5);
     addRenderingParam("Тени", "shadows");
+    addRenderingParam("Проверка шейдеров", "checkShaderErrors");
   };
 
   const addCameraControlls = () => {

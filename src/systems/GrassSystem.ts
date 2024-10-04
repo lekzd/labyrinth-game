@@ -15,6 +15,8 @@ export const GrassSystem = () => {
     }
   };
 
+  let grassMaterial: GrassMaterial;
+
   const tilesWithGrass = [Tiles.Floor, Tiles.Wall, Tiles.Tree];
 
   return {
@@ -31,7 +33,9 @@ export const GrassSystem = () => {
         instancesPerTile;
 
       const geometry = new THREE.PlaneGeometry(width, height);
-      const grassMaterial = new GrassMaterial(grassUniforms);
+      if (!grassMaterial) {
+        grassMaterial = new GrassMaterial(grassUniforms);
+      }
       const instancedMesh = new THREE.InstancedMesh(
         geometry,
         grassMaterial,

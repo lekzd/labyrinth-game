@@ -18,7 +18,7 @@ import { shadowSetter } from "@/utils/shadowSetter";
 import { loads } from "@/loader";
 
 function createTorch() {
-  const torch = new PointLight(0xffcc00, 200, 500); // Цвет, интенсивность, дистанция факела
+  const torch = new PointLight(0xffcc00, 200, 50); // Цвет, интенсивность, дистанция факела
   torch.position.set(0, 0, 0); // Позиция факела (относительно руки персонажа)
   torch.castShadow = true;
   torch.shadow.mapSize.width = 100;

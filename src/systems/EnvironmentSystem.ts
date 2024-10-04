@@ -8,6 +8,8 @@ type EnvironmentPointConfig = {
   lightIntensity: number
   skyColor: Color
   fogColor: Color
+  fogNear: number
+  fogFar: number
   grassColor: Color
 }
 
@@ -24,6 +26,8 @@ const timePointsConfig: Record<number, EnvironmentPointConfig> = {
     lightIntensity: 0.2,
     skyColor: new Color('#06000f'),
     fogColor: new Color('#000000'),
+    fogNear: 1,
+    fogFar: 400,
     grassColor: new Color('#000000'),
   },
   [time(6, 0)]: {
@@ -32,6 +36,8 @@ const timePointsConfig: Record<number, EnvironmentPointConfig> = {
     lightIntensity: 0.2,
     skyColor: new Color('#140131'),
     fogColor: new Color('#000000'),
+    fogNear: 1,
+    fogFar: 400,
     grassColor: new Color('#000000'),
   },
   [time(8, 0)]: {
@@ -40,6 +46,8 @@ const timePointsConfig: Record<number, EnvironmentPointConfig> = {
     lightIntensity: 1.0,
     skyColor: new Color('#bfd1f5'),
     fogColor: new Color('#a6c0f5'),
+    fogNear: 1,
+    fogFar: 400,
     grassColor: new Color('#022607'),
   },
   [time(10, 0)]: {
@@ -48,6 +56,8 @@ const timePointsConfig: Record<number, EnvironmentPointConfig> = {
     lightIntensity: 5.0,
     skyColor: new Color('#759fe8'),
     fogColor: new Color('#6391e0'),
+    fogNear: 100,
+    fogFar: 600,
     grassColor: new Color('#132602'),
   },
   [time(17, 0)]: {
@@ -56,6 +66,8 @@ const timePointsConfig: Record<number, EnvironmentPointConfig> = {
     lightIntensity: 3.0,
     skyColor: new Color('#dde176'),
     fogColor: new Color('#957b1c'),
+    fogNear: 100,
+    fogFar: 400,
     grassColor: new Color('#132602'),
   },
   [time(18, 0)]: {
@@ -64,6 +76,8 @@ const timePointsConfig: Record<number, EnvironmentPointConfig> = {
     lightIntensity: 0.7,
     skyColor: new Color('#f6852f'),
     fogColor: new Color('#4f0c04'),
+    fogNear: 100,
+    fogFar: 400,
     grassColor: new Color('#261b02'),
   },
   [time(19, 0)]: {
@@ -72,6 +86,8 @@ const timePointsConfig: Record<number, EnvironmentPointConfig> = {
     lightIntensity: 0.3,
     skyColor: new Color('#130429'),
     fogColor: new Color('#000000'),
+    fogNear: 1,
+    fogFar: 400,
     grassColor: new Color('#000200'),
   },
   [time(22, 0)]: {
@@ -80,6 +96,8 @@ const timePointsConfig: Record<number, EnvironmentPointConfig> = {
     lightIntensity: 0.3,
     skyColor: new Color('#0a0118'),
     fogColor: new Color('#000000'),
+    fogNear: 1,
+    fogFar: 400,
     grassColor: new Color('#000000'),
   },
   [time(24, 0)]: {
@@ -88,6 +106,8 @@ const timePointsConfig: Record<number, EnvironmentPointConfig> = {
     lightIntensity: 0.3,
     skyColor: new Color('#06000f'),
     fogColor: new Color('#000000'),
+    fogNear: 1,
+    fogFar: 400,
     grassColor: new Color('#000000'),
   },
 }
@@ -103,7 +123,7 @@ export const EnvironmentSystem = () => {
   scene.add(hemiLight);
 
   scene.background = new Color(0x06000f);
-  scene.fog = new Fog(0x000000, 1, 400);
+  const fog = scene.fog = new Fog(0x000000, 100, 400);
 
   const entries = Object.entries(timePointsConfig)
   const values = {
@@ -112,6 +132,8 @@ export const EnvironmentSystem = () => {
     lightIntensity: 0.2,
     skyColor: new Color('#06000f'),
     fogColor: new Color('#000000'),
+    fogNear: 100,
+    fogFar: 400,
     grassColor: new Color('#000000'),
   }
 
@@ -144,6 +166,8 @@ export const EnvironmentSystem = () => {
             lightIntensity: fromPoint.lightIntensity + (toPoint.lightIntensity - fromPoint.lightIntensity) * amount,
             skyColor: values.skyColor.lerpColors(fromPoint.skyColor, toPoint.skyColor, amount),
             fogColor: values.fogColor.lerpColors(fromPoint.fogColor, toPoint.fogColor, amount),
+            fogNear: fromPoint.fogNear + (toPoint.fogNear - fromPoint.fogNear) * amount,
+            fogFar: fromPoint.fogFar + (toPoint.fogFar - fromPoint.fogFar) * amount,
             grassColor: values.grassColor.lerpColors(fromPoint.grassColor, toPoint.grassColor, amount),
           })
 
@@ -151,7 +175,9 @@ export const EnvironmentSystem = () => {
           hemiLight.intensity = values.lightIntensity
 
           scene.background = values.skyColor
-          scene.fog.color = values.fogColor
+          fog.color = values.fogColor
+          fog.near = values.fogNear
+          fog.far = values.fogFar
 
           break
         }

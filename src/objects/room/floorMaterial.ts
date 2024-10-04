@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { Tiles } from "@/config";
 import { frandom, noise } from "@/utils/random";
 import { makeCtx } from "@/utils/makeCtx";
 import { RoomConfig } from "@/types";
@@ -43,9 +42,6 @@ export const createRoomTerrainCanvas = (
     }
   }
 
-  ctx.strokeStyle = baseColor.getStyle();
-  ctx.strokeRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
   return ctx.canvas;
 };
 
@@ -62,6 +58,7 @@ export const createFloorMaterial = (room: RoomConfig) => {
       room.width,
       room.height
     ),
+    normalScale: new THREE.Vector2(10, 10),
     color: 0x777777,
     roughness: 1,
     metalness: 0,
