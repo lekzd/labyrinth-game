@@ -5,7 +5,7 @@ varying float vIndex;
 
 attribute vec3 values; // Атрибут для размера частиц
 
-float HEIGHT = 30.0;
+float HEIGHT = 50.0;
 
 void main() {
   vec4 pos = vec4(position, 1.0);
@@ -16,7 +16,7 @@ void main() {
 
   pos.y = mod(pos.y + YFactor, HEIGHT * values.x);
 
-  csm_PointSize = values.x;
+  csm_PointSize = values.y;
 
   csm_PositionRaw = projectionMatrix * modelViewMatrix * pos;
 }

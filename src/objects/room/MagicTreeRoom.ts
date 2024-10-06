@@ -15,13 +15,7 @@ const ptInCircle = (px: number, py: number, cx = 0, cy = 0, radius = 20) => {
 const getTile = (x: number, y: number, props: RoomConfig) => {
   const center = props.width / 2;
 
-  if (ptInCircle(x, y, center, center, 3)) return Tiles.Road;
-
   if (ptInCircle(x, y, center, center, 11)) {
-    if (
-      (x > center - 2 && x < center + 2) ||
-      (y > center - 2 && y < center + 2)
-    )
       return Tiles.Road;
   }
 

@@ -1,28 +1,23 @@
 import * as CANNON from "cannon";
-import {
-  createBranch,
-  createBranchGeometry,
-  createFoliageGeometry
-} from ".";
-import { createPhysicBox } from "@/cannon";
+import { createBranch, createBranchGeometry } from ".";
+import { createPhysicBox, physicWorld } from "@/cannon";
 import {
   BufferAttribute,
   BufferGeometry,
   Color,
+  InstancedMesh,
   Mesh,
   MeshPhongMaterial,
+  MeshStandardMaterial,
   Object3D,
   Object3DEventMap,
   PointLight,
   Points,
-  RepeatWrapping,
   Sprite,
   SpriteMaterial,
-  Texture,
   Vector2
 } from "three";
 import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
-import { LeavesMatetial } from "@/materials/leaves";
 import { DynamicObject } from "@/types";
 import { assign } from "lodash";
 import { shadowSetter } from "@/utils/shadowSetter";
@@ -30,8 +25,10 @@ import { loads } from "@/loader";
 import { ParticlesMaterial } from "@/materials/particles";
 import { frandom } from "@/utils/random";
 import { MagicTreePointsMaterial } from "@/materials/magicTreePoints";
+import { textureRepeat } from "@/utils/textureRepeat";
+import { createMatrix } from "@/utils/createMatrix";
 
-const PARTICLE_COUNT = 100;
+const PARTICLE_COUNT = 500;
 
 const ParticleSystem = (particleMaterial: ParticlesMaterial) => {
   // Создание массивов для хранения позиций частиц
@@ -39,12 +36,12 @@ const ParticleSystem = (particleMaterial: ParticlesMaterial) => {
   const indexes = new Float32Array(PARTICLE_COUNT * 3); // 3 компоненты (x, y, z) на каждую частицу
 
   for (let i = 0; i < positions.length; i += 3) {
-    positions[i] = frandom(-10, 10); // Рандомное положение частицы по оси X
-    positions[i + 1] = frandom(0, 30); // Рандомное положение частицы по оси Y
-    positions[i + 2] = frandom(-10, 10); // Рандомное положение частицы по оси Z
+    positions[i] = frandom(-50, 50); // Рандомное положение частицы по оси X
+    positions[i + 1] = frandom(0, 50); // Рандомное положение частицы по оси Y
+    positions[i + 2] = frandom(-50, 50); // Рандомное положение частицы по оси Z
 
     indexes[i] = i / positions.length;
-    indexes[i + 1] = frandom(0.1, 1);
+    indexes[i + 1] = frandom(0.1, 10);
     indexes[i + 2] = frandom(0.1, 1);
   }
   // Создание буферной геометрии для частиц
@@ -60,7 +57,7 @@ const ParticleSystem = (particleMaterial: ParticlesMaterial) => {
 };
 
 const Torch = () => {
-  const torch = new PointLight(new Color("rgb(241, 48, 216)"), 100000, 100); // Цвет, интенсивность, дистанция факела
+  const torch = new PointLight(new Color("rgb(241, 48, 216)"), 5000, 100, 1); // Цвет, интенсивность, дистанция факела
   torch.position.set(0, 20, 0);
   torch.shadow.mapSize.width = 100;
   torch.shadow.mapSize.height = 100;
@@ -107,34 +104,104 @@ export const createMagicTree = () => {
 
   const woodGeometry = BufferGeometryUtils.mergeGeometries(branchGeometries);
 
-  const foliageGeometries = branches.slice(1).map(createFoliageGeometry).flat();
-  const croneGeometry = BufferGeometryUtils.mergeGeometries(foliageGeometries);
-
-  const prepareTexture = (texture: Texture) => {
-    const map = texture.clone();
-    map.rotation = Math.PI / 2;
-    map.wrapS = RepeatWrapping;
-    map.wrapT = RepeatWrapping;
-    map.repeat = new Vector2(0.5, 2);
-
-    return map;
-  };
-
   const material = new MeshPhongMaterial({
     color: new Color("#ef19bd"),
     side: 0,
     shininess: 1,
-    map: prepareTexture(loads.texture["Bark_06_basecolor.jpg"]!),
-    normalMap: prepareTexture(loads.texture["Bark_06_normal.jpg"]!),
+    map: textureRepeat(
+      loads.texture["Bark_06_basecolor.jpg"]!,
+      2,
+      1,
+      1,
+      2,
+      Math.PI / 2
+    ),
+    normalMap: textureRepeat(
+      loads.texture["Bark_06_normal.jpg"]!,
+      2,
+      1,
+      1,
+      2,
+      Math.PI / 2
+    ),
     normalScale: new Vector2(5, 5)
   });
 
   const mesh = new Mesh(woodGeometry, material);
-  const foliage = new Mesh(croneGeometry, new LeavesMatetial());
-
-  // mesh.add(foliage);
 
   return mesh;
+};
+
+const Altar = (props: DynamicObject) => {
+  const count = 24;
+  const radius = 100;
+  const branches = createBranch(3, 5, 20);
+  const branchGeometries = branches.map(createBranchGeometry);
+
+  const geometry = BufferGeometryUtils.mergeGeometries(branchGeometries);
+
+  geometry.rotateX(-Math.PI / 12);
+
+  const stoneShape = new CANNON.Box(new CANNON.Vec3(5, 30, 5));
+  const material = new MeshStandardMaterial({
+    color: new Color("rgb(92, 82, 28)"),
+    metalness: 0,
+    roughness: 0.8,
+    map: textureRepeat(
+      loads.texture["Bark_06_basecolor.jpg"]!,
+      1,
+      2,
+      10,
+      20,
+      Math.PI
+    ),
+    normalMap: textureRepeat(
+      loads.texture["Bark_06_normal.jpg"]!,
+      1,
+      2,
+      10,
+      20,
+      Math.PI
+    )
+  });
+
+  const instanceNumber = count;
+
+  const instancedMesh = new InstancedMesh(geometry, material, instanceNumber);
+
+  const boxBody = new CANNON.Body({ mass: 0, type: CANNON.Body.STATIC });
+
+  boxBody.position.set(props.position.x, 0, props.position.z);
+
+  for (let i = 0; i < count; i++) {
+    const angle = (i * Math.PI * 2) / count;
+    const x = Math.cos(angle) * radius;
+    const z = Math.sin(angle) * radius;
+
+    const matrix = createMatrix({
+      translation: {
+        x,
+        y: -10,
+        z
+      },
+      rotation: {
+        y: -angle + Math.PI / 2
+      },
+      scale: {
+        x: 4,
+        y: 4,
+        z: 4
+      }
+    });
+
+    boxBody.addShape(stoneShape, new CANNON.Vec3(x, 0, z));
+
+    instancedMesh.setMatrixAt(i, matrix);
+  }
+
+  physicWorld.addBody(boxBody);
+
+  return instancedMesh;
 };
 
 export class MagicTree {
@@ -148,12 +215,13 @@ export class MagicTree {
     this.props = props;
     this.mesh = createMagicTree();
     this.particleMaterial = new MagicTreePointsMaterial({
-      time: { value: 0.0 },
+      time: { value: 0.0 }
     });
     const particleSystem = ParticleSystem(this.particleMaterial);
 
     this.mesh.add(Torch());
     this.mesh.add(Shine());
+    this.mesh.add(Altar(props));
     this.mesh.add(particleSystem);
 
     assign(this.mesh.position, props.position);
