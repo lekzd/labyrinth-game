@@ -56,7 +56,7 @@ export class Campfire {
     this.props = props;
 
     this.particleMaterial = new ParticlesMaterial({
-      time: { value: 0.0 },
+      time: { value: 0.0 }
     });
 
     const { base, torch } = initMesh(props, this.particleMaterial);
@@ -103,7 +103,10 @@ export class Campfire {
 
       const distance = getDistance(this.props.position, object.position);
 
-      if (distance < 30 && (object.health || 0) < settings[object.type].health) {
+      if (
+        distance < 30 &&
+        (object.health || 0) < settings[object.type].health
+      ) {
         healHealth(object);
         healing = true;
       }
@@ -177,7 +180,7 @@ const Shine = () => {
   return shine;
 };
 
-const Altar = () => {
+const Altar = (props: DynamicObject) => {
   const altar = new Mesh(
     new CylinderGeometry(30, 30, 1, 6, 1), // Геометрия сферы
     new MeshStandardMaterial({
@@ -230,18 +233,16 @@ const Altar = () => {
       0.3,
       0.3
     ),
-    normalScale: new Vector2(5, 5),
+    normalScale: new Vector2(5, 5)
   });
 
   const instanceNumber = count * 2;
 
-  const instancedMesh = new InstancedMesh(
-    geometry,
-    material,
-    instanceNumber
-  );
+  const instancedMesh = new InstancedMesh(geometry, material, instanceNumber);
 
   const boxBody = new CANNON.Body({ mass: 0, type: CANNON.Body.STATIC });
+
+  boxBody.position.set(props.position.x, 0, props.position.z)
 
   for (let i = 0; i < count; i++) {
     const angle = (i * Math.PI * 2) / count;
@@ -250,17 +251,16 @@ const Altar = () => {
 
     const matrix = createMatrix({
       translation: {
-        x, y: 15, z,
+        x,
+        y: 15,
+        z
       },
       rotation: {
-        y: -angle - (Math.PI / 2) * (i % 4),
+        y: -angle - (Math.PI / 2) * (i % 4)
       }
     });
 
-    boxBody.addShape(
-      stoneShape,
-      new CANNON.Vec3(x, 0, z)
-    );
+    boxBody.addShape(stoneShape, new CANNON.Vec3(x, 0, z));
 
     instancedMesh.setMatrixAt(i, matrix);
   }
@@ -274,13 +274,15 @@ const Altar = () => {
 
     const matrix = createMatrix({
       translation: {
-        x, y: 30, z,
+        x,
+        y: 30,
+        z
       },
       rotation: {
         y: -angle - Math.PI / 2,
-        z: Math.PI / 2,
+        z: Math.PI / 2
       }
-    })
+    });
 
     instancedMesh.setMatrixAt(count + i, matrix);
   }
@@ -291,38 +293,20 @@ const Altar = () => {
   return altar;
 };
 
-const Ring = () => {
+const Ring = (props: DynamicObject) => {
   const count = 24;
   const radius = 15;
   const geometry = new BoxGeometry(3.5, 3.5, 3.5);
-  // const material = new MeshStandardMaterial({
-  //   color: new Color("rgb(69, 69, 69)"),
-  //   metalness: 0,
-  //   roughness: 0.8,
-  //   map: textureRepeat(loads.texture["stone_wall_map.jpg"]!, 1, 1, 0.3, 0.3),
-  //   normalMap: textureRepeat(
-  //     loads.texture["stone_wall_bump.jpg"]!,
-  //     1,
-  //     1,
-  //     0.3,
-  //     0.3
-  //   ),
-  //   normalScale: new Vector2(1, 1),
-  // });
 
   const material = new MeshBasicMaterial({
     color: new Color("rgb(36, 198, 168)"),
     wireframe: true,
-    side: 2,
+    side: 2
   });
 
   const instanceNumber = count * 2;
 
-  const instancedMesh = new InstancedMesh(
-    geometry,
-    material,
-    instanceNumber
-  );
+  const instancedMesh = new InstancedMesh(geometry, material, instanceNumber);
 
   for (let i = 0; i < count; i++) {
     const angle = (i * Math.PI * 2) / count;
@@ -331,15 +315,17 @@ const Ring = () => {
 
     const matrix = createMatrix({
       translation: {
-        x, y: y + radius, z: 0,
+        x,
+        y: y + radius,
+        z: 0
       },
       rotation: {
-        z: angle + (Math.PI / 2),
+        z: angle + Math.PI / 2
       },
       scale: {
-        x: 1, 
+        x: 1,
         y: frandom(0.5, 1.5),
-        z: frandom(0.5, 1.5),
+        z: frandom(0.5, 1.5)
       }
     });
 
@@ -348,20 +334,22 @@ const Ring = () => {
 
   const effect = SpriteEffect({
     texture: loads.texture["fx_portal.png"],
-    position: new Vector3(0, radius, 0),
+    position: new Vector3(props.position.x, radius, props.position.z),
     size: new Vector2(5, 6),
     scale: 30,
-    rotation: 0,
+    rotation: 0
   });
 
   setInterval(() => {
-    effect.update(Math.floor((0.5 + (Math.sin(performance.now() / 200) * .5)) * 28));
+    effect.update(
+      Math.floor((0.5 + Math.sin(performance.now() / 200) * 0.5) * 28)
+    );
   }, 40);
 
   instancedMesh.rotateY(Math.PI / 2);
 
-  return instancedMesh
-}
+  return instancedMesh;
+};
 
 function initMesh(props: DynamicObject, particleMaterial: ParticlesMaterial) {
   const base = new Object3D();
@@ -379,12 +367,13 @@ function initMesh(props: DynamicObject, particleMaterial: ParticlesMaterial) {
   base.add(particleSystem);
   base.add(torch);
   base.add(shine);
-  base.add(Altar());
-  base.add(Ring());
+  base.add(Altar(props));
+  base.add(Ring(props));
+
+  assign(base.position, props.position);
 
   base.updateMatrixWorld(true);
   base.matrixAutoUpdate = false;
 
-  assign(base.position, props.position);
   return { base, torch };
 }

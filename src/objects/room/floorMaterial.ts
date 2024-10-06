@@ -24,8 +24,8 @@ export const createRoomTerrainCanvas = (
     for (let x = 0; x < room.width; x++) {
       const absolutePoint = { x: room.x + x, z: room.y + y, y: 0 };
       const ground =
-        getDistance({ x: 0, y: 0, z: 0 }, absolutePoint) > 20
-          ? noise((-6 + room.x + x) / 25, (-6 + room.y + y) / 25)
+        getDistance({ x: 0, y: 0, z: 0 }, absolutePoint) > 10
+          ? noise((room.x + x) / 25, (room.y + y) / 25)
           : -1;
       const shadowPower = ground < -0.6 ? 0 : Math.min(1, (ground + 0.5) * 5);
 

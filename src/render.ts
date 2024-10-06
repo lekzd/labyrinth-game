@@ -10,7 +10,7 @@ import { createGroundBody, physicWorld } from "./cannon.ts";
 import { KeyboardCharacterController } from "./objects/hero/controller.ts";
 import { currentPlayer } from "./main.ts";
 import { systems } from "./systems/index.ts";
-import { Room } from "@/uses";
+import { Room } from "./objects/room/Room.ts";
 import { App } from "./ui/App.tsx";
 import CannonDebugRenderer from "./cannonDebugRender.ts";
 import { getObjectContructorConfig } from "./utils/getObjectContructorConfig.ts";
@@ -18,6 +18,9 @@ import {getWorld} from "@/generators/getWorld.ts";
 import { DynamicObject } from "./types/DynamicObject.ts";
 import { MapObject } from "./types/MapObject.ts";
 import { RoomConfig } from "./types/index";
+import { Tiles } from "@/config";
+import { CentralRoom } from "./objects/room/CentralRoom.ts";
+import { MagicTreeRoom } from "./objects/room/MagicTreeRoom.ts";
 
 const stats = new Stats();
 
@@ -153,7 +156,7 @@ export const render = () => {
   renderLoop();
 };
 
-export const roomChunks = (pos: THREE.Vector3Like, slice = 12) => {
+export const roomChunks = (pos: THREE.Vector3Like, slice = 20) => {
   const rooms: Record<string, Room> = {};
   const s = slice;
 
@@ -162,7 +165,7 @@ export const roomChunks = (pos: THREE.Vector3Like, slice = 12) => {
   x-= x % slice;
   z-= z % slice;
 
-  const roomsArray = getRoomsRadius({ x, z }, slice, 3);
+  const roomsArray = getRoomsRadius({ x, y: 0, z }, slice, 2);
 
   for (const pos of roomsArray) {
     const { x, y } = pos;
@@ -181,15 +184,21 @@ export const roomChunks = (pos: THREE.Vector3Like, slice = 12) => {
       }
 
       // Парсим тили
-      for (let y = pos.y; y < pos.y + s; y++) {
-        for (let x = pos.x; x < pos.x + s; x++) {
-          const tile = getWorld(x, y);
-
-          room.tiles.push(tile);
+      for (let y = 0; y < slice; y++) {
+        for (let x = 0; x < slice; x++) {
+          const index = x + y * slice;
+          const tile = getWorld(pos.x + x, pos.y + y);
+  
+          room.tiles[index] = tile;
         }
       }
-
-      all[id] = new Room(room);
+      if (room.tiles.includes(Tiles.MagicTree)) {
+        all[id] = new MagicTreeRoom(room);
+      } else if (room.tiles.includes(Tiles.Campfire)) {
+        all[id] = new CentralRoom(room);
+      } else {
+        all[id] = new Room(room);
+      }
     }
 
     rooms[id] = all[id];
@@ -200,10 +209,11 @@ export const roomChunks = (pos: THREE.Vector3Like, slice = 12) => {
 
 const getRoomsRadius = (base: THREE.Vector3Like, size: number, radius = 1) => {
   const items = [];
+  const half = size / 2;
 
   for (let x = base.x - size * radius; x <= base.x + size * radius; x+=size) {
     for (let y = base.z - size * radius; y <= base.z + size * radius; y+=size) {
-      items.push({ x, y });
+      items.push({ x: x - half, y: y - half });
     }
   }
 

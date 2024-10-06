@@ -5,7 +5,7 @@ import {
   Mesh,
   MeshPhongMaterial,
   Object3DEventMap,
-  Vector3Like,
+  Vector3Like
 } from "three";
 import * as THREE from "three";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
@@ -17,7 +17,7 @@ import { currentPlayer } from "@/main.ts";
 import { state } from "@/state.ts";
 import { GlowMaterial } from "@/materials/glow/index.ts";
 import { HeroProps } from "@/types";
-import {getObjectState} from "@/objects/room";
+import { getObjectState } from "@/objects/room/Room";
 
 const PHYSIC_Y = 4;
 export class Weapon {
@@ -75,8 +75,8 @@ export class Weapon {
       state.setState({
         objects: {
           [currentPlayer.activeObjectId]: { weapon: this.props.type },
-          [this.props.id]: { position: { x: 0, y: 0, z: -1000000 } },
-        },
+          [this.props.id]: { position: { x: 0, y: 0, z: -1000000 } }
+        }
       });
 
       this.setPosition({ x: 0, y: 0, z: -1000000 });
@@ -104,7 +104,7 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
   Object.assign(containner.position, props.position);
   Object.assign(containner.quaternion, props.rotation);
 
-  target.rotateZ(-Math.PI/2)
+  target.rotateZ(-Math.PI / 2);
   target.scale.multiplyScalar(5);
   target.updateMatrix();
   containner.updateMatrix();

@@ -4,4 +4,4 @@ export { Torch } from "@/objects/torch";
 export { Campfire } from "@/objects/campfire";
 export { Weapon } from "@/objects/weapon";
 export { PuzzleHandler } from "@/objects/puzzleHandler";
-export { Room } from "@/objects/room";
+export { Room } from "@/objects/room/Room";
