@@ -4,6 +4,8 @@ uniform float u_scale;
 uniform float u_windSpeed;
 uniform float u_windTime;
 varying vec4 vWorldPosition;
+attribute float a_shadowPower;
+varying float v_shadowPower;
 
 float inverseLerp(float v, float minValue, float maxValue) {
   return (v - minValue) / (maxValue - minValue);
@@ -50,6 +52,8 @@ void main() {
   worldViewPosition = applyWind(worldViewPosition);
 
   vWorldPosition = vec4(position, 1.0);
+
+  v_shadowPower = a_shadowPower;
 
   csm_PositionRaw = projectionMatrix * worldViewPosition;
 }

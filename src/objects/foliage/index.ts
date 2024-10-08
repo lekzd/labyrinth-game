@@ -1,24 +1,28 @@
 import { DynamicObject } from "@/types";
-import { Color, DoubleSide, Mesh, MeshPhongMaterial, Object3D, Object3DEventMap, PlaneGeometry } from "three";
+import {
+  Float32BufferAttribute,
+  Mesh,
+  Object3D,
+  Object3DEventMap,
+  PlaneGeometry
+} from "three";
 import { assign } from "@/utils/assign";
-import { frandom, random } from "@/utils/random";
-import { loads } from "@/loader";
+import { frandom, noise, random } from "@/utils/random";
 import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
+import { FoliageMatetial } from "@/materials/foliage";
 
-const createFoliage = () => {
+let material: FoliageMatetial;
+
+const createFoliage = (props: DynamicObject) => {
   const height = random(10, 20);
-  const baseColor = new Color(`#344a20`).offsetHSL(
-    frandom(-0.1, 0.1),
-    frandom(-0.1, 0.1),
-    frandom(-0.01, 0.01)
-  );
-  const material = new MeshPhongMaterial({
-    color: baseColor,
-    map: loads.texture["foliage.jpg"],
-    alphaMap: loads.texture["foliage_mask.jpg"],
-    alphaTest: 0.8,
-    side: DoubleSide
-  });
+  const x = Math.floor(props.position.x / 10);
+  const y = Math.floor(props.position.z / 10);
+  const ground = noise(x / 25, y / 25);
+  const shadowPower = ground < -0.6 ? 0 : Math.min(0.95, (ground + 0.5) * 2);
+
+  if (!material) {
+    material = new FoliageMatetial();
+  }
 
   const geometries = [
     new PlaneGeometry(height, height).rotateY(Math.PI / 4),
@@ -27,15 +31,26 @@ const createFoliage = () => {
 
   const geometry = BufferGeometryUtils.mergeGeometries(geometries);
 
+  // Получаем количество вершин
+  const vertexCount = geometry.attributes.position.count;
+
+  // Создаем массив для атрибута с корректной длиной
+  const shadowPowerArray = new Float32Array(vertexCount).fill(
+    shadowPower
+  );
+
+  // Задаем атрибут
+  geometry.setAttribute(
+    "a_shadowPower",
+    new Float32BufferAttribute(shadowPowerArray, 1)
+  );
+
   geometry.rotateZ(frandom(-Math.PI / 6, Math.PI / 6));
   geometry.rotateX(frandom(-Math.PI / 6, Math.PI / 6));
   geometry.rotateY(frandom(-Math.PI / 6, Math.PI / 6));
   geometry.translate(0, height >> 2, 0);
 
-  const mesh = new Mesh(
-    geometry,
-    material
-  );
+  const mesh = new Mesh(geometry, material);
 
   return mesh;
 };
@@ -47,7 +62,7 @@ export class Foliage {
 
   constructor(props: DynamicObject) {
     this.props = props;
-    this.mesh = createFoliage();
+    this.mesh = createFoliage(props);
     assign(this.mesh.position, props.position);
   }
   update(timeDelta: number) {}

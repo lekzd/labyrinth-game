@@ -149,7 +149,7 @@ export function createBranch(
 }
 
 export const createTree = () => {
-  const branches = createBranch(3, 4, random(10, 50));
+  const branches = createBranch(3, 4, random(15, 50));
   const base = rotateUvs(createCurvedBranch(
     new THREE.Vector3(0, 0, 0),
     new THREE.Vector3(0, 3, 0),
@@ -178,7 +178,7 @@ export const createTree = () => {
   };
 
   const material = new THREE.MeshPhongMaterial({
-    color: new THREE.Color('#452d1c'),
+    color: new THREE.Color('#2f221e'),
     side: 0,
     shininess: 1,
     map: prepareTexture(loads.texture["Bark_06_basecolor.jpg"]!),

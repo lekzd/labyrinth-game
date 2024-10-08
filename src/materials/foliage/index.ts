@@ -20,14 +20,14 @@ const animate = () => {
 
 animate();
 
-export class LeavesMatetial extends CustomShaderMaterial<
+export class FoliageMatetial extends CustomShaderMaterial<
   typeof MeshStandardMaterial
 > {
   constructor() {
     const map = loads.texture["foliage.jpg"];
     const alphaMap = loads.texture["foliage_mask.jpg"];
 
-    const baseColor = new Color(`#676831`).offsetHSL(
+    const baseColor = new Color(`#acca51`).offsetHSL(
       frandom(-0.1, 0.1),
       frandom(-0.1, 0.1),
       frandom(-0.05, 0.05)
