@@ -1,9 +1,9 @@
 import * as THREE from "three";
-import { frandom, random } from "../../utils/random";
-import { loads } from "@/loader";
+import { frandom } from "../../utils/random";
 import { jitterGeometry } from "@/utils/jitterGeometry";
+import { StoneMatetial } from "@/materials/stone";
 
-let material: THREE.MeshPhongMaterial;
+let material: StoneMatetial;
 
 export const createStone = () => {
   const radius = frandom(5, 9);
@@ -15,18 +15,9 @@ export const createStone = () => {
   geometry.scale(1, 1, 2);
   geometry.rotateX(Math.PI / 2);
 
-  const randomGray = () => {
-    const base = random(50, 80);
-    return (base << 16) + (base << 8) + base;
-  };
-
   // Создание материала и объекта камня
   if (!material) {
-    material = new THREE.MeshPhongMaterial({
-      color: randomGray(),
-      map: loads.texture["stone_wall_map.jpg"],
-      normalMap: loads.texture["stone_wall_bump.jpg"]
-    });
+    material = new StoneMatetial();
   }
 
   return new THREE.Mesh(geometry, material);

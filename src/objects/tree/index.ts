@@ -1,6 +1,5 @@
 import * as CANNON from "cannon";
 import * as THREE from "three";
-import { loads } from "@/loader";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import { createMatrix } from "@/utils/createMatrix";
 import { LeavesMatetial } from "@/materials/leaves";
@@ -11,6 +10,7 @@ import { assign } from "@/utils/assign.ts";
 import { DynamicObject } from "@/types";
 import { createPhysicBox } from "@/cannon.ts";
 import { rotateUvs } from "@/utils/rotateUvs";
+import { PineMatetial } from "@/materials/pine";
 
 const radiusFunction = (from: number, to: number) => (t: number) => {
   return from - t * (from - to);
@@ -167,24 +167,7 @@ export const createTree = () => {
   const foliageGeometries = branches.slice(1).map(createFoliageGeometry).flat();
   const croneGeometry = BufferGeometryUtils.mergeGeometries(foliageGeometries);
 
-  const prepareTexture = (texture: THREE.Texture) => {
-    const map = texture.clone();
-    map.rotation = Math.PI / 2;
-    map.wrapS = THREE.RepeatWrapping;
-    map.wrapT = THREE.RepeatWrapping;
-    map.repeat = new THREE.Vector2(0.5, 2);
-
-    return map;
-  };
-
-  const material = new THREE.MeshPhongMaterial({
-    color: new THREE.Color('#2f221e'),
-    side: 0,
-    shininess: 1,
-    map: prepareTexture(loads.texture["Bark_06_basecolor.jpg"]!),
-    normalMap: prepareTexture(loads.texture["Bark_06_normal.jpg"]!),
-    normalScale: new THREE.Vector2(5, 5)
-  });
+  const material = new PineMatetial(0.5, 0.5);
 
   const mesh = new THREE.Mesh(woodGeometry, material);
   const foliage = new THREE.Mesh(croneGeometry, new LeavesMatetial());

@@ -1,5 +1,4 @@
 import {
-  AdditiveBlending,
   BoxGeometry,
   BufferAttribute,
   BufferGeometry,
@@ -34,8 +33,8 @@ import { textureRepeat } from "@/utils/textureRepeat";
 import { createMatrix } from "@/utils/createMatrix";
 import { physicWorld } from "@/cannon";
 import * as CANNON from "cannon";
-import { GlowMaterial } from "@/materials/glow";
 import { SpriteEffect } from "@/effects/SpriteEffect";
+import { StoneMatetial } from "@/materials/stone";
 
 const healHealth = throttle((object: DynamicObject) => {
   state.setState({
@@ -220,7 +219,8 @@ const Altar = (props: DynamicObject) => {
   const radius = 100;
   const geometry = new CylinderGeometry(5, 5, 30, 4, 1);
   const stoneShape = new CANNON.Box(new CANNON.Vec3(5, 30, 5));
-  const material = new MeshStandardMaterial({
+
+  const material = new StoneMatetial({
     color: new Color("rgb(132, 124, 84)"),
     metalness: 0,
     roughness: 0.8,
@@ -242,7 +242,7 @@ const Altar = (props: DynamicObject) => {
 
   const boxBody = new CANNON.Body({ mass: 0, type: CANNON.Body.STATIC });
 
-  boxBody.position.set(props.position.x, 0, props.position.z)
+  boxBody.position.set(props.position.x, 0, props.position.z);
 
   for (let i = 0; i < count; i++) {
     const angle = (i * Math.PI * 2) / count;
@@ -333,7 +333,7 @@ const Ring = (props: DynamicObject) => {
   }
 
   const effect = SpriteEffect({
-    texture: loads.texture["fx_portal.png"],
+    texture: loads.texture["fx_portal.png"]!,
     position: new Vector3(props.position.x, radius, props.position.z),
     size: new Vector2(5, 6),
     scale: 30,

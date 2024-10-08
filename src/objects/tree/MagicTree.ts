@@ -27,6 +27,7 @@ import { frandom } from "@/utils/random";
 import { MagicTreePointsMaterial } from "@/materials/magicTreePoints";
 import { textureRepeat } from "@/utils/textureRepeat";
 import { createMatrix } from "@/utils/createMatrix";
+import { PineMatetial } from "@/materials/pine";
 
 const PARTICLE_COUNT = 500;
 
@@ -143,27 +144,29 @@ const Altar = (props: DynamicObject) => {
   geometry.rotateX(-Math.PI / 12);
 
   const stoneShape = new CANNON.Box(new CANNON.Vec3(5, 30, 5));
-  const material = new MeshStandardMaterial({
-    color: new Color("rgb(92, 82, 28)"),
-    metalness: 0,
-    roughness: 0.8,
-    map: textureRepeat(
-      loads.texture["Bark_06_basecolor.jpg"]!,
-      1,
-      2,
-      10,
-      20,
-      Math.PI
-    ),
-    normalMap: textureRepeat(
-      loads.texture["Bark_06_normal.jpg"]!,
-      1,
-      2,
-      10,
-      20,
-      Math.PI
-    )
-  });
+  // const material = new MeshStandardMaterial({
+  //   color: new Color("rgb(92, 82, 28)"),
+  //   metalness: 0,
+  //   roughness: 0.8,
+  //   map: textureRepeat(
+  //     loads.texture["Bark_06_basecolor.jpg"]!,
+  //     1,
+  //     2,
+  //     10,
+  //     20,
+  //     Math.PI
+  //   ),
+  //   normalMap: textureRepeat(
+  //     loads.texture["Bark_06_normal.jpg"]!,
+  //     1,
+  //     2,
+  //     10,
+  //     20,
+  //     Math.PI
+  //   )
+  // });
+
+  const material = new PineMatetial(10, 20);
 
   const instanceNumber = count;
 
