@@ -2,13 +2,13 @@ import * as CANNON from "cannon";
 import { createBranch, createBranchGeometry } from ".";
 import { createPhysicBox, physicWorld } from "@/cannon";
 import {
+  AdditiveBlending,
   BufferAttribute,
   BufferGeometry,
   Color,
   InstancedMesh,
   Mesh,
   MeshPhongMaterial,
-  MeshStandardMaterial,
   Object3D,
   Object3DEventMap,
   PointLight,
@@ -81,7 +81,11 @@ const Shine = () => {
     new SpriteMaterial({
       map: loads.texture["dot.png"],
       color: new Color("rgb(241, 48, 216)"),
-      opacity: 0.5
+      opacity: 0.5,
+      transparent: true,
+      blending: AdditiveBlending,
+      depthTest: true,
+      depthWrite: false,
     })
   );
 
@@ -143,28 +147,7 @@ const Altar = (props: DynamicObject) => {
 
   geometry.rotateX(-Math.PI / 12);
 
-  const stoneShape = new CANNON.Box(new CANNON.Vec3(5, 30, 5));
-  // const material = new MeshStandardMaterial({
-  //   color: new Color("rgb(92, 82, 28)"),
-  //   metalness: 0,
-  //   roughness: 0.8,
-  //   map: textureRepeat(
-  //     loads.texture["Bark_06_basecolor.jpg"]!,
-  //     1,
-  //     2,
-  //     10,
-  //     20,
-  //     Math.PI
-  //   ),
-  //   normalMap: textureRepeat(
-  //     loads.texture["Bark_06_normal.jpg"]!,
-  //     1,
-  //     2,
-  //     10,
-  //     20,
-  //     Math.PI
-  //   )
-  // });
+  const stoneShape = new CANNON.Box(new CANNON.Vec3(11, 30, 11));
 
   const material = new PineMatetial(10, 20);
 
@@ -177,7 +160,7 @@ const Altar = (props: DynamicObject) => {
   boxBody.position.set(props.position.x, 0, props.position.z);
 
   for (let i = 0; i < count; i++) {
-    const angle = (i * Math.PI * 2) / count;
+    const angle = (i * Math.PI * 2) / (count + 2);
     const x = Math.cos(angle) * radius;
     const z = Math.sin(angle) * radius;
 
@@ -188,12 +171,12 @@ const Altar = (props: DynamicObject) => {
         z
       },
       rotation: {
-        y: -angle + Math.PI / 2
+        y: -angle + Math.PI / 2,
       },
       scale: {
-        x: 4,
-        y: 4,
-        z: 4
+        x: 5,
+        y: 5,
+        z: 5
       }
     });
 

@@ -55,7 +55,7 @@ export const GrassSystem = () => {
           const tile = room.tiles[j];
           const absolutePoint = { x: room.x + x, z: room.y + y, y: 0 };
           const ground =
-            getDistance({ x: 0, y: 0, z: 0 }, absolutePoint) > 10
+            getDistance({ x: 0, y: 0, z: 0 }, absolutePoint) > 8
               ? noise((room.x + x) / 25, (room.y + y) / 25)
               : -1;
           const shadowPower =
