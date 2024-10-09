@@ -21,7 +21,8 @@ const DEFAULTS = {
     toneMapping: THREE.NoToneMapping,
     toneMappingExposure: 1.0,
     checkShaderErrors: false,
-    shadows: true
+    shadows: true,
+    bokehPass: true,
   },
   camera: {
     fov: 40,
@@ -100,10 +101,16 @@ export const UiSettingsSystem = () => {
     width: window.innerWidth,
     height: window.innerHeight
   });
-  composer.addPass(bokehPass);
+
+  if (store.renderer.bokehPass) {
+    composer.addPass(bokehPass);
+  }
 
   const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader);
-  composer.addPass(gammaCorrectionPass);
+
+  if (store.renderer.bokehPass) {
+    composer.addPass(gammaCorrectionPass);
+  }
 
   type ApplyFn = (attr: string, value: any) => void;
 
@@ -170,6 +177,15 @@ export const UiSettingsSystem = () => {
         case "checkShaderErrors":
           renderer.debug.checkShaderErrors = value as boolean;
           break;
+        case "bokehPass":
+          if (value) {
+            composer.addPass(bokehPass);
+            composer.addPass(gammaCorrectionPass);
+          } else {
+            composer.removePass(bokehPass);
+            composer.removePass(gammaCorrectionPass);
+          }
+          break;
         default:
           // @ts-expect-error
           renderer[attr] = value;
@@ -200,7 +216,8 @@ export const UiSettingsSystem = () => {
     );
     addRenderingParam("Яркость", "toneMappingExposure", 0, 5);
     addRenderingParam("Тени", "shadows");
-    addRenderingParam("Проверка шейдеров", "checkShaderErrors");
+    addRenderingParam("Дебаг шейдеров", "checkShaderErrors");
+    addRenderingParam("Глубина резкости", "bokehPass");
   };
 
   const addCameraControlls = () => {
@@ -215,7 +232,7 @@ export const UiSettingsSystem = () => {
       camera.updateProjectionMatrix();
     };
 
-    const addRenderingParam = addParam.bind(
+    const addCameraParam = addParam.bind(
       0,
       rederingGui,
       "camera",
@@ -223,10 +240,10 @@ export const UiSettingsSystem = () => {
     );
 
     // Добавляем на панель управления параметры рендерера
-    addRenderingParam("Поле зрения", "fov", 1, 180);
-    addRenderingParam("Соотношение сторон", "aspect");
-    addRenderingParam("Ближняя границв", "near", 0.1, 100);
-    addRenderingParam("Дальность отрисовки", "far", 100, 1000);
+    addCameraParam("Поле зрения", "fov", 1, 180);
+    addCameraParam("Соотношение сторон", "aspect");
+    addCameraParam("Ближняя границв", "near", 0.1, 100);
+    addCameraParam("Дальность отрисовки", "far", 100, 1000);
   };
 
   const addGameControlls = () => {
@@ -243,17 +260,17 @@ export const UiSettingsSystem = () => {
       }
     };
 
-    const addRenderingParam = addParam.bind(
+    const addGameParam = addParam.bind(
       0,
       rederingGui,
       "game",
       applyGameChange
     );
 
-    addRenderingParam("Физика", "physics");
-    addRenderingParam("Физические_боксы", "physics_boxes");
-    addRenderingParam("ИИ врагов", "enemy_ai");
-    addRenderingParam("Время", "time", 0, 24 * 60 * 60);
+    addGameParam("Физика", "physics");
+    addGameParam("Физические_боксы", "physics_boxes");
+    addGameParam("ИИ врагов", "enemy_ai");
+    addGameParam("Время", "time", 0, 24 * 60 * 60);
   };
 
   addRenderingControlls();
