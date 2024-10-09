@@ -7,7 +7,7 @@ type Uniforms = {
   time: THREE.IUniform<number>;
 };
 
-export class ParticlesMaterial extends CustomShaderMaterial<typeof THREE.PointsMaterial> {
+export class CampfireMaterial extends CustomShaderMaterial<typeof THREE.PointsMaterial> {
   constructor(uniforms: Uniforms) {
     const map = loads.texture['dot.png'];
 

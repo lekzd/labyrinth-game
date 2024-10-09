@@ -2,9 +2,6 @@ import * as CANNON from "cannon";
 import { createBranch, createBranchGeometry } from ".";
 import { createPhysicBox, physicWorld } from "@/cannon";
 import {
-  AdditiveBlending,
-  BufferAttribute,
-  BufferGeometry,
   Color,
   InstancedMesh,
   Mesh,
@@ -12,50 +9,19 @@ import {
   Object3D,
   Object3DEventMap,
   PointLight,
-  Points,
-  Sprite,
-  SpriteMaterial,
-  Vector2
+  Vector2,
 } from "three";
 import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
 import { DynamicObject } from "@/types";
 import { assign } from "lodash";
 import { shadowSetter } from "@/utils/shadowSetter";
 import { loads } from "@/loader";
-import { ParticlesMaterial } from "@/materials/particles";
-import { frandom } from "@/utils/random";
 import { MagicTreePointsMaterial } from "@/materials/magicTreePoints";
 import { textureRepeat } from "@/utils/textureRepeat";
 import { createMatrix } from "@/utils/createMatrix";
 import { PineMatetial } from "@/materials/pine";
-
-const PARTICLE_COUNT = 500;
-
-const ParticleSystem = (particleMaterial: ParticlesMaterial) => {
-  // Создание массивов для хранения позиций частиц
-  const positions = new Float32Array(PARTICLE_COUNT * 3); // 3 компоненты (x, y, z) на каждую частицу
-  const indexes = new Float32Array(PARTICLE_COUNT * 3); // 3 компоненты (x, y, z) на каждую частицу
-
-  for (let i = 0; i < positions.length; i += 3) {
-    positions[i] = frandom(-50, 50); // Рандомное положение частицы по оси X
-    positions[i + 1] = frandom(0, 50); // Рандомное положение частицы по оси Y
-    positions[i + 2] = frandom(-50, 50); // Рандомное положение частицы по оси Z
-
-    indexes[i] = i / positions.length;
-    indexes[i + 1] = frandom(0.1, 10);
-    indexes[i + 2] = frandom(0.1, 1);
-  }
-  // Создание буферной геометрии для частиц
-  const particleGeometry = new BufferGeometry();
-  particleGeometry.setAttribute("position", new BufferAttribute(positions, 3));
-  particleGeometry.setAttribute("values", new BufferAttribute(indexes, 3));
-
-  const particleSystem = new Points(particleGeometry, particleMaterial);
-
-  particleSystem.position.y = 3;
-
-  return particleSystem;
-};
+import { ParticleSystem } from "../common/ParticleSystem";
+import { Shine } from "../common/Shine";
 
 const Torch = () => {
   const torch = new PointLight(new Color("rgb(241, 48, 216)"), 5000, 100, 1); // Цвет, интенсивность, дистанция факела
@@ -74,25 +40,6 @@ const Torch = () => {
   }, 1000);
 
   return torch;
-};
-
-const Shine = () => {
-  const shine = new Sprite(
-    new SpriteMaterial({
-      map: loads.texture["dot.png"],
-      color: new Color("rgb(241, 48, 216)"),
-      opacity: 0.5,
-      transparent: true,
-      blending: AdditiveBlending,
-      depthTest: true,
-      depthWrite: false,
-    })
-  );
-
-  shine.position.y = 20;
-  shine.scale.set(50, 50, 30);
-
-  return shine;
 };
 
 function initPhysicBody() {
@@ -171,7 +118,7 @@ const Altar = (props: DynamicObject) => {
         z
       },
       rotation: {
-        y: -angle + Math.PI / 2,
+        y: -angle + Math.PI / 2
       },
       scale: {
         x: 5,
@@ -203,10 +150,24 @@ export class MagicTree {
     this.particleMaterial = new MagicTreePointsMaterial({
       time: { value: 0.0 }
     });
-    const particleSystem = ParticleSystem(this.particleMaterial);
+    const particleSystem = ParticleSystem({
+      count: 500,
+      material: this.particleMaterial,
+      x: [-50, 50],
+      y: [0, 50],
+      z: [-50, 50],
+      size: [0.1, 10],
+      speed: [0.1, 1]
+    });
 
+    particleSystem.position.y = 3;
+
+    const shine = Shine({ color: new Color("rgb(241, 48, 216)") });
+    shine.position.y = 20;
+    shine.scale.set(50, 50, 30);
+
+    this.mesh.add(shine);
     this.mesh.add(Torch());
-    this.mesh.add(Shine());
     this.mesh.add(Altar(props));
     this.mesh.add(particleSystem);
 

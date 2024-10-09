@@ -1,7 +1,5 @@
 import {
   BoxGeometry,
-  BufferAttribute,
-  BufferGeometry,
   Color,
   CylinderGeometry,
   InstancedMesh,
@@ -11,10 +9,6 @@ import {
   Object3D,
   Object3DEventMap,
   PointLight,
-  Points,
-  SphereGeometry,
-  Sprite,
-  SpriteMaterial,
   Vector2,
   Vector3
 } from "three";
@@ -26,7 +20,7 @@ import { state } from "@/state";
 import { getDistance } from "@/utils/getDistance";
 import { settings } from "../hero/settings";
 import { throttle } from "@/utils/throttle.ts";
-import { ParticlesMaterial } from "@/materials/particles";
+import { CampfireMaterial } from "@/materials/campfire";
 import { loads } from "@/loader";
 import { shadowSetter } from "@/utils/shadowSetter";
 import { textureRepeat } from "@/utils/textureRepeat";
@@ -35,6 +29,8 @@ import { physicWorld } from "@/cannon";
 import * as CANNON from "cannon";
 import { SpriteEffect } from "@/effects/SpriteEffect";
 import { StoneMatetial } from "@/materials/stone";
+import { ParticleSystem } from "../common/ParticleSystem";
+import { Shine } from "../common/Shine";
 
 const healHealth = throttle((object: DynamicObject) => {
   state.setState({
@@ -44,17 +40,16 @@ const healHealth = throttle((object: DynamicObject) => {
   });
 }, 500);
 
-const PARTICLE_COUNT = 75;
 export class Campfire {
   readonly props: DynamicObject;
   readonly mesh: Object3D<Object3DEventMap>;
-  private particleMaterial: ParticlesMaterial;
+  private particleMaterial: CampfireMaterial;
   private torch: PointLight;
 
   constructor(props: DynamicObject) {
     this.props = props;
 
-    this.particleMaterial = new ParticlesMaterial({
+    this.particleMaterial = new CampfireMaterial({
       time: { value: 0.0 }
     });
 
@@ -123,32 +118,6 @@ export class Campfire {
   }
 }
 
-const ParticleSystem = (particleMaterial: ParticlesMaterial) => {
-  // Создание массивов для хранения позиций частиц
-  const positions = new Float32Array(PARTICLE_COUNT * 3); // 3 компоненты (x, y, z) на каждую частицу
-  const indexes = new Float32Array(PARTICLE_COUNT * 3); // 3 компоненты (x, y, z) на каждую частицу
-
-  for (let i = 0; i < positions.length; i += 3) {
-    positions[i] = frandom(-2, 2); // Рандомное положение частицы по оси X
-    positions[i + 1] = frandom(0, 10); // Рандомное положение частицы по оси Y
-    positions[i + 2] = frandom(-2, 2); // Рандомное положение частицы по оси Z
-
-    indexes[i] = i / positions.length;
-    indexes[i + 1] = frandom(0.1, 1);
-    indexes[i + 2] = frandom(0.1, 1);
-  }
-  // Создание буферной геометрии для частиц
-  const particleGeometry = new BufferGeometry();
-  particleGeometry.setAttribute("position", new BufferAttribute(positions, 3));
-  particleGeometry.setAttribute("values", new BufferAttribute(indexes, 3));
-
-  const particleSystem = new Points(particleGeometry, particleMaterial);
-
-  particleSystem.position.y = 3;
-
-  return particleSystem;
-};
-
 const Torch = () => {
   const torch = new PointLight(0xff4500, 2000, 70); // Цвет, интенсивность, дистанция факела
   torch.position.set(0, 5, 0); // Позиция факела (относительно руки персонажа)
@@ -162,21 +131,6 @@ const Torch = () => {
   });
 
   return torch;
-};
-
-const Shine = () => {
-  const shine = new Sprite(
-    new SpriteMaterial({
-      map: loads.texture["dot.png"],
-      color: new Color("rgb(200, 99, 31)"),
-      opacity: 0.5
-    })
-  );
-
-  shine.position.y = 7;
-  shine.scale.set(30, 30, 20);
-
-  return shine;
 };
 
 const Altar = (props: DynamicObject) => {
@@ -351,19 +305,27 @@ const Ring = (props: DynamicObject) => {
   return instancedMesh;
 };
 
-function initMesh(props: DynamicObject, particleMaterial: ParticlesMaterial) {
+function initMesh(props: DynamicObject, particleMaterial: CampfireMaterial) {
   const base = new Object3D();
-  const sphere = new Mesh(
-    new SphereGeometry(1, 32, 32), // Геометрия сферы
-    new MeshBasicMaterial({ color: 0xff4500 })
-  );
 
-  const particleSystem = ParticleSystem(particleMaterial);
+  const particleSystem = ParticleSystem({
+    count: 75,
+    material: particleMaterial,
+    x: [-2, 2],
+    y: [0, 10],
+    z: [-2, 2],
+    size: [0.1, 1],
+    speed: [0.1, 1]
+  });
+
+  particleSystem.position.y = 3;
+
   const torch = Torch();
-  const shine = Shine();
 
-  // Добавление эффекта частиц к костру
-  base.add(sphere);
+  const shine = Shine({ color: new Color("rgb(200, 99, 31)") });
+  shine.position.y = 7;
+  shine.scale.set(30, 30, 20);
+
   base.add(particleSystem);
   base.add(torch);
   base.add(shine);
