@@ -115,7 +115,7 @@ export const createHeroObject = (
     baseAnimation: NpcAnimationStates.idle,
     additionsAnimation: undefined,
     type,
-    weapon: weaponType.dagger,
+    weapon: weaponType.arrow,
     ...settings[type],
   });
 };

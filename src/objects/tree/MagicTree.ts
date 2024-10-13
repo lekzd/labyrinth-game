@@ -10,9 +10,10 @@ import {
   Object3DEventMap,
   PointLight,
   Vector2,
+  Vector3,
 } from "three";
 import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
-import { DynamicObject } from "@/types";
+import { DynamicObject, HeroProps } from "@/types";
 import { shadowSetter } from "@/utils/shadowSetter";
 import { loads } from "@/loader";
 import { MagicTreePointsMaterial } from "@/materials/magicTreePoints";
@@ -182,5 +183,11 @@ export class MagicTree {
   }
   update(timeDelta: number) {
     this.particleMaterial.uniforms.time.value += timeDelta * 2;
+  }
+
+  hit(by: HeroProps, point: Vector3) {
+    if (this.props.onHit) {
+      this.props.onHit(by);
+    }
   }
 }

@@ -4,13 +4,14 @@ import { Vector3Like } from 'three';
 export const physicWorld = new CANNON.World();
 window.physicWorld = physicWorld;
 
-physicWorld.gravity.set(0, -9.82, 0); // m/s²
+physicWorld.gravity.set(0, -9.82 * 10, 0); // m/s²
 
 console.log('physicWorld', physicWorld)
 
 export const createPhysicBox = (dimensions: Vector3Like, options: CANNON.IBodyOptions) => {
   const { x, y, z } = dimensions;
-  const shape = new CANNON.Box(new CANNON.Vec3(x, y, z));
+  const halfExtents = new CANNON.Vec3(x, y, z);
+  const shape = new CANNON.Box(halfExtents);
 
   return new CANNON.Body({ ...options, shape });
 }

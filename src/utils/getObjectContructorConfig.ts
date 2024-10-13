@@ -1,7 +1,6 @@
 import { ObjectType } from "@/types";
-import { Campfire, Hero, PuzzleHandler, Weapon } from "@/uses";
+import { Box, Campfire, Hero, PuzzleHandler, Weapon } from "@/uses";
 import {modelType, weaponType} from "../loader.ts";
-import { Box } from "cannon";
 import { Gate } from "../objects/gate/index.ts";
 import { Tree } from "@/objects/tree";
 import { MagicTree } from "@/objects/tree/MagicTree";
@@ -25,6 +24,8 @@ const constructors = {
 const props = {
   PuzzleHandler: { physical: true, interactive: true },
   Gate: { physical: true, interactive: true },
+  Foliage: {},
+  Campfire: {},
 }
 
 // Прокидываем всех персонажей
