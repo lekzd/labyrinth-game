@@ -1,6 +1,6 @@
 import { ObjectType } from "@/types";
 import { Campfire, Hero, PuzzleHandler, Weapon } from "@/uses";
-import { modelType } from "../loader.ts";
+import {modelType, weaponType} from "../loader.ts";
 import { Box } from "cannon";
 import { Gate } from "../objects/gate/index.ts";
 import { Tree } from "@/objects/tree";
@@ -9,79 +9,37 @@ import { Stone } from "@/objects/stone/index.ts";
 import { Pine } from "@/objects/pine/index.ts";
 import { Foliage } from "@/objects/foliage/index.ts";
 
-export const getObjectContructorConfig = (type: ObjectType) => {
-  switch (type) {
-    case "Campfire":
-      return {
-        Constructor: Campfire,
-        physical: false,
-        interactive: true
-      };
-    case "Tree":
-      return {
-        Constructor: Tree,
-        physical: true,
-        interactive: false
-      };
-    case "Stone":
-      return {
-        Constructor: Stone,
-        physical: true,
-        interactive: false
-      };
-    case "Pine":
-      return {
-        Constructor: Pine,
-        physical: true,
-        interactive: false
-      };
-    case "MagicTree":
-      return {
-        Constructor: MagicTree,
-        physical: true,
-        interactive: false
-      };
-    case "Foliage":
-      return {
-        Constructor: Foliage,
-        physical: false,
-        interactive: false
-      };
-    case "Box":
-      return {
-        Constructor: Box,
-        physical: true,
-        interactive: true
-      };
-    case "Gate":
-      return {
-        Constructor: Gate,
-        physical: true,
-        interactive: false
-      };
-    case "PuzzleHandler":
-      return {
-        Constructor: PuzzleHandler,
-        physical: true,
-        interactive: true
-      };
-    case modelType.Warrior:
-    case modelType.Rogue:
-    case modelType.Monk:
-    case modelType.Cleric:
-    case modelType.Wizard:
-    case modelType.Skeleton_Mage:
-      return {
-        Constructor: Hero,
-        physical: true,
-        interactive: true
-      };
-      break;
-    default:
-      return {
-        Constructor: Weapon,
-        physical: true,
-        interactive: true
-      };
-  }
-};
+const constructors = {
+  Campfire,
+  Tree,
+  Stone,
+  Pine,
+  PuzzleHandler,
+  MagicTree,
+  Gate,
+  Foliage,
+  Box,
+}
+
+// По-умолчанию все объекты просто физические
+const props = {
+  PuzzleHandler: { physical: true, interactive: true },
+  Gate: { physical: true, interactive: true },
+}
+
+// Прокидываем всех персонажей
+for (const key of Object.values(modelType)) {
+  constructors[key] = Hero;
+  props[key] = { physical: true, interactive: true };
+}
+
+// Прокидываем все вещи
+for (const key of Object.values(weaponType)) {
+  constructors[key] = Weapon;
+  props[key] = { physical: true, interactive: true };
+}
+
+export const getObjectContructorConfig = (type: ObjectType) => ({
+  Constructor: constructors[type],
+  ...(props[type] || { physical: true  })
+});

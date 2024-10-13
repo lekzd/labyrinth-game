@@ -145,12 +145,12 @@ export const ObjectsSystem = () => {
       objects[object.props.id] = object;
 
       if (config.physical) {
-        if (!object.physicBody) {
-          throw Error("ObjectsSystem: physical object should have physicBody!");
+        if (object.physicBody) {
+          physicObjects.set(object.props.id, object);
+          physicWorld.addBody(object.physicBody);
+        } else {
+          console.error("ObjectsSystem: physical object should have physicBody!");
         }
-
-        physicObjects.set(object.props.id, object);
-        physicWorld.addBody(object.physicBody);
       }
 
       if (config.interactive) {

@@ -1,7 +1,7 @@
 import { DynamicObject, MapObject, RoomConfig } from "@/types";
 import { Tiles } from "@/config";
 import { Object3D, Object3DEventMap, Vector3, Vector3Like, Mesh, PlaneGeometry } from "three";
-import { createObject, scale, state } from "@/state.ts";
+import {createObject, getTileId, scale, state} from "@/state.ts";
 import { frandom, random } from "@/utils/random";
 import { physicWorld } from "@/cannon";
 import { weaponType } from "@/loader";
@@ -128,7 +128,7 @@ export class Room {
     for (let y = 0; y < props.height; y++) {
       for (let x = 0; x < props.width; x++) {
         const tile = props.tiles[x + y * props.width];
-        const id = `${props.id}::tile${tile}:${x}:${y}`;
+        const id = getTileId(props, { x, y }, tile);
 
         if (tileHandlers[tile]) {
           tileHandlers[tile](id, x, y);

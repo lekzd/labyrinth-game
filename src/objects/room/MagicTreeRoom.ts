@@ -1,7 +1,7 @@
 import { DynamicObject, RoomConfig } from "@/types";
 import { Tiles } from "@/config";
 import { Room } from "./Room";
-import { createObject, scale } from "@/state";
+import {createObject, getTileId, scale} from "@/state";
 import { getWorld } from "@/generators/getWorld";
 import { getDistance } from "@/utils/getDistance";
 import { Vector3 } from "three";
@@ -12,13 +12,10 @@ export class MagicTreeRoom extends Room {
   getRoomObjects(props: RoomConfig) {
     const objectsToAdd: Record<string, DynamicObject> = {};
 
-    const id = `${props.id}::tile:MagicTree:${props.x}:${props.y}`;
+    const type = 'MagicTree'
+    const id = getTileId(props, this.center, type);
 
-    objectsToAdd[id] = createObject({
-      id,
-      type: "MagicTree",
-      position: this.center,
-    });
+    objectsToAdd[id] = createObject({ id, type, position: this.center });
 
     return objectsToAdd;
   }

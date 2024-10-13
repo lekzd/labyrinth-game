@@ -80,6 +80,8 @@ let id = 0;
 
 const getId = () => `${id++}`;
 
+export const getTileId = (props, { x, y }, tile) => `${props.id}::tile:${tile}:${x}:${y}`
+
 export const createObject = (data: Partial<DynamicObject>): DynamicObject => {
   return {
     id: getId(),

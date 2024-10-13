@@ -53,8 +53,12 @@ export const addObjects = (items: Record<string, DynamicObject>) => {
     }
 
     const controllable = currentPlayer.activeObjectId === id;
-    const { Constructor: ObjectConstructor, ...config } =
-      getObjectContructorConfig(objectConfig.type);
+    const { Constructor: ObjectConstructor, ...config } = getObjectContructorConfig(objectConfig.type);
+
+    if (!ObjectConstructor) {
+      console.error('ObjectConstructor is not constructor', objectConfig.type)
+      continue;
+    }
 
     const object = new ObjectConstructor({ ...objectConfig }) as MapObject;
     res[id] = object;
@@ -169,7 +173,7 @@ export const render = () => {
 };
 
 const constructors = [
-  [Tiles.MagicTree, MagicTreeRoom],
+  [Tiles.MagicTree, StumpTreeRoom],
   [Tiles.Stump, StumpTreeRoom],
   [Tiles.Campfire, CentralRoom],
 ]
