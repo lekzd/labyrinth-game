@@ -54,7 +54,11 @@ export class CentralRoom extends Room {
         x: (props.x + props.width / 2) * scale,
         z: (props.y + props.height / 2) * scale,
         y: 0
-      }
+      },
+      state: {
+        healing: false,
+        parts: 0,
+      },
     });
 
     return objectsToAdd;

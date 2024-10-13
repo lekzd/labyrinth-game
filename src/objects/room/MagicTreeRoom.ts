@@ -17,13 +17,14 @@ export class MagicTreeRoom extends Room {
 
     const type = "MagicTree";
     const id = getTileId(props, this.center, type);
+    const altarPartId = `${id}::AltarPart`;
 
     objectsToAdd[id] = createObject({
       id,
       type,
       position: this.center,
       onHit: (by) => {
-        const apple = systems.objectsSystem.objects[`${id}::box`];
+        const apple = systems.objectsSystem.objects[altarPartId];
         const effect = getMagicSplashFx({
           scale: 100,
           color: new Color("rgb(242, 255, 100)"),
@@ -48,9 +49,9 @@ export class MagicTreeRoom extends Room {
       }
     });
 
-    objectsToAdd[`${id}::box`] = createObject({
-      id: `${id}::box`,
-      type: "Box",
+    objectsToAdd[altarPartId] = createObject({
+      id: altarPartId,
+      type: "AltarPart",
       position: new Vector3(this.center.x, 40, this.center.z)
     });
 

@@ -7,6 +7,7 @@ import { MagicTree } from "@/objects/tree/MagicTree";
 import { Stone } from "@/objects/stone/index.ts";
 import { Pine } from "@/objects/pine/index.ts";
 import { Foliage } from "@/objects/foliage/index.ts";
+import { AltarPart } from "@/objects/altarPart/index.ts";
 
 const constructors = {
   Campfire,
@@ -18,6 +19,7 @@ const constructors = {
   Gate,
   Foliage,
   Box,
+  AltarPart
 }
 
 // По-умолчанию все объекты просто физические
@@ -26,6 +28,7 @@ const props = {
   Gate: { physical: true, interactive: true },
   Foliage: {},
   Campfire: {},
+  AltarPart: { physical: true, interactive: true },
 }
 
 // Прокидываем всех персонажей
