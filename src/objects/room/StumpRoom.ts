@@ -4,7 +4,6 @@ import { Room } from "./Room";
 import { createObject, scale } from "@/state";
 import { getWorld } from "@/generators/getWorld";
 import { getDistance } from "@/utils/getDistance";
-import { Vector3 } from "three";
 import { systems } from "@/systems";
 
 const ptInCircle = (px: number, py: number, cx = 0, cy = 0, radius = 20) => {
@@ -25,7 +24,7 @@ const getTile = (x: number, y: number, props: RoomConfig) => {
   return getWorld(x + props.x, y + props.y);
 };
 
-export class MagicTreeRoom extends Room {
+export class StumpTreeRoom extends Room {
   getGrass() {}
   getRoomObjects(props: RoomConfig) {
     const objectsToAdd: Record<string, DynamicObject> = {};

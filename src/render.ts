@@ -21,6 +21,7 @@ import { RoomConfig } from "./types/index";
 import { Tiles } from "@/config";
 import { CentralRoom } from "./objects/room/CentralRoom.ts";
 import { MagicTreeRoom } from "./objects/room/MagicTreeRoom.ts";
+import {StumpTreeRoom} from "@/objects/room/StumpRoom.ts";
 
 const stats = new Stats();
 
@@ -167,6 +168,12 @@ export const render = () => {
   renderLoop();
 };
 
+const constructors = [
+  [Tiles.MagicTree, MagicTreeRoom],
+  [Tiles.Stump, StumpTreeRoom],
+  [Tiles.Campfire, CentralRoom],
+]
+
 export const roomChunks = (x: number, z: number, slice = ROOM_SIZE) => {
   const rooms: Record<string, Room> = {};
   const s = slice;
@@ -198,13 +205,14 @@ export const roomChunks = (x: number, z: number, slice = ROOM_SIZE) => {
           room.tiles[index] = tile;
         }
       }
-      if (room.tiles.includes(Tiles.MagicTree)) {
-        all[id] = new MagicTreeRoom(room);
-      } else if (room.tiles.includes(Tiles.Campfire)) {
-        all[id] = new CentralRoom(room);
-      } else {
-        all[id] = new Room(room);
-      }
+
+      let Constructor = Room;
+
+      for (const [key, render] of constructors)
+        if (room.tiles.includes(key as Tiles))
+          Constructor = render;
+
+      all[id] = new Constructor(room);
     }
 
     rooms[id] = all[id];

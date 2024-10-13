@@ -277,6 +277,10 @@ export const UiSettingsSystem = () => {
   addCameraControlls();
   addGameControlls();
 
+  setTimeout(() => {
+    systems.environmentSystem.setTime(store.game.time);
+  }, 0)
+
   return {
     settings: store,
     renderer,

@@ -13,7 +13,6 @@ import {
 } from "three";
 import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
 import { DynamicObject } from "@/types";
-import { assign } from "lodash";
 import { shadowSetter } from "@/utils/shadowSetter";
 import { loads } from "@/loader";
 import { MagicTreePointsMaterial } from "@/materials/magicTreePoints";
@@ -22,6 +21,7 @@ import { createMatrix } from "@/utils/createMatrix";
 import { PineMatetial } from "@/materials/pine";
 import { ParticleSystem } from "../common/ParticleSystem";
 import { Shine } from "../common/Shine";
+import {assign} from "@/utils/assign.ts";
 
 const Torch = () => {
   const torch = new PointLight(new Color("rgb(241, 48, 216)"), 5000, 100, 1); // Цвет, интенсивность, дистанция факела
