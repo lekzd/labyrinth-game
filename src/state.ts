@@ -28,6 +28,7 @@ export type State = {
   activePlayerId: number;
   setState: setState;
   listen(handler: (prev: RecursivePartial<State>, next: RecursivePartial<State>, params?: { server?: boolean }) => void): void;
+  select: <T>(selector: (state: Partial<State>) => T) => T;
 };
 
 export const initState = (initialState: Partial<State>): State => {
@@ -49,7 +50,7 @@ export const initState = (initialState: Partial<State>): State => {
     };
   };
 
-  const setState = (newState: Partial<State> = {}, params) => {
+  const setState = (newState: RecursivePartial<State> = {}, params: { server?: boolean } = {}) => {
     const prev = pickPrev(state, newState);
 
     mergeDeep(state, newState);
@@ -68,6 +69,7 @@ export const initState = (initialState: Partial<State>): State => {
     rooms,
     listen,
     setState,
+    select: <T>(selector: (state: Partial<State>) => T) => selector(state)
   };
 
   return state;
