@@ -7,24 +7,6 @@ import { getDistance } from "@/utils/getDistance";
 import { Vector3 } from "three";
 import { systems } from "@/systems";
 
-const ptInCircle = (px: number, py: number, cx = 0, cy = 0, radius = 20) => {
-  const dx = px - cx;
-  const dy = py - cy;
-  const distanceSquared = dx * dx + dy * dy;
-
-  return distanceSquared <= radius * radius;
-};
-
-const getTile = (x: number, y: number, props: RoomConfig) => {
-  const center = props.width / 2;
-
-  if (ptInCircle(x, y, center, center, 11)) {
-    return Tiles.Road;
-  }
-
-  return getWorld(x + props.x, y + props.y);
-};
-
 export class MagicTreeRoom extends Room {
   getGrass() {}
   getRoomObjects(props: RoomConfig) {
@@ -35,11 +17,7 @@ export class MagicTreeRoom extends Room {
     objectsToAdd[id] = createObject({
       id,
       type: "MagicTree",
-      position: {
-        x: (props.x + props.width / 2) * scale,
-        z: (props.y + props.height / 2) * scale,
-        y: 0
-      }
+      position: this.center,
     });
 
     return objectsToAdd;
