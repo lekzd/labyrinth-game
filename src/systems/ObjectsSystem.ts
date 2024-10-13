@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { PointOctree, RayPointIntersection } from "sparse-octree";
+import { PointContainer, PointOctree } from "sparse-octree";
 import { physicWorld } from "@/cannon";
 import { DynamicObject, MapObject } from "@/types";
 import { currentPlayer } from "@/main";
@@ -84,7 +84,7 @@ const fixedTimeStep = 1.0 / 60.0; // seconds
 const hitItems = throttle(
   (
     activeObject: DynamicObject,
-    itemsToHit: RayPointIntersection<MapObject>[]
+    itemsToHit: PointContainer<MapObject>[]
   ) => {
     for (const itemToHit of itemsToHit) {
       const { data, point } = itemToHit;

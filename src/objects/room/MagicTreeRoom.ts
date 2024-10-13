@@ -1,8 +1,6 @@
 import { DynamicObject, RoomConfig } from "@/types";
-import { Tiles } from "@/config";
 import { Room } from "./Room";
-import { createObject, scale } from "@/state";
-import { getWorld } from "@/generators/getWorld";
+import { createObject } from "@/state";
 import { getDistance } from "@/utils/getDistance";
 import { systems } from "@/systems";
 import {

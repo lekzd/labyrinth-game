@@ -8,8 +8,18 @@ export const getObjectFromState = (id: string) => (state: Partial<State>) => {
 export const getActiveObjectFromState = (state: Partial<State>) =>
   getObjectFromState(currentPlayer.activeObjectId)(state);
 
-export const selectObjectsByType = (...types: string[]) => (state: Partial<State>) => {
-  return Object.values(state.objects ?? {}).filter((object) => types.includes(object.type));
-};
+export const selectObjectsByType =
+  (...types: string[]) =>
+  (state: Partial<State>) => {
+    return Object.values(state.objects ?? {}).filter(
+      (object) => object && types.includes(object.type)
+    );
+  };
 
-export const selectAllPlayerObjects = selectObjectsByType("Monk", "Cleric", "Rogue", "Warrior", "Wizard")
+export const selectAllPlayerObjects = selectObjectsByType(
+  "Monk",
+  "Cleric",
+  "Rogue",
+  "Warrior",
+  "Wizard"
+);

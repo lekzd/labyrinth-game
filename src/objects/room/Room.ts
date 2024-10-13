@@ -141,7 +141,7 @@ export class Room {
 
   private updateObjectsInside() {
     Object.entries(state.objects).forEach(([id, object]) => {
-      if (object.position && this.isPointInside(object.position)) {
+      if (object && object.position && this.isPointInside(object.position)) {
         this.objectsInside[id] = object;
       } else {
         delete this.objectsInside[id];
