@@ -1,6 +1,6 @@
 import { DynamicObject, MapObject, RoomConfig } from "@/types";
 import { Tiles } from "@/config";
-import { Object3D, Object3DEventMap } from "three";
+import { Object3D, Object3DEventMap, Vector3, Vector3Like } from "three";
 import { createObject, scale, state } from "@/state.ts";
 import { frandom, random } from "@/utils/random";
 import { physicWorld } from "@/cannon";
@@ -21,14 +21,18 @@ export class Room {
   protected isOnline: boolean = false;
 
   readonly mesh: Object3D<Object3DEventMap>;
+  readonly worldPosition: Vector3 = new Vector3();
+  readonly objectsInside: Record<string, DynamicObject> = {};
   readonly config: RoomConfig;
   readonly objects: Record<string, MapObject> = {};
+  private updateInterval: NodeJS.Timeout | null = null;
 
   constructor(props: RoomConfig) {
     this.config = props;
     this.mesh = RoomFloorMesh(props);
+    this.mesh.getWorldPosition(this.worldPosition);
 
-    const objectsToAdd = this.getRoomObjects(props);
+    const objectsToAdd = this.objectsInside = this.getRoomObjects(props);
 
     assign(globalObjects, objectsToAdd);
     this.objects = addObjects(objectsToAdd) ?? {};
@@ -95,6 +99,16 @@ export class Room {
     return objectsToAdd;
   }
 
+  private updateObjectsInside() {
+    Object.entries(state.objects).forEach(([id, object]) => {
+      if (object.position && this.isPointInside(object.position)) {
+        this.objectsInside[id] = object;
+      } else {
+        delete this.objectsInside[id];
+      }
+    });
+  }
+
   offline() {
     if (!this.isOnline) return;
 
@@ -116,6 +130,10 @@ export class Room {
     }
 
     this.mesh.visible = false;
+
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval);
+    }
   }
 
   online() {
@@ -141,5 +159,20 @@ export class Room {
     this.mesh.children.forEach((mesh) => {
       mesh.updateMatrixWorld();
     });
+
+    this.updateInterval = setInterval(() => {
+      this.updateObjectsInside();
+    }, 1000);
   }
+
+  isPointInside(point: Vector3Like) {
+    return (
+      this.worldPosition.x <= point.x &&
+      this.worldPosition.x + this.config.width * scale >= point.x &&
+      this.worldPosition.z <= point.z &&
+      this.worldPosition.z + this.config.height * scale >= point.z
+    );
+  }
+
+  update(timeDelta: number) {}
 }

@@ -24,6 +24,8 @@ import { MagicTreeRoom } from "./objects/room/MagicTreeRoom.ts";
 
 const stats = new Stats();
 
+const ROOM_SIZE = 20;
+
 const subscribers: { update: (time: number) => void }[] = [
   stats,
   systems.grassSystem,
@@ -118,7 +120,6 @@ export const render = () => {
 
       const { objects } = systems.objectsSystem;
 
-      // renderer.render(scene, camera);
       const focusVector = objects[currentPlayer.activeObjectId].position;
       const distance = camera.position.distanceTo(focusVector);
       bokehPass.uniforms['focus'].value = distance;
@@ -132,14 +133,24 @@ export const render = () => {
         item.update(timeElapsedS);
       }
 
-      const rooms = roomChunks(state.objects[currentPlayer.activeObjectId].position);
+      const pos = state.objects[currentPlayer.activeObjectId].position;
+      let x = Math.floor(pos.x / scale);
+      let z = Math.floor(pos.z / scale);
+
+      x-= x % ROOM_SIZE;
+      z-= z % ROOM_SIZE;
+
+      const rooms = roomChunks(x, z, ROOM_SIZE);
 
       for (const id in all) {
         const room = all[id];
 
-        if (id in rooms)
+        if (id in rooms) {
           room.online();
-        else
+          if (room.isPointInside(pos)) {
+            room.update(timeElapsedS);
+          }
+        } else
           room.offline();
       }
 
@@ -156,14 +167,9 @@ export const render = () => {
   renderLoop();
 };
 
-export const roomChunks = (pos: THREE.Vector3Like, slice = 20) => {
+export const roomChunks = (x: number, z: number, slice = ROOM_SIZE) => {
   const rooms: Record<string, Room> = {};
   const s = slice;
-
-  let x = Math.floor(pos.x / scale), z = Math.floor(pos.z / scale);
-
-  x-= x % slice;
-  z-= z % slice;
 
   const roomsArray = getRoomsRadius({ x, y: 0, z }, slice, 2);
 
