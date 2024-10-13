@@ -4,10 +4,11 @@ import { physicWorld } from "@/cannon";
 import { DynamicObject, MapObject } from "@/types";
 import { currentPlayer } from "@/main";
 import { systems } from ".";
-import { scale, state } from "@/state";
+import { state } from "@/state";
 import { throttle } from "@/utils/throttle.ts";
 import { AABB, Body, Vec3 } from "cannon";
 import { HitContactType } from "@/types/HitContactType";
+import { getActiveObjectFromState } from "@/utils/stateUtils";
 
 function isPointInsideBody(point: Vec3, body: Body) {
   // Создаем AABB для физического тела
@@ -129,7 +130,7 @@ export const ObjectsSystem = () => {
     current: { x: 0, y: 0, z: 0 },
   };
 
-  const relativePosition = (point, state: keyof typeof position = 'current') => {
+  const relativePosition = (point: THREE.Vector3, state: keyof typeof position = 'current') => {
     const vector = point.clone();
 
     vector.x -= position[state].x;
@@ -196,7 +197,7 @@ export const ObjectsSystem = () => {
     },
 
     update: (timeElapsedS: number) => {
-      const { position: next } = state.objects[currentPlayer.activeObjectId] || { position };
+      const { position: next } = state.select(getActiveObjectFromState) || { position };
 
       position.previous = position.current;
       position.current = next;

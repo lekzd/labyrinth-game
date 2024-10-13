@@ -121,7 +121,7 @@ export const render = () => {
 
       const { objects } = systems.objectsSystem;
 
-      const focusVector = objects[currentPlayer.activeObjectId].position;
+      const focusVector = objects[currentPlayer.activeObjectId].mesh.position;
       const distance = camera.position.distanceTo(focusVector);
       bokehPass.uniforms['focus'].value = distance;
 
@@ -134,7 +134,7 @@ export const render = () => {
         item.update(timeElapsedS);
       }
 
-      const pos = state.objects[currentPlayer.activeObjectId].position;
+      const pos = focusVector;
       let x = Math.floor(pos.x / scale);
       let z = Math.floor(pos.z / scale);
 

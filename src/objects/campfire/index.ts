@@ -31,6 +31,7 @@ import { SpriteEffect } from "@/effects/SpriteEffect";
 import { StoneMatetial } from "@/materials/stone";
 import { ParticleSystem } from "../common/ParticleSystem";
 import { Shine } from "../common/Shine";
+import { selectAllPlayerObjects } from "@/utils/stateUtils";
 
 const healHealth = throttle((object: DynamicObject) => {
   state.setState({
@@ -84,14 +85,8 @@ export class Campfire {
       Math.sin(performance.now() / 50) * 500 +
       Math.sin(performance.now() / 10) * 100;
 
-    Object.entries(state.objects).forEach(([id, object]) => {
-      if (id === this.props.id) {
-        return;
-      }
-
-      if (
-        !["Monk", "Cleric", "Rogue", "Warrior", "Wizard"].includes(object?.type)
-      ) {
+    state.select(selectAllPlayerObjects).forEach((object) => {
+      if (object.id === this.props.id) {
         return;
       }
 

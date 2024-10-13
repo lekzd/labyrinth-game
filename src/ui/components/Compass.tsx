@@ -2,6 +2,8 @@ import * as THREE from 'three'
 import React, { FC, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { systems } from '../../systems'
+import { state } from '@/state'
+import { getActiveObjectFromState } from '@/utils/stateUtils'
 
 const Container = styled.div`
   display: flex;
@@ -123,10 +125,12 @@ export const Compass: FC<IProps> = (props: IProps) => {
       }
 
       if (coordinatesRef.current) {
+        const activeObject = state.select(getActiveObjectFromState)
+
         coordinatesRef.current.innerHTML = `
-          <div>X: ${Math.round(camera.position.x)}</div>
-          <div>Y: ${Math.round(camera.position.y)}</div>
-          <div>Z: ${Math.round(camera.position.z)}</div>
+          <div>X: ${Math.round(activeObject?.position.x ?? 0)}</div>
+          <div>Y: ${Math.round(activeObject?.position.y ?? 0)}</div>
+          <div>Z: ${Math.round(activeObject?.position.z ?? 0)}</div>
         `
       }
     }
