@@ -13,6 +13,7 @@ const getColor = (tile: Tiles) => {
     // case Tiles.Road:
       return `#651218`;
     case Tiles.Stump:
+      return `#1a509f`;
     case Tiles.MagicTree:
     case Tiles.Grave:
       return `#5affe1`;

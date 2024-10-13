@@ -8,6 +8,7 @@ import { Stone } from "@/objects/stone/index.ts";
 import { Pine } from "@/objects/pine/index.ts";
 import { Foliage } from "@/objects/foliage/index.ts";
 import { AltarPart } from "@/objects/altarPart/index.ts";
+import { Stump } from "@/objects/stump";
 
 const constructors = {
   Campfire,
@@ -19,6 +20,7 @@ const constructors = {
   Gate,
   Foliage,
   Box,
+  Stump,
   AltarPart
 }
 

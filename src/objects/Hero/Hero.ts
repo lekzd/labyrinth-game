@@ -81,7 +81,7 @@ export class Hero {
     this.mixer.timeScale = 1.5;
     this.animations = initAnimations(this.target, this.mixer);
 
-    this.physicBody = initPhysicBody(props.mass);
+    this.physicBody = initPhysicBody(props);
     this.elementsHero = initElementsHero(this.target);
     this.stateMachine = initStateMashine(this.animations);
     this.stateMachine2 = initStateMashine(this.animations);
@@ -283,9 +283,9 @@ function initElementsHero(target: Object3D<Object3DEventMap>): ElementsHero {
     torch
   };
 }
-function initPhysicBody(mass?: number) {
+function initPhysicBody({ mass = 5, size = 5 }) {
   return createPhysicBox(
-    { x: 2, y: PHYSIC_Y, z: 2 },
+    { x: size, y: PHYSIC_Y, z: size },
     { mass, fixedRotation: true }
   );
 }
