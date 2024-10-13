@@ -174,23 +174,23 @@ export const ObjectsSystem = () => {
       const cloned = point.clone();
       cloned.y = 0;
       const object = octree.findNearestPoint(cloned, 7, true);
+      const activeObject = objects[currentPlayer.activeObjectId];
 
       if (object && object.data?.props.id !== fromObjectId) {
-        const activeObject = objects[currentPlayer.activeObjectId];
-
         hitItems(activeObject.props, [object]);
 
         return object.data?.props.health ? HitContactType.Body : HitContactType.Other;
       } else {
         const cannonPoint = new Vec3(point.x, point.y, point.z);
 
-        const body = physicWorld.bodies.find((body) =>
-          isPointInsideBody(cannonPoint, body)
-        );
-
-        if (body) {
-          return HitContactType.Other;
-        }
+        for (const object of physicObjects.values()) {
+          if (object.physicBody && isPointInsideBody(cannonPoint, object.physicBody)) {
+            if (object.hit) {
+              object.hit(activeObject.props, point);
+            }
+            return HitContactType.Other;
+          }
+        };
       }
 
       return null;

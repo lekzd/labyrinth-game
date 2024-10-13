@@ -1,13 +1,13 @@
 import { ObjectType } from "@/types";
-import { Campfire, Hero, PuzzleHandler, Weapon } from "@/uses";
+import { Box, Campfire, Hero, PuzzleHandler, Weapon } from "@/uses";
 import {modelType, weaponType} from "../loader.ts";
-import { Box } from "cannon";
 import { Gate } from "../objects/gate/index.ts";
 import { Tree } from "@/objects/tree";
 import { MagicTree } from "@/objects/tree/MagicTree";
 import { Stone } from "@/objects/stone/index.ts";
 import { Pine } from "@/objects/pine/index.ts";
 import { Foliage } from "@/objects/foliage/index.ts";
+import { AltarPart } from "@/objects/altarPart/index.ts";
 
 const constructors = {
   Campfire,
@@ -19,12 +19,16 @@ const constructors = {
   Gate,
   Foliage,
   Box,
+  AltarPart
 }
 
 // По-умолчанию все объекты просто физические
 const props = {
   PuzzleHandler: { physical: true, interactive: true },
   Gate: { physical: true, interactive: true },
+  Foliage: {},
+  Campfire: {},
+  AltarPart: { physical: true, interactive: true },
 }
 
 // Прокидываем всех персонажей

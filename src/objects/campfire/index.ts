@@ -3,6 +3,7 @@ import {
   Color,
   CylinderGeometry,
   InstancedMesh,
+  Matrix4,
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
@@ -21,7 +22,7 @@ import { getDistance } from "@/utils/getDistance";
 import { settings } from "../hero/settings";
 import { throttle } from "@/utils/throttle.ts";
 import { CampfireMaterial } from "@/materials/campfire";
-import { loads } from "@/loader";
+import { loads, weaponType } from "@/loader";
 import { shadowSetter } from "@/utils/shadowSetter";
 import { textureRepeat } from "@/utils/textureRepeat";
 import { createMatrix } from "@/utils/createMatrix";
@@ -41,11 +42,43 @@ const healHealth = throttle((object: DynamicObject) => {
   });
 }, 500);
 
+const getRingMatrices = () => {
+  const count = 24;
+  const radius = 15;
+  const result: Matrix4[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const angle = (i * Math.PI * 2) / count;
+    const x = Math.cos(angle) * radius;
+    const y = Math.sin(angle) * radius;
+
+    result.push(createMatrix({
+      translation: {
+        x,
+        y: y + radius,
+        z: 0
+      },
+      rotation: {
+        z: angle + Math.PI / 2
+      },
+      scale: {
+        x: 1,
+        y: frandom(0.5, 1.5),
+        z: frandom(0.5, 1.5)
+      }
+    }));
+  }
+
+  return result;
+};
+
 export class Campfire {
   readonly props: DynamicObject;
   readonly mesh: Object3D<Object3DEventMap>;
   private particleMaterial: CampfireMaterial;
   private torch: PointLight;
+  private parts: any;
+  private ringMatrices: Matrix4[];
 
   constructor(props: DynamicObject) {
     this.props = props;
@@ -54,25 +87,37 @@ export class Campfire {
       time: { value: 0.0 }
     });
 
-    const { base, torch } = initMesh(props, this.particleMaterial);
+    const { base, torch, parts, ringMatrices } = initMesh(props, this.particleMaterial);
 
     this.torch = torch;
     this.mesh = base;
+    this.parts = parts;
+    this.ringMatrices = ringMatrices;
   }
 
   onStateChange(prev: DynamicObject, next: DynamicObject) {
     if (!next) return;
 
     if (next.hasOwnProperty("state")) {
-      this.torch.color = new Color(next.state ? 0x00ff33 : "rgb(230, 73, 33)");
+      this.torch.color = new Color(
+        next.state.healing ? 0x00ff33 : "rgb(230, 73, 33)"
+      );
       this.props.state = next.state;
 
       this.particleMaterial.color = new Color(
-        next.state ? 0x00ff33 : "rgb(230, 73, 33)"
+        next.state.healing ? 0x00ff33 : "rgb(230, 73, 33)"
       );
-      this.particleMaterial.map = next.state
+      this.particleMaterial.map = next.state.healing
         ? loads.texture["plus.png"]
         : loads.texture["dot.png"];
+
+      if (next.state.parts) {
+        this.mesh.remove(this.parts.mesh);
+
+        const parts = Parts(next, this.ringMatrices);
+
+        this.mesh.add(parts.mesh);
+      }
     }
   }
 
@@ -92,21 +137,34 @@ export class Campfire {
 
       const distance = getDistance(this.props.position, object.position);
 
-      if (
-        distance < 30 &&
-        (object.health || 0) < settings[object.type].health
-      ) {
-        healHealth(object);
-        healing = true;
+      if (distance < 30) {
+        if ((object.health || 0) < settings[object.type].health) {
+          healHealth(object);
+          healing = true;
+        }
+
+        if (object.weapon === "AltarPart") {
+          state.setState({
+            objects: {
+              [object.id]: { weapon: weaponType.arrow },
+              [this.props.id]: {
+                state: {
+                  ...this.props.state,
+                  parts: (this.props.state.parts || 0) + 1
+                }
+              }
+            }
+          });
+        }
       }
     });
 
     this.particleMaterial.uniforms.time.value += timeDelta * 2;
 
-    if (this.props.state !== healing) {
+    if (this.props.state.healing !== healing) {
       state.setState({
         objects: {
-          [this.props.id]: { state: healing }
+          [this.props.id]: { state: { ...this.props.state, healing } }
         }
       });
     }
@@ -242,8 +300,7 @@ const Altar = (props: DynamicObject) => {
   return altar;
 };
 
-const Ring = (props: DynamicObject) => {
-  const count = 24;
+const Ring = (props: DynamicObject, ringMatrices: Matrix4[]) => {
   const radius = 15;
   const geometry = new BoxGeometry(3.5, 3.5, 3.5);
 
@@ -253,33 +310,13 @@ const Ring = (props: DynamicObject) => {
     side: 2
   });
 
-  const instanceNumber = count * 2;
+  const instanceNumber = ringMatrices.length * 2;
 
   const instancedMesh = new InstancedMesh(geometry, material, instanceNumber);
 
-  for (let i = 0; i < count; i++) {
-    const angle = (i * Math.PI * 2) / count;
-    const x = Math.cos(angle) * radius;
-    const y = Math.sin(angle) * radius;
-
-    const matrix = createMatrix({
-      translation: {
-        x,
-        y: y + radius,
-        z: 0
-      },
-      rotation: {
-        z: angle + Math.PI / 2
-      },
-      scale: {
-        x: 1,
-        y: frandom(0.5, 1.5),
-        z: frandom(0.5, 1.5)
-      }
-    });
-
-    instancedMesh.setMatrixAt(i, matrix);
-  }
+  ringMatrices.forEach((matrix, index) => {
+    instancedMesh.setMatrixAt(index, matrix);
+  });
 
   const effect = SpriteEffect({
     texture: loads.texture["fx_portal.png"]!,
@@ -295,13 +332,38 @@ const Ring = (props: DynamicObject) => {
     );
   }, 40);
 
-  instancedMesh.rotateY(Math.PI / 2);
+  // instancedMesh.rotateY(Math.PI / 2);
 
   return instancedMesh;
 };
 
+const Parts = (props: DynamicObject, ringMatrices: Matrix4[]) => {
+  const parts = props.state.parts || 0;
+  const geometry = new BoxGeometry(3.5, 3.5, 3.5);
+
+  const material = new MeshStandardMaterial({
+    color: new Color("rgb(83, 83, 83)")
+  });
+
+  const instanceNumber = ringMatrices.length * 2;
+
+  const instancedMesh = new InstancedMesh(geometry, material, instanceNumber);
+
+  ringMatrices.slice(0, parts).forEach((matrix, index) => {
+    instancedMesh.setMatrixAt(index, matrix);
+  });
+
+  instancedMesh.rotateY(Math.PI / 2);
+
+  return {
+    mesh: instancedMesh,
+    count: parts
+  };
+};
+
 function initMesh(props: DynamicObject, particleMaterial: CampfireMaterial) {
   const base = new Object3D();
+  const ringMatrices = getRingMatrices();
 
   const particleSystem = ParticleSystem({
     count: 75,
@@ -321,16 +383,19 @@ function initMesh(props: DynamicObject, particleMaterial: CampfireMaterial) {
   shine.position.y = 7;
   shine.scale.set(30, 30, 20);
 
+  const parts = Parts(props, ringMatrices);
+
   base.add(particleSystem);
   base.add(torch);
   base.add(shine);
   base.add(Altar(props));
-  base.add(Ring(props));
+  base.add(Ring(props, ringMatrices));
+  base.add(parts.mesh);
 
   assign(base.position, props.position);
 
   base.updateMatrixWorld(true);
   base.matrixAutoUpdate = false;
 
-  return { base, torch };
+  return { base, torch, parts, ringMatrices };
 }

@@ -19,7 +19,7 @@ import { animationType, loads, weaponType } from "@/loader";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import * as CANNON from "cannon";
 import { createPhysicBox } from "@/cannon";
-import { Torch } from "@/uses";
+import { Box, Torch } from "@/uses";
 import { NpcAdditionalAnimations, NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates.ts";
 import { state } from "@/state.ts";
 import { HealthBar } from "./healthbar.ts";
@@ -123,7 +123,13 @@ export class Hero {
       return;
     }
 
-    this.weaponObject = clone(loads.weapon_glb[weaponType]!);
+    const boxMesh = (new Box({ id: 'asdasd', type: 'Box', position: { x: 0, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0, w: 0 } })).mesh;
+
+    boxMesh.scale.set(0.2, 0.2, 0.2);
+
+    this.weaponObject = loads.weapon_glb[weaponType]
+      ? clone(loads.weapon_glb[weaponType]!)
+      : boxMesh;
 
     weaponRightHand.add(this.weaponObject);
   }

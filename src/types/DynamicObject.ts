@@ -20,6 +20,7 @@ export type DynamicObject = {
   state?: any;
   baseAnimation?: string;
   additionsAnimation?: string;
+  onHit?: (props: DynamicObject) => void;
 
   position: ObjectVector3;
   rotation: ObjectQuaternion;

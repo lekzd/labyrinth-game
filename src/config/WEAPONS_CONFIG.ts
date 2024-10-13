@@ -80,7 +80,7 @@ const getSwordFx = (props: Partial<FxProps>) =>
     ...props
   });
 
-const getMagicSplashFx = (props: Partial<FxProps>) =>
+export const getMagicSplashFx = (props: Partial<FxProps>) =>
   getFxEffect({
     texture: "fx_magic_splash.png",
     size: new Vector2(4, 4),

@@ -173,7 +173,7 @@ export const render = () => {
 };
 
 const constructors = [
-  [Tiles.MagicTree, StumpTreeRoom],
+  [Tiles.MagicTree, MagicTreeRoom],
   [Tiles.Stump, StumpTreeRoom],
   [Tiles.Campfire, CentralRoom],
 ]
