@@ -56,7 +56,7 @@ export class ArrowEffect implements AbstactEffect {
       const shift = direction.multiplyScalar(1.1 + state.i * 0.001);
       tube.position.add(shift);
 
-      const result = systems.objectsSystem.checkPointHitColision(
+      const result = state.i > 1 && systems.objectsSystem.checkPointHitColision(
         tube.position,
         person.id
       );

@@ -22,6 +22,7 @@ import { Tiles } from "@/config";
 import { CentralRoom } from "./objects/room/CentralRoom.ts";
 import { MagicTreeRoom } from "./objects/room/MagicTreeRoom.ts";
 import {StumpTreeRoom} from "@/objects/room/StumpRoom.ts";
+import { MagicMushroomRoom } from "./objects/room/MagicMushroomRoom.ts";
 
 const stats = new Stats();
 
@@ -175,7 +176,8 @@ export const render = () => {
 const constructors = [
   [Tiles.MagicTree, MagicTreeRoom],
   [Tiles.Stump, StumpTreeRoom],
-  [Tiles.Campfire, StumpTreeRoom],
+  [Tiles.Campfire, CentralRoom],
+  [Tiles.MagicMushroom, MagicMushroomRoom],
 ]
 
 export const roomChunks = (x: number, z: number, slice = ROOM_SIZE) => {

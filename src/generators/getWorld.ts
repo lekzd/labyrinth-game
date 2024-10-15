@@ -15,7 +15,7 @@ export const getWorld = (x: number, y: number, n = 25, k = 0.7) => {
   if (spawner > 0.93 && ground < 0) return Tiles.Spawner;
 
   if (dungeons > 0.98 && ground < 0)
-    return [Tiles.Stump, Tiles.MagicTree, Tiles.Grave][(x + y) % 3];
+    return [Tiles.Stump, Tiles.MagicTree, Tiles.Grave, Tiles.MagicMushroom][(x + y) % 4];
 
   if (weapon > 0.985 && ground < 0) return Tiles.Weapon;
 

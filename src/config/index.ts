@@ -19,4 +19,5 @@ export enum Tiles {
   Stump,
   MagicTree,
   Grave,
+  MagicMushroom,
 }
