@@ -12,7 +12,7 @@ import { createPhysicBox } from "@/cannon.ts";
 import { rotateUvs } from "@/utils/rotateUvs";
 import { PineMatetial } from "@/materials/pine";
 
-const radiusFunction = (from: number, to: number) => (t: number) => {
+export const radiusFunction = (from: number, to: number) => (t: number) => {
   return from - t * (from - to);
 };
 

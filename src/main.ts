@@ -55,8 +55,8 @@ onUpdate((next) => {
 });
 
 const seed = Math.random().toString(36).substring(2, 6)
-const x = 0;
-const z = 0;
+const x = -70;
+const z = -130;
 const angle = (0 / 3) * (Math.PI * 2);
 const quaternion = new THREE.Quaternion();
 

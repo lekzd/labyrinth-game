@@ -175,7 +175,7 @@ export const render = () => {
 const constructors = [
   [Tiles.MagicTree, MagicTreeRoom],
   [Tiles.Stump, StumpTreeRoom],
-  [Tiles.Campfire, CentralRoom],
+  [Tiles.Campfire, StumpTreeRoom],
 ]
 
 export const roomChunks = (x: number, z: number, slice = ROOM_SIZE) => {
