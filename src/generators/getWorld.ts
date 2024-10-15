@@ -1,5 +1,7 @@
-import { noise, random } from "@/utils/random.ts";
+import { noise } from "@/utils/random.ts";
 import { Tiles } from "@/config";
+
+const DUNGEONS = [Tiles.Stump, Tiles.MagicTree, Tiles.Grave, Tiles.MagicMushroom];
 
 export const getWorld = (x: number, y: number, n = 25, k = 0.7) => {
   const ground = noise(x / n, y / n);
@@ -15,7 +17,7 @@ export const getWorld = (x: number, y: number, n = 25, k = 0.7) => {
   if (spawner > 0.93 && ground < 0) return Tiles.Spawner;
 
   if (dungeons > 0.98 && ground < 0)
-    return [Tiles.Stump, Tiles.MagicTree, Tiles.Grave, Tiles.MagicMushroom][(x + y) % 4];
+    return DUNGEONS[(Math.abs(x) + Math.abs(y)) % DUNGEONS.length];
 
   if (weapon > 0.985 && ground < 0) return Tiles.Weapon;
 

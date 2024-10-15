@@ -10,13 +10,15 @@ const getColor = (tile: Tiles) => {
     case Tiles.SouthExit:
     case Tiles.WestExit:
     case Tiles.EastExit:
-    // case Tiles.Road:
       return `#651218`;
-    case Tiles.Stump:
-      return `#1a509f`;
     case Tiles.MagicTree:
+      return `#9f1a98`;
     case Tiles.Grave:
-      return `#5affe1`;
+      return `#1a509f`;
+    case Tiles.MagicMushroom:
+      return `#2fe517`;
+    case Tiles.Stump:
+      return `#1dbc82`;
     case Tiles.Wall:
       return `#2f4e2f`;
     case Tiles.PuzzleHandler:
@@ -26,9 +28,15 @@ const getColor = (tile: Tiles) => {
     case Tiles.Weapon:
       return `#00FF00`;
     case Tiles.Floor:
-      return `#555555`;
+      return `#53a557`;
+    case Tiles.Road:
+      return `#c8c56d`;
+    case Tiles.Tree:
+      return `#072d0c`;
+    case Tiles.Campfire:
+      return `#ff0000`;
     default:
-      return `#777777`;
+      return `#072d0c`;
   }
 };
 
@@ -53,12 +61,31 @@ const PreviewCanvas = ({ radius, x: cx = 0, y: cy = 0, channel }) => {
     ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    for (let y = 0; y < cy + 2 * radius; y++) {
-      for (let x = 0; x < cx + 2 * radius; x++) {
-        const tail = getWorld(cx + (x - radius), cy + (y - radius));
+    for (let y = 0; y < Math.abs(cy) + 2 * radius; y++) {
+      for (let x = 0; x < Math.abs(cx) + 2 * radius; x++) {
+        const tile = getWorld(cx + (x - radius), cy + (y - radius));
 
-        ctx.fillStyle = getColor(tail);
+        ctx.fillStyle = getColor(tile);
+
         ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+      }
+    }
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    for (let y = 0; y < Math.abs(cy) + 2 * radius; y++) {
+      for (let x = 0; x < Math.abs(cx) + 2 * radius; x++) {
+        const tile = getWorld(cx + (x - radius), cy + (y - radius));
+
+        ctx.fillStyle = getColor(tile);
+
+        if ([Tiles.Campfire, Tiles.MagicMushroom, Tiles.Grave, Tiles.Stump, Tiles.MagicTree].includes(tile)) {
+          ctx.fillRect((x - 10) * tileSize, (y - 10) * tileSize, 20 * tileSize, 20 * tileSize);
+          ctx.fillStyle = `#000000`;
+          ctx.fillText(Tiles[tile], x * tileSize, y * tileSize);
+          ctx.fillText(`${(cx + (x - radius)) * 10}, ${cy + (y - radius) * 10}`, x * tileSize, y * tileSize + 10);
+        }
       }
     }
 
