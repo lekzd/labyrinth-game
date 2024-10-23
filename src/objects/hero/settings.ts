@@ -1,4 +1,4 @@
-import {modelType, weaponType} from "../../loader.ts";
+import {modelType, modelTypeGlb, weaponType} from "../../loader.ts";
 
 export type SettingObject = {
   health: number,
@@ -10,7 +10,7 @@ export type SettingObject = {
   attack: number,
 }
 
-export const settings: Record<modelType, SettingObject> = {
+export const settings: Record<modelType & modelTypeGlb, SettingObject> = {
   [modelType.Monk]: {
     health: 100,
     mana: 10,
@@ -48,6 +48,13 @@ export const settings: Record<modelType, SettingObject> = {
     attack: 5,
   },
   [modelType.Skeleton_Mage]: {
+    health: 10,
+    mana: 10,
+    speed: 2.5,
+    mass: 25,
+    attack: 5,
+  },
+  [modelTypeGlb.Mushroom_Warrior]: {
     health: 10,
     mana: 10,
     speed: 2.5,

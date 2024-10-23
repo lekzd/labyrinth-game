@@ -77,11 +77,11 @@ export class Room {
     this.mesh.getWorldPosition(this.worldPosition);
   }
 
-  private getGrass() {
+  getGrass() {
     return systems.grassSystem.createRoomMesh(this.config);
   }
 
-  private getRoomObjects(props: RoomConfig): Record<string, DynamicObject> {
+  getRoomObjects(props: RoomConfig): Record<string, DynamicObject> {
     const objectsToAdd: Record<string, DynamicObject> = {};
 
     // Хандлеры для разных типов плиток

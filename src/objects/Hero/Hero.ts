@@ -15,7 +15,7 @@ import {
   Vector3Like,
   Color,
 } from "three";
-import { animationType, loads, weaponType } from "@/loader";
+import { loads, weaponType } from "@/loader";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import * as CANNON from "cannon";
 import { createPhysicBox } from "@/cannon";
@@ -26,8 +26,7 @@ import { HealthBar } from "./healthbar.ts";
 import { HeroProps } from "@/types";
 import { DissolveEffect } from "../../effects/DissolveEffect.ts";
 import { shadowSetter } from "@/utils/shadowSetter";
-
-type Animations = Partial<Record<animationType, Group<Object3DEventMap>>>;
+import { initAnimations } from "@/utils/initAnimations";
 
 type ElementsHero = {
   leftArm: Object3D<Object3DEventMap>;
@@ -293,65 +292,6 @@ function initStateMashine(animations: AnimationClip[]) {
   const stateMachine = CharacterFSM({ animations });
   stateMachine.setState("idle");
   return stateMachine;
-}
-function initAnimations(
-  target: Object3D<Object3DEventMap>,
-  mixer: AnimationMixer
-) {
-  target.animations.forEach(function(clip) {
-    for(var t = clip.tracks.length - 1; t >= 0; t--) {
-      var track = clip.tracks[t];
-      var isStatic = true;
-      var inc = track.name.split(".")[1] == "quaternion" ? 4 : 3;
-
-      for(var i = 0; i < track.values.length - inc; i += inc) {
-        for(var j = 0; j < inc; j++) {
-          if(Math.abs(track.values[i + j] - track.values[i + j + inc]) > 0.000001) {
-            isStatic = false;
-            //console.log("found change: " + clip.name + " -> " + track.name);
-            break;
-          }
-        }
-
-        if(!isStatic)
-          break;
-      }
-
-      if(isStatic) {
-        clip.tracks.splice(t, 1);
-      }
-    }
-  });
-
-  const animations = [
-    ...target.animations.map((animation) => animation.clone()),
-    ...pullAnimations(loads.animation)
-  ];
-
-  for (const clip of animations) {
-    const name = clip.name
-      .toLowerCase()
-      .replace("characterarmature|", "") as AnimationName;
-    animations[name] = {
-      clip: clip,
-      action: mixer.clipAction(clip)
-    };
-  }
-
-  return animations;
-}
-function pullAnimations(animation: Animations): AnimationClip[] {
-  const result = [];
-  for (const name in animation) {
-    const animationType = animation[name as keyof typeof animation];
-    if (animationType) {
-      for (const animation of animationType.animations) {
-        animation.name = name;
-        result.push(animation.clone());
-      }
-    }
-  }
-  return result;
 }
 
 function correctionPhysicBody(

@@ -30,6 +30,12 @@ export class MagicMushroomRoom extends Room {
       position: new Vector3(this.center.x, 40, this.center.z)
     });
 
+    objectsToAdd[altarPartId] = createObject({
+      id: `${id}::MushroomWarior`,
+      type: "MushroomWarior",
+      position: new Vector3(this.center.x + 20, 0, this.center.z)
+    });
+
     return objectsToAdd;
   }
 

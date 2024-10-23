@@ -59,6 +59,10 @@ export enum modelType {
   // Skeleton_Warrior = 'Skeleton_Warrior',
 }
 
+export enum modelTypeGlb {
+  Mushroom_Warrior = 'Mushroom_Warrior',
+}
+
 export enum weaponType {
   arrow = 'arrow',
   // bow = 'bow',
@@ -75,6 +79,7 @@ export enum weaponType {
 
 type ItemsType = {
   model: Partial<Record<modelType, THREE.Group<THREE.Object3DEventMap>>>
+  model_glb: Partial<Record<modelTypeGlb, THREE.Group<THREE.Object3DEventMap>>>
   weapon: Partial<Record<weaponType, THREE.Group<THREE.Object3DEventMap>>>
   weapon_glb: Partial<Record<weaponType, THREE.Group<THREE.Object3DEventMap>>>
   animation: Partial<Record<animationType, THREE.Group<THREE.Object3DEventMap>>>
@@ -85,6 +90,7 @@ export const loads: ItemsType = {
   weapon: {},
   weapon_glb: {},
   model: {},
+  model_glb: {},
   animation: {},
   texture: {},
 }
@@ -131,6 +137,7 @@ export const loaders = [
   load(fbxLoader, modelType, 'model', '.fbx'),
   load(fbxLoader, animationType, 'animation', '.fbx'),
   load(gltfLoader, weaponType, 'weapon_glb', '.glb'),
+  load(gltfLoader, modelTypeGlb, 'model_glb', '.glb'),
 ];
 
 // @ts-expect-error
