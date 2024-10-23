@@ -24,22 +24,25 @@ export class Room {
   readonly center: Vector3;
   readonly mesh: Object3D<Object3DEventMap>;
   readonly worldPosition: Vector3 = new Vector3();
-  readonly objectsInside: Record<string, DynamicObject> = {};
+  objectsInside: Record<string, DynamicObject> = {};
   readonly config: RoomConfig;
-  readonly objects: Record<string, MapObject> = {};
+  objects: Record<string, MapObject> = {};
   private updateInterval: NodeJS.Timeout | null = null;
 
   constructor(props: RoomConfig) {
     this.config = props;
-    this.getRoomFloorMesh(props);
 
     this.center = new Vector3(
       (props.x + props.width / 2) * scale,
       0,
       (props.y + props.height / 2) * scale
     );
+  }
 
-    const objectsToAdd = this.objectsInside = this.getRoomObjects(props);
+  init() {
+    this.getRoomFloorMesh(this.config);
+
+    const objectsToAdd = this.objectsInside = this.getRoomObjects(this.config);
 
     assign(globalObjects, objectsToAdd);
     this.objects = addObjects(objectsToAdd) ?? {};

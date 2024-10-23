@@ -219,6 +219,7 @@ export const roomChunks = (x: number, z: number, slice = ROOM_SIZE) => {
           Constructor = render;
 
       all[id] = new Constructor(room);
+      all[id].init();
     }
 
     rooms[id] = all[id];

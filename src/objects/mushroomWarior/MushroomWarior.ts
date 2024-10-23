@@ -4,7 +4,7 @@ import { loads } from "@/loader";
 import { DynamicObject } from "@/types";
 import { AnimationMixer, Group, Object3DEventMap } from "three";
 
-const PHYSIC_Y = 0;
+const PHYSIC_Y = 2;
 
 function initPhysicBody({ mass = 5, size = 5 }) {
   return createPhysicBox(
@@ -53,9 +53,9 @@ export class MushroomWarior {
 
   update(timeDelta: number) {
     this.jumpCounter += 1;
-    if (this.jumpCounter % 100 === 0) {
-      this.physicBody.applyLocalImpulse(new CANNON.Vec3(0, 200, 0), this.physicBody.position);
-    }
+    // if (this.jumpCounter % 100 === 0) {
+    //   this.physicBody.applyLocalImpulse(new CANNON.Vec3(0, 200, 0), this.physicBody.position);
+    // }
     this.mixer.update(timeDelta);
   }
 }
