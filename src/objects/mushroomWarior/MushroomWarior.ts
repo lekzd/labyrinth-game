@@ -14,6 +14,7 @@ import { getDistance } from "@/utils/getDistance";
 import { get2DAngleBetweenPoints } from "@/utils/getAngleBetweenPoints";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { random } from "@/utils/random";
+import { getScalarVectorAngle } from "@/utils/getScalarVectorAngle";
 
 const PHYSIC_Y = 12;
 const MASS = 10000;
@@ -45,7 +46,7 @@ export class MushroomWarior {
   room: Room | null = null;
   readonly physicY = PHYSIC_Y;
 
-  behaviorState: BehaviorState = BehaviorState.IDLE;
+  behaviorState: BehaviorState = BehaviorState.PATROL;
   behaviorTarget: Vector3Like | null = null;
 
   constructor(props: DynamicObject) {
@@ -148,31 +149,42 @@ export class MushroomWarior {
         );
       };
 
-      const goToCenter = () => {
-        goToTarget(this.room!.center);
-      };
-
-      const goToPlayer = () => {
-        goToTarget(object.position);
-      };
-
       if (distanceToCenter < 100) {
         // грибок в грибнице, может атаковать
 
         if (distanceToPlayer < 50) {
           this.behaviorState = BehaviorState.ATTACK;
-          goToPlayer();
+          this.behaviorTarget = object.position;
         } else {
           this.behaviorState = BehaviorState.PATROL;
-          goToCenter();
+
+          const angle = getScalarVectorAngle(
+            this.mesh.position.x,
+            this.mesh.position.z,
+            this.room!.center.x,
+            this.room!.center.z
+          );
+
+          const angleToTarget = (angle + Math.PI / 6) % (Math.PI * 2);
+
+          this.behaviorTarget = new CANNON.Vec3(
+            this.room!.center.x + Math.cos(angleToTarget) * 30,
+            0,
+            this.room!.center.z + Math.sin(angleToTarget) * 30
+          );
         }
       } else {
         // грибок отошел от грибницы, идет обратно
 
         if (distanceToCenter > 10) {
           this.behaviorState = BehaviorState.RETURN;
-          goToCenter();
+          this.behaviorTarget = this.room!.center;
         }
+      }
+
+
+      if (this.behaviorState !== BehaviorState.IDLE && this.behaviorTarget) {
+        goToTarget(this.behaviorTarget)
       }
     }
 

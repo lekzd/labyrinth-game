@@ -16,12 +16,20 @@ export class MagicMushroomRoom extends Room {
     const id = getTileId(props, this.center, type);
     const altarPartId = `${id}::AltarPart`;
 
-    const mushroomWarriorsPositions = [
-      new Vector3(this.center.x + 20, 0, this.center.z),
-      new Vector3(this.center.x - 20, 0, this.center.z),
-      new Vector3(this.center.x, 0, this.center.z + 20),
-      new Vector3(this.center.x, 0, this.center.z - 20)
-    ];
+    const radius = 20;
+    const count = 8;
+
+    const mushroomWarriorsPositions = [];
+
+    for (let i = 0; i < count; i++) {
+      mushroomWarriorsPositions.push(
+        new Vector3(
+          this.center.x + Math.cos(i * (Math.PI * 2) / count) * radius,
+          0,
+          this.center.z + Math.sin(i * (Math.PI * 2) / count) * radius
+        )
+      );
+    }
 
     objectsToAdd[id] = createObject({
       id,
@@ -46,21 +54,19 @@ export class MagicMushroomRoom extends Room {
         type: "MushroomWarior",
         position
       });
+
+      setTimeout(() => {
+        const mushroomWarrior =
+          systems.objectsSystem.objects[mushroomWarriorId] as MushroomWarior;
+
+        mushroomWarrior.setRoom(this);
+      }, 1000);
     });
 
     return objectsToAdd;
   }
 
   update(_timeDelta: number) {
-    this.tickCounter++;
 
-    if (this.tickCounter % 100 === 0) {
-      this.mushroomWarriorsIds.forEach((mushroomWarriorId) => {
-        const mushroomWarrior =
-          systems.objectsSystem.objects[mushroomWarriorId] as MushroomWarior;
-
-        mushroomWarrior.setRoom(this);
-      });
-    }
   }
 }
