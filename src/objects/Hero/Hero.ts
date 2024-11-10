@@ -49,7 +49,7 @@ interface StateAction extends ReturnType<typeof action> {
   Exit?: () => void;
 }
 
-const PHYSIC_Y = 5;
+const PHYSIC_Y = 8;
 export class Hero {
   private target: Object3D<Object3DEventMap>;
   private stateMachine: ReturnType<typeof CharacterFSM>;
@@ -283,9 +283,12 @@ function initElementsHero(target: Object3D<Object3DEventMap>): ElementsHero {
   };
 }
 function initPhysicBody({ mass = 5, size = 5 }) {
+  const material = new CANNON.Material("hero");
+  material.friction = 0; // Устанавливаем трение на 0
+
   return createPhysicBox(
     { x: size, y: PHYSIC_Y, z: size },
-    { mass, fixedRotation: true }
+    { mass, fixedRotation: true, material }
   );
 }
 function initStateMashine(animations: AnimationClip[]) {
