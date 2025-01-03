@@ -10,6 +10,7 @@ import {
   Quaternion,
   SphereGeometry,
   TextureLoader,
+  MeshStandardMaterial,
   Vector3,
   LoopOnce,
   Vector3Like,
@@ -114,7 +115,9 @@ export class Hero {
   }
 
   private initWeapon(weaponType?: weaponType) {
-    const weaponRightHand = this.target.getObjectByName("WeaponR")!;
+    const weaponRightHand = this.target.getObjectByName("WeaponR") || this.target.getObjectByName("hand.R");
+
+    if (!weaponRightHand) return;
 
     weaponRightHand.remove(...weaponRightHand.children);
 
@@ -245,11 +248,19 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
   target.scale.multiplyScalar(0.05);
   target.updateMatrix();
 
+  const texture = new TextureLoader().load(
+    `model/${target.name}_Texture.png`
+  );
+
+  const material = new MeshStandardMaterial({
+    map: texture,
+    metalness: 0,
+    roughness: 1
+  });
+
   target.traverse((o) => {
-    if (o instanceof Mesh) {
-      o.material.map = new TextureLoader().load(
-        `model/${target.name}_Texture.png`
-      );
+    if (o.isMesh) {
+      o.material = material;
       o.material.needsUpdate = true;
 
       shadowSetter(o, {

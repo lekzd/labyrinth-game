@@ -47,6 +47,7 @@ export const HealthBar = (props: HeroProps, target) =>  {
   const healthSprite = createSprite({ scale: target.scale.x, pos: 16 }); // 75% здоровья
   const manaSprite = createSprite({ scale: target.scale.x, pos: 15.75 });
 
+  // TODO: model texture
   target.add(healthSprite);
   target.add(manaSprite);
 

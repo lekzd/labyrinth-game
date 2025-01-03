@@ -108,7 +108,7 @@ export const createObject = (data: Partial<DynamicObject>): DynamicObject => {
 export const createHeroObject = (
   data: Partial<DynamicObject>
 ): DynamicObject => {
-  const type = something(Object.values(modelType));
+  const type = modelType.Journey;
 
   return createObject({
     ...data,

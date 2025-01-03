@@ -1,7 +1,7 @@
 export enum NpcBaseAnimations {
-  idle = "idle_weapon",
+  idle = "idle",
   walk = "walk",
-  run = "run_weapon",
+  run = "run",
   death = "death",
   pickup = "pickup",
   receivehit = "receivehit"

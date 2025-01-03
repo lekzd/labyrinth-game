@@ -42,8 +42,9 @@ export enum animationType {
   bow_attack = 'bow_attack',
   gunplay = 'gunplay',
   // death = 'death',
-  // run = 'run',
-  // walk = 'walk',
+  run = 'run',
+  walk = 'walk',
+  idle = 'idle',
 }
 
 export enum modelType {
@@ -52,6 +53,8 @@ export enum modelType {
   Rogue = 'Rogue',
   Warrior = 'Warrior',
   Wizard = 'Wizard',
+
+  Journey = 'Journey',
 
   Skeleton_Mage = 'Skeleton_Mage',
   // Skeleton_Minion = 'Skeleton_Minion',
