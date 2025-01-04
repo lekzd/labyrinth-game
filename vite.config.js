@@ -6,6 +6,8 @@ import path from 'path'
 export default defineConfig({
   plugins: [react(), glsl()],
   resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.json'],
+    mainFiles: ['index'],
     alias: {
       '@': path.resolve(__dirname, 'src'),
     },
