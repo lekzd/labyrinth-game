@@ -25,6 +25,9 @@ jobs:
       - name: Debug directiry
         run: ls ./src/objects/hero
 
+      - name: Show file list
+        run: find . -print
+
       - name: Build the project
         run: npm run build
 
