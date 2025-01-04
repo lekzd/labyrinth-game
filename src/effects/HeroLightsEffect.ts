@@ -1,4 +1,4 @@
-import { Hero } from "../objects/hero/Hero";
+import { Hero } from "../objects/hero";
 import {
   BufferAttribute,
   CatmullRomCurve3,

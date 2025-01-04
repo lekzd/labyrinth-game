@@ -7,7 +7,7 @@ import { systems } from "../../systems/index.ts";
 import { settings } from "./settings.ts";
 import { DynamicObject } from "@/types/DynamicObject.ts";
 import { throttle } from "@/utils/throttle.ts";
-import { Hero } from "./Hero.ts";
+import { Hero } from "./index.ts";
 import { WEAPONS_CONFIG } from "../../config/WEAPONS_CONFIG.ts";
 
 const sendThrottle = throttle(state.setState, 500);
