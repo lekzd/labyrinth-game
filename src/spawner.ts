@@ -131,7 +131,7 @@ export const Spawners = async (count = 1) => {
       // Если нет создаем
       if (!item) {
         const { x, y, z } = pos;
-        const type = modelType.Skeleton_Mage;
+        const type = modelType.Hallow;
         item = {
           id,
           type,

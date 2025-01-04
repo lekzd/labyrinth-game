@@ -48,16 +48,17 @@ export enum animationType {
 }
 
 export enum modelType {
-  Monk = 'Monk',
-  Cleric = 'Cleric',
-  Rogue = 'Rogue',
-  Warrior = 'Warrior',
-  Wizard = 'Wizard',
+  // Monk = 'Monk',
+  // Cleric = 'Cleric',
+  // Rogue = 'Rogue',
+  // Warrior = 'Warrior',
+  // Wizard = 'Wizard',
 
   Journey = 'Journey',
+  Hallow = 'Hallow',
   Mashroom = 'Mashroom',
 
-  Skeleton_Mage = 'Skeleton_Mage',
+  // Skeleton_Mage = 'Skeleton_Mage',
   // Skeleton_Minion = 'Skeleton_Minion',
   // Skeleton_Rogue = 'Skeleton_Rogue',
   // Skeleton_Warrior = 'Skeleton_Warrior',
