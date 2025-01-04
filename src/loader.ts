@@ -55,6 +55,7 @@ export enum modelType {
   Wizard = 'Wizard',
 
   Journey = 'Journey',
+  Mashroom = 'Mashroom',
 
   Skeleton_Mage = 'Skeleton_Mage',
   // Skeleton_Minion = 'Skeleton_Minion',

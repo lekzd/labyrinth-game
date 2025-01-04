@@ -54,6 +54,13 @@ export const settings: Record<modelType & modelTypeGlb, SettingObject> = {
     mass: 25,
     attack: 5,
   },
+  [modelType.Mashroom]: {
+    health: 10,
+    mana: 10,
+    speed: 2.5,
+    mass: 25,
+    attack: 5,
+  },
   [modelType.Skeleton_Mage]: {
     health: 10,
     mana: 10,
