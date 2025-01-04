@@ -2,7 +2,7 @@ import { updateSeed } from "./utils/random";
 
 const { protocol, search } = window.location;
 
-const host = 'channel.frontende.ru'
+const host = 'channel.amaze.run'
 const urlParams = new URLSearchParams(search);
 const channel = urlParams.get('channel') || '';
 
