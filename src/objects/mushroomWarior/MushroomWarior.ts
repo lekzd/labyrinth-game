@@ -15,6 +15,7 @@ import { get2DAngleBetweenPoints } from "@/utils/getAngleBetweenPoints";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { random } from "@/utils/random";
 import { getScalarVectorAngle } from "@/utils/getScalarVectorAngle";
+import { initAnimations } from "@/utils/initAnimations";
 
 const PHYSIC_Y = 12;
 const MASS = 10000;
@@ -51,11 +52,13 @@ export class MushroomWarior {
 
   constructor(props: DynamicObject) {
     this.props = props;
-    const model = clone(loads.model_glb.Mushroom_Warrior!);
+    const model = clone(loads.model.Mashroom!);
 
     model.updateMatrix();
 
     this.mesh = model as Group<Object3DEventMap>;
+
+    this.mesh.scale.set(0.05, 0.05, 0.05);
 
     this.mesh.position.copy(props.position);
 
@@ -69,14 +72,22 @@ export class MushroomWarior {
       props.position.z
     );
 
+    [
+      loads.animation.idle,
+      loads.animation.run,
+      loads.animation.walk,
+      loads.animation.jumping,
+    ].forEach(animation => {
+      if (animation) {
+        this.mesh.animations.push(...animation.animations);
+      }
+    });
+
     this.mixer = new AnimationMixer(this.mesh);
 
-    // this.mixer.clipAction("Attack").play();
+    this.animations = initAnimations(this.mesh, this.mixer);
 
-    // this.mixer.timeScale = 1.5;
-    // this.animations = initAnimations(this.mesh, this.mixer);
-
-    // console.log(this.animations);
+    this.mixer.clipAction(this.mesh.animations[3]).play();
   }
 
   setRoom(room: Room) {
