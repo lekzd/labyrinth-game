@@ -21,5 +21,6 @@ export const selectAllPlayerObjects = selectObjectsByType(
   "Cleric",
   "Rogue",
   "Warrior",
-  "Wizard"
+  "Wizard",
+  "Journey"
 );

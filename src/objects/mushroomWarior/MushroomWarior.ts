@@ -58,11 +58,8 @@ export class MushroomWarior {
 
     this.mesh = model as Group<Object3DEventMap>;
 
-    this.mesh.scale.set(0.05, 0.05, 0.05);
-
+    this.mesh.scale.set(0.07, 0.07, 0.07);
     this.mesh.position.copy(props.position);
-
-    this.mesh.updateMatrix();
 
     this.physicBody = initPhysicBody({ mass: MASS });
 
@@ -77,9 +74,11 @@ export class MushroomWarior {
       loads.animation.run,
       loads.animation.walk,
       loads.animation.jumping,
-    ].forEach(animation => {
-      if (animation) {
-        this.mesh.animations.push(...animation.animations);
+    ].forEach(group => {
+      if (group) {
+        group.animations.forEach(animation => {
+          this.mesh.animations.push(animation);
+        })
       }
     });
 
@@ -87,7 +86,7 @@ export class MushroomWarior {
 
     this.animations = initAnimations(this.mesh, this.mixer);
 
-    this.mixer.clipAction(this.mesh.animations[3]).play();
+    // this.mixer.clipAction(this.mesh.animations[0]).play();
   }
 
   setRoom(room: Room) {
@@ -96,6 +95,10 @@ export class MushroomWarior {
 
   update(timeDelta: number) {
     this.tickCounter += 1;
+
+    this.mesh.rotation.set(0, 0, Math.PI);
+
+    this.mesh.updateMatrix();
 
     if (this.tickCounter % 100 === 0 && this.room) {
       const [object] = selectAllPlayerObjects({
