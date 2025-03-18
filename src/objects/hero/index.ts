@@ -115,9 +115,11 @@ export class Hero {
   }
 
   private initWeapon(weaponType?: weaponType) {
-    const weaponRightHand = this.target.getObjectByName("WeaponR") || this.target.getObjectByName("hand.R");
+    const weaponRightHand = this.target.getObjectByName("handR_end");
 
-    if (!weaponRightHand) return;
+    if (!weaponRightHand) {
+      return;
+    }
 
     weaponRightHand.remove(...weaponRightHand.children);
 
@@ -132,6 +134,11 @@ export class Hero {
     this.weaponObject = loads.weapon_glb[weaponType]
       ? clone(loads.weapon_glb[weaponType]!)
       : boxMesh;
+
+    this.weaponObject.scale.set(0.5, 0.5, 0.5);
+    this.weaponObject.rotation.set(0, Math.PI * 0.3, Math.PI * 0.1);
+
+    window.weapon = this.weaponObject;
 
     weaponRightHand.add(this.weaponObject);
   }

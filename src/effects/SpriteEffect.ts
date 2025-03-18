@@ -30,7 +30,7 @@ export const SpriteEffect = ({
 
   const material = new SpriteMaterial({
     map: texture,
-    color
+    // color
   });
   const sprite = new Sprite(material);
   sprite.position.copy(position);
