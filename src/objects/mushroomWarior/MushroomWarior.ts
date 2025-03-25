@@ -1,7 +1,7 @@
 import * as CANNON from "cannon";
 import { createPhysicBox } from "@/cannon";
 import { loads } from "@/loader";
-import { DynamicObject } from "@/types";
+import { DynamicObject, HeroProps } from "@/types";
 import {
   AnimationMixer,
   Group,
@@ -175,17 +175,13 @@ export class MushroomWarior {
           if (distanceToPlayer < 5 && !this.attackCoolDown) {
             this.attackCoolDown = true;
 
-            const next = (change: RecursivePartial<State>) => {
-              state.setState(change, { server: true });
-            }
-
-            next({
+            state.setState({
               objects: {
                 [object.id]: {
                   health: (state.objects[object.id]?.health ?? 100) - 10,
                 }
               }
-            });
+            }, { server: true });
 
             setTimeout(() => {
               this.attackCoolDown = false;
@@ -226,5 +222,25 @@ export class MushroomWarior {
     }
 
     this.mixer.update(timeDelta);
+  }
+
+  hit(by: HeroProps) {
+    const health = (state.objects[this.props.id]?.health ?? 100) - (by.attack ?? 10);
+
+    if (health <= 0) {
+      state.setState({
+        objects: {
+          [this.props.id]: null,
+        }
+      }, { server: true });
+    } else {
+      state.setState({
+        objects: {
+          [this.props.id]: {
+            health,
+          }
+        }
+      }, { server: true });
+    }
   }
 }
