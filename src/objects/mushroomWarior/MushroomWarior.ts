@@ -16,6 +16,10 @@ import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { random } from "@/utils/random";
 import { getScalarVectorAngle } from "@/utils/getScalarVectorAngle";
 import { initAnimations } from "@/utils/initAnimations";
+import { RecursivePartial } from "@/types/RecursivePartial";
+import { State, state } from "@/state";
+import { mergeDeep } from "@/utils/mergeDeep";
+import { send } from "process";
 
 const PHYSIC_Y = 12;
 const MASS = 10000;
@@ -49,6 +53,8 @@ export class MushroomWarior {
 
   behaviorState: BehaviorState = BehaviorState.PATROL;
   behaviorTarget: Vector3Like | null = null;
+
+  private attackCoolDown = false;
 
   constructor(props: DynamicObject) {
     this.props = props;
@@ -165,6 +171,27 @@ export class MushroomWarior {
         if (distanceToPlayer < 50) {
           this.behaviorState = BehaviorState.ATTACK;
           this.behaviorTarget = object.position;
+
+          if (distanceToPlayer < 5 && !this.attackCoolDown) {
+            this.attackCoolDown = true;
+
+            const next = (change: RecursivePartial<State>) => {
+              state.setState(change, { server: true });
+            }
+
+            next({
+              objects: {
+                [object.id]: {
+                  health: (state.objects[object.id]?.health ?? 100) - 10,
+                }
+              }
+            });
+
+            setTimeout(() => {
+              this.attackCoolDown = false;
+            }, 1000);
+          }
+
         } else {
           this.behaviorState = BehaviorState.PATROL;
 
