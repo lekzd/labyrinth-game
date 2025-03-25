@@ -86,7 +86,7 @@ export class MushroomWarior {
 
     this.animations = initAnimations(this.mesh, this.mixer);
 
-    // this.mixer.clipAction(this.mesh.animations[0]).play();
+    this.mixer.clipAction(this.mesh.animations[1]).play();
   }
 
   setRoom(room: Room) {
@@ -95,10 +95,6 @@ export class MushroomWarior {
 
   update(timeDelta: number) {
     this.tickCounter += 1;
-
-    this.mesh.rotation.set(0, 0, Math.PI);
-
-    this.mesh.updateMatrix();
 
     if (this.tickCounter % 100 === 0 && this.room) {
       const [object] = selectAllPlayerObjects({
@@ -154,7 +150,7 @@ export class MushroomWarior {
 
         this.physicBody.quaternion.setFromAxisAngle(
           new CANNON.Vec3(0, 1, 0),
-          angleToTarget
+          angleToTarget + Math.PI / 2
         );
 
         this.physicBody.applyImpulse(
