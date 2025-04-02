@@ -19,7 +19,6 @@ import {
 import { pickBy } from "@/utils/pickBy.ts";
 import { loads, weaponType } from "@/loader";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
-import * as CANNON from "cannon";
 import { Box, Torch } from "@/uses";
 import { NpcAdditionalAnimations, NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates.ts";
 import { HealthBar } from "./healthbar.ts";
@@ -157,16 +156,7 @@ export class Hero {
   setPosition(position: Partial<Vector3Like>, lerpFactor = 1) {
     if (!position || !this.physicEntity.body.position) return;
 
-    const targetPosition = new CANNON.Vec3(
-      position.x || this.physicEntity.body.position.x,
-      position.y ? position.y + 8 : this.physicEntity.body.position.y,
-      position.z || this.physicEntity.body.position.z
-    );
-
-    this.physicEntity.body.position.vadd(
-      targetPosition.vsub(this.physicEntity.body.position).scale(lerpFactor),
-      this.physicEntity.body.position
-    );
+    this.physicEntity.setPositionLerp(position, lerpFactor);
   }
 
   onStateChange(prev, next) {
@@ -243,8 +233,6 @@ export class Hero {
 
   hit(by: HeroProps, point: Vector3) {
     const { attack = 0 } = by;
-
-    console.log('attack', attack);
 
     this.state.makeHit(attack);
   }

@@ -1,3 +1,4 @@
+import { Vec3 } from "cannon";
 import { Object3D, Object3DEventMap, Vector3Like } from "three";
 
 interface BasePhysicEntityProps {
@@ -50,6 +51,19 @@ export class BasePhysicEntity {
       position.x || this.body.position.x,
       position.y ? position.y + this.physicY : this.body.position.y,
       position.z || this.body.position.z
+    );
+  }
+
+  setPositionLerp(position: Partial<Vector3Like>, lerpFactor = 1) {
+    const targetPosition = new Vec3(
+      position.x || this.body.position.x,
+      position.y ? position.y + this.physicY : this.body.position.y,
+      position.z || this.body.position.z
+    );
+
+    this.body.position.vadd(
+      targetPosition.vsub(this.body.position).scale(lerpFactor),
+      this.body.position
     );
   }
 }
