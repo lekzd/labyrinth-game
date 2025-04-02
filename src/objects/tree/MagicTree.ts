@@ -1,6 +1,6 @@
 import * as CANNON from "cannon";
 import { createBranch, createBranchGeometry } from ".";
-import { createPhysicBox, physicWorld } from "@/cannon";
+import { physicWorld } from "@/cannon";
 import {
   Color,
   InstancedMesh,
@@ -23,6 +23,7 @@ import { PineMatetial } from "@/materials/pine";
 import { ParticleSystem } from "../common/ParticleSystem";
 import { Shine } from "../common/Shine";
 import {assign} from "@/utils/assign.ts";
+import { StaticPhysicEntity } from "../entities/StaticPhysicEntity";
 
 const Torch = () => {
   const torch = new PointLight(new Color("rgb(241, 48, 216)"), 5000, 100, 1); // Цвет, интенсивность, дистанция факела
@@ -42,14 +43,6 @@ const Torch = () => {
 
   return torch;
 };
-
-function initPhysicBody() {
-  const physicRadius = 4;
-  return createPhysicBox(
-    { x: physicRadius, y: 30, z: physicRadius },
-    { mass: 0, type: CANNON.Body.STATIC }
-  );
-}
 
 export const createMagicTree = () => {
   const branches = createBranch(2, 5, 20);
@@ -141,9 +134,8 @@ const Altar = (props: DynamicObject) => {
 export class MagicTree {
   readonly props: DynamicObject;
   readonly mesh: Object3D<Object3DEventMap>;
-  readonly physicBody: CANNON.Body;
-  readonly physicY = 0;
   particleMaterial: MagicTreePointsMaterial;
+  physicEntity: StaticPhysicEntity;
 
   constructor(props: DynamicObject) {
     this.props = props;
@@ -173,13 +165,12 @@ export class MagicTree {
     this.mesh.add(particleSystem);
 
     assign(this.mesh.position, props.position);
-    this.physicBody = initPhysicBody();
 
-    this.physicBody.position.set(
-      props.position.x,
-      props.position.y,
-      props.position.z
-    );
+    this.physicEntity = new StaticPhysicEntity({
+      target: this.mesh,
+      physicY: 30,
+      physicRadius: 4,
+    });
   }
   update(timeDelta: number) {
     this.particleMaterial.uniforms.time.value += timeDelta * 2;

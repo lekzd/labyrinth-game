@@ -1,14 +1,14 @@
 import * as THREE from 'three';
-import * as CANNON from 'cannon';
 import { DynamicObject } from './DynamicObject';
 import { StateEntity } from '../objects/entities/StateEntity';
+import { BasePhysicEntity } from '@/objects/entities/BasePhysicEntity';
 
 export type MapObject = {
   props: DynamicObject,
   update: (time: number) => void,
   state: StateEntity,
   mesh: THREE.Mesh,
-  physicBody?: CANNON.Body
+  physicEntity?: BasePhysicEntity
   physicY?: number
   interactWith?: (value: boolean) => void
   setFocus?: (value: boolean) => void

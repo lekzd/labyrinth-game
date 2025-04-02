@@ -1,32 +1,34 @@
-import * as CANNON from "cannon";
 import { BoxGeometry, Mesh, MeshPhongMaterial, Object3DEventMap } from "three";
 import * as THREE from "three";
 import * as TWEEN from "@tweenjs/tween.js";
 import { loads } from "@/loader";
 
 import { createInteractivitySign } from "@/utils/interactivitySign.ts";
-import { createPhysicBox } from "@/cannon";
 import { DynamicObject } from "@/types";
 import { state } from "@/state";
 import { shadowSetter } from "@/utils/shadowSetter";
+import { StaticPhysicEntity } from "../entities/StaticPhysicEntity";
 
-const PHYSIC_Y = 4;
 export class PuzzleHandler {
   readonly props: DynamicObject;
   readonly mesh: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
-  readonly physicBody: CANNON.Body;
-  readonly physicY = PHYSIC_Y;
 
   sign: {
     mesh: Mesh<THREE.ConeGeometry, THREE.ShaderMaterial, Object3DEventMap>;
     setFocused: (value: boolean) => void;
   };
   cube: Mesh<BoxGeometry, THREE.MeshLambertMaterial[], Object3DEventMap>;
+  physicEntity: StaticPhysicEntity;
 
   constructor(props: DynamicObject) {
     this.props = props;
     this.mesh = initMesh(props, this.getColor());
-    this.physicBody = initPhysicBody();
+
+    this.physicEntity = new StaticPhysicEntity({
+      target: this.mesh,
+      physicY: 4,
+      physicRadius: 5,
+    });
 
     this.sign = createInteractivitySign();
 
@@ -39,20 +41,9 @@ export class PuzzleHandler {
 
     this.cube.rotation.y = (Math.PI / 2) * rotation;
     this.mesh.add(this.cube);
-
-    const obj = state.objects[this.props.id];
-    this.setPosition(obj.position);
   }
   
   update(time: number) {}
-
-  setPosition(position: Partial<THREE.Vector3Like>) {
-    this.physicBody.position.set(
-      position.x || this.physicBody.position.x,
-      position.y ? position.y + this.physicY : this.physicBody.position.y,
-      position.z || this.physicBody.position.z
-    );
-  }
 
   setFocus(value: boolean) {
     this.sign.setFocused(value);
@@ -172,12 +163,4 @@ function initMesh(props: DynamicObject, color: THREE.Color) {
   target.add(base);
 
   return target;
-}
-
-function initPhysicBody() {
-  const physicRadius = 4;
-  return createPhysicBox(
-    { x: physicRadius, y: PHYSIC_Y * 2, z: physicRadius },
-    { mass: 0 }
-  );
 }

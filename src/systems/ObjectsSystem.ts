@@ -146,11 +146,11 @@ export const ObjectsSystem = () => {
       objects[object.props.id] = object;
 
       if (config.physical) {
-        if (object.physicBody) {
+        if (object.physicEntity) {
           physicObjects.set(object.props.id, object);
-          physicWorld.addBody(object.physicBody);
+          physicWorld.addBody(object.physicEntity.body);
         } else {
-          console.error("ObjectsSystem: physical object should have physicBody!");
+          console.error("ObjectsSystem: physical object should have physicEntity!");
         }
       }
 
@@ -167,7 +167,10 @@ export const ObjectsSystem = () => {
         octree.remove(relativePosition(object.mesh.position));
 
       physicObjects.delete(id);
-      physicWorld.remove(object.physicBody);
+
+      if (object.physicEntity) {
+        physicWorld.remove(object.physicEntity.body);
+      }
     },
 
     checkPointHitColision: (point: THREE.Vector3, fromObjectId: string): HitContactType | null => {
@@ -184,11 +187,11 @@ export const ObjectsSystem = () => {
         const cannonPoint = new Vec3(point.x, point.y, point.z);
 
         for (const object of physicObjects.values()) {
-          if (object.physicBody && isPointInsideBody(cannonPoint, object.physicBody)) {
+          if (object.physicEntity && isPointInsideBody(cannonPoint, object.physicEntity.body)) {
             if (object.hit) {
               object.hit(activeObject.props, point);
             }
-            return HitContactType.Other;
+            return object.state.props.health ? HitContactType.Body : HitContactType.Other;
           }
         };
       }
@@ -205,16 +208,10 @@ export const ObjectsSystem = () => {
       physicWorld.step(fixedTimeStep, timeElapsedS);
 
       physicObjects.forEach((object) => {
-        if (object.physicBody) {
+        if (object.physicEntity) {
           const prev = relativePosition(object.mesh.position, 'previous');
 
-          object.mesh.position.set(
-            object.physicBody.position.x,
-            object.physicBody.position.y - (object.physicY ?? 0),
-            object.physicBody.position.z
-          );
-
-          object.mesh.quaternion.copy(object.physicBody.quaternion);
+          object.physicEntity.syncMesh()
 
           const next = relativePosition(object.mesh.position);
 
@@ -262,15 +259,19 @@ export const ObjectsSystem = () => {
           if (input.interact) {
             tryRunMethod(data, "interactWith");
 
-            if (data?.mesh.position && data?.physicBody?.position) {
+            if (data?.mesh.position && data?.physicEntity?.body.position) {
               const distance = data?.mesh.position.distanceTo(
-                data?.physicBody?.position
+                data.physicEntity.body.position
               );
 
               if (distance > 10) {
                 octree.move(
                   relativePosition(data?.mesh.position),
-                  relativePosition(data.physicBody.position)
+                  relativePosition(new THREE.Vector3(
+                    data.physicEntity.body.position.x,
+                    data.physicEntity.body.position.y,
+                    data.physicEntity.body.position.z
+                  ))
                 );
               }
             }

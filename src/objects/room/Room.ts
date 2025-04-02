@@ -160,15 +160,15 @@ export class Room {
     scene.remove(this.mesh);
 
     for (const id in this.objects) {
-      const { mesh, physicBody } = this.objects[id];
+      const { mesh, physicEntity } = this.objects[id];
 
       if (mesh) {
         mesh.visible = false;
         scene.remove(mesh);
       }
 
-      if (physicBody) {
-        physicWorld.remove(physicBody);
+      if (physicEntity) {
+        physicWorld.remove(physicEntity.body);
       }
     }
 
@@ -189,14 +189,16 @@ export class Room {
     this.mesh.visible = true;
 
     for (const id in this.objects) {
-      const { mesh, physicBody } = this.objects[id];
+      const { mesh, physicEntity } = this.objects[id];
 
       if (mesh) {
         mesh.visible = true;
         scene.add(mesh);
       }
 
-      if (physicBody) physicWorld.addBody(physicBody);
+      if (physicEntity) {
+        physicWorld.addBody(physicEntity.body);
+      }
     }
 
     this.mesh.children.forEach((mesh) => {

@@ -1,26 +1,19 @@
-import * as CANNON from "cannon";
-import { createPhysicBox, physicWorld } from "@/cannon";
 import { CSG } from 'three-csg-ts';
 import {
   Color,
-  InstancedMesh,
   CatmullRomCurve3,
   DoubleSide,
   Mesh,
   MeshPhongMaterial,
   Object3D,
   Object3DEventMap,
-  PointLight,
-  Vector2,
   Group,
   CylinderGeometry,
   Matrix4,
   MeshBasicMaterial,
   BoxGeometry,
   MeshStandardMaterial,
-  ConeGeometry,
   Vector3,
-  TubeGeometry,
   BufferGeometry,
   BufferAttribute,
   CanvasTexture,
@@ -34,28 +27,7 @@ import {ParticleSystem} from "@/objects/common/ParticleSystem.ts";
 import {Shine} from "@/objects/common/Shine.ts";
 import {CustomTubeGeometry} from "@/objects/tree/CustomTubeGeometry.ts";
 import {radiusFunction} from "@/objects/tree";
-
-function initPhysicBody(props, count, radius, del = 0) {
-  const stoneShape = new CANNON.Box(new CANNON.Vec3(11, 30, 11));
-
-  const boxBody = new CANNON.Body({mass: 0, type: CANNON.Body.STATIC});
-
-  boxBody.position.set(props.position.x, 0, props.position.z);
-
-  for (let i = 0; i < count; i++) {
-    if (i === del) {
-      console.log('Skip', del)
-      continue;
-    }
-    const angle = (i * Math.PI * 2) / (count);
-    const x = Math.cos(angle) * radius;
-    const z = Math.sin(angle) * radius;
-
-    boxBody.addShape(stoneShape, new CANNON.Vec3(x, 0, z));
-  }
-
-  return boxBody;
-}
+import { StumpPhysicEntity } from "../entities/StumpPhysicEntity";
 
 const remove = (from, to) => {
   const cylinderCSG = CSG.fromMesh(from);
@@ -268,9 +240,9 @@ const createMesh = () => {
 export class Stump {
   readonly props: DynamicObject;
   readonly mesh: Object3D<Object3DEventMap>;
-  readonly physicBody: CANNON.Body;
   readonly physicY = 0;
   particleMaterial: MagicTreePointsMaterial;
+  physicEntity: StumpPhysicEntity;
 
   constructor(props: DynamicObject) {
     this.props = props;
@@ -303,13 +275,13 @@ export class Stump {
     this.mesh.add(particleSystem);
 
     assign(this.mesh.position, props.position);
-    this.physicBody = initPhysicBody(props, 20, 45, 15);
 
-    this.physicBody.position.set(
-      props.position.x,
-      props.position.y,
-      props.position.z
-    );
+    this.physicEntity = new StumpPhysicEntity({
+      target: this.mesh,
+      count: 20,
+      radius: 45,
+      del: 15
+    });
   }
   update(timeDelta: number) {
     this.particleMaterial.uniforms.time.value += timeDelta * 2;

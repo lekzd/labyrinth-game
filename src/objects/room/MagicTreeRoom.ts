@@ -40,8 +40,8 @@ export class MagicTreeRoom extends Room {
           })
           .start();
 
-        if (apple && apple.physicBody) {
-          apple.physicBody.applyImpulse(
+        if (apple && apple.physicEntity) {
+          apple.physicEntity.body.applyImpulse(
             new CANNON.Vec3(random(-200, 200), 400, random(-200, 200)),
             new CANNON.Vec3(this.center.x, this.center.y + 10, this.center.z)
           );
@@ -65,12 +65,12 @@ export class MagicTreeRoom extends Room {
 
         const model = systems.objectsSystem.objects[object.id];
         if (distance < 50) {
-          if (model && model.physicBody) {
-            model.physicBody.velocity.y = 10 - model.physicBody.position.y / 3;
+          if (model && model.physicEntity) {
+            model.physicEntity.body.velocity.y = 10 - model.physicEntity.body.position.y / 3;
           }
         } else {
-          if (model && model.physicBody) {
-            model.physicBody.velocity.y = -50;
+          if (model && model.physicEntity) {
+            model.physicEntity.body.velocity.y = -50;
           }
         }
       }

@@ -1,5 +1,4 @@
 import * as CANNON from "cannon";
-import { createPhysicBox } from "@/cannon";
 import { loads } from "@/loader";
 import { DynamicObject, HeroProps } from "@/types";
 import {
@@ -19,19 +18,9 @@ import { initAnimations } from "@/utils/initAnimations";
 import { StateEntity } from "../entities/StateEntity";
 import { systems } from "@/systems";
 import { HealthBar } from "../hero/healthbar";
+import { HeroPhysicEntity } from "../entities/HeroPhysicEntity";
 
-const PHYSIC_Y = 6;
 const MASS = 10000;
-
-function initPhysicBody({ mass = 5, size = 5 }) {
-  const material = new CANNON.Material("mushroomWarrior");
-  material.friction = 0; // Устанавливаем трение на 0
-
-  return createPhysicBox(
-    { x: size, y: PHYSIC_Y, z: size },
-    { mass, fixedRotation: true, type: CANNON.Body.DYNAMIC, material }
-  );
-}
 
 enum BehaviorState {
   IDLE = "idle",
@@ -43,12 +32,10 @@ enum BehaviorState {
 export class MushroomWarior {
   mesh: Group<Object3DEventMap>;
   props: DynamicObject;
-  physicBody: CANNON.Body;
   mixer: AnimationMixer;
   animations: any;
   tickCounter: number = random(0, 100);
   room: Room | null = null;
-  readonly physicY = PHYSIC_Y;
   state: StateEntity;
 
   behaviorState: BehaviorState = BehaviorState.PATROL;
@@ -56,6 +43,7 @@ export class MushroomWarior {
 
   private attackCoolDown = false;
   healthBar: ReturnType<typeof HealthBar>;
+  physicEntity: any;
 
   constructor(props: DynamicObject) {
     this.props = props;
@@ -77,14 +65,14 @@ export class MushroomWarior {
     this.mesh.scale.set(0.07, 0.07, 0.07);
     this.mesh.position.copy(props.position);
 
-    this.physicBody = initPhysicBody({ mass: this.state.props.mass });
-    this.healthBar = HealthBar(this.state.props, this.mesh);
+    this.physicEntity = new HeroPhysicEntity({
+      target: this.mesh,
+      physicY: 6,
+      physicRadius: 5,
+      mass: this.state.props.mass,
+    });
 
-    this.physicBody.position.set(
-      props.position.x,
-      props.position.y,
-      props.position.z
-    );
+    this.healthBar = HealthBar(this.state.props, this.mesh);
 
     [
       loads.animation.idle,
@@ -139,7 +127,7 @@ export class MushroomWarior {
       const impluse = 40 * MASS;
 
       const goToTarget = (target: Vector3Like) => {
-        if (!this.physicBody) {
+        if (!this.physicEntity.body) {
           return;
         }
 
@@ -171,14 +159,14 @@ export class MushroomWarior {
           target
         );
 
-        this.physicBody.quaternion.setFromAxisAngle(
+        this.physicEntity.body.quaternion.setFromAxisAngle(
           new CANNON.Vec3(0, 1, 0),
           angleToTarget + Math.PI / 2
         );
 
-        this.physicBody.applyImpulse(
+        this.physicEntity.body.applyImpulse(
           impulseVector,
-          this.physicBody.position
+          this.physicEntity.body.position
         );
       };
 

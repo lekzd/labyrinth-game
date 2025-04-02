@@ -1,5 +1,4 @@
-import * as CANNON from "cannon";
-import { createPhysicBox } from "@/cannon";
+
 import {
   AdditiveBlending,
   Color,
@@ -26,6 +25,7 @@ import { assign } from "@/utils/assign.ts";
 import { createBranch, createBranchGeometry } from "../tree";
 import { jitterGeometry } from "@/utils/jitterGeometry";
 import { MagicMushroomPointsMaterial } from "@/materials/magicMushroomPoints";
+import { StaticPhysicEntity } from "../entities/StaticPhysicEntity";
 
 const Torch = () => {
   const torch = new PointLight(new Color("rgb(77, 241, 48)"), 1000, 100, 1); // Цвет, интенсивность, дистанция факела
@@ -45,14 +45,6 @@ const Torch = () => {
 
   return torch;
 };
-
-function initPhysicBody() {
-  const physicRadius = 4;
-  return createPhysicBox(
-    { x: physicRadius, y: 30, z: physicRadius },
-    { mass: 0, type: CANNON.Body.STATIC }
-  );
-}
 
 const MushroomCap = () => {
   const mesh = new Object3D();
@@ -133,9 +125,8 @@ export const createMagicMushroom = () => {
 export class MagicMushroom {
   readonly props: DynamicObject;
   readonly mesh: Object3D<Object3DEventMap>;
-  readonly physicBody: CANNON.Body;
-  readonly physicY = 0;
   particleMaterial: MagicMushroomPointsMaterial;
+  physicEntity: StaticPhysicEntity;
 
   constructor(props: DynamicObject) {
     this.props = props;
@@ -167,13 +158,11 @@ export class MagicMushroom {
     this.mesh.add(particleSystem);
 
     assign(this.mesh.position, props.position);
-    this.physicBody = initPhysicBody();
-
-    this.physicBody.position.set(
-      props.position.x,
-      props.position.y,
-      props.position.z
-    );
+    this.physicEntity = new StaticPhysicEntity({
+      target: this.mesh,
+      physicY: 30,
+      physicRadius: 5,
+    });
   }
   update(timeDelta: number) {
     this.particleMaterial.uniforms.time.value += timeDelta * 2;

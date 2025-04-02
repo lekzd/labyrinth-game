@@ -1,36 +1,31 @@
-import * as CANNON from "cannon";
 import {
   BoxGeometry,
   Group,
   Mesh,
   MeshPhongMaterial,
-  Object3DEventMap,
-  Vector3Like
+  Object3DEventMap
 } from "three";
 import * as THREE from "three";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { loads } from "@/loader";
 import { DynamicObject } from "@/types";
 import { createInteractivitySign } from "@/utils/interactivitySign";
-import { createPhysicBox } from "@/cannon";
 import { currentPlayer } from "@/main.ts";
 import { state } from "@/state.ts";
 import { GlowMaterial } from "@/materials/glow/index.ts";
 import { HeroProps } from "@/types";
-import { getObjectState } from "@/objects/room/Room";
+import { StaticPhysicEntity } from "../entities/StaticPhysicEntity";
 
-const PHYSIC_Y = 4;
 export class Weapon {
   readonly props: DynamicObject;
   readonly mesh: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
-  readonly physicBody: CANNON.Body;
-  readonly physicY = PHYSIC_Y;
 
   sign: {
     mesh: Mesh<THREE.ConeGeometry, THREE.ShaderMaterial, Object3DEventMap>;
     setFocused: (value: boolean) => void;
   };
   cube: Mesh<BoxGeometry, THREE.MeshLambertMaterial[], Object3DEventMap>;
+  physicEntity: StaticPhysicEntity;
 
   constructor(props: DynamicObject) {
     const model = loads.weapon_glb[props.type];
@@ -42,7 +37,11 @@ export class Weapon {
     this.props = props;
     this.mesh = initTarget(model, props);
 
-    this.physicBody = initPhysicBody();
+    this.physicEntity = new StaticPhysicEntity({
+      target: this.mesh,
+      physicY: 30,
+      physicRadius: 4,
+    });
 
     this.sign = createInteractivitySign();
 
@@ -52,19 +51,8 @@ export class Weapon {
 
     this.cube = initCube();
     this.mesh.add(this.cube);
-
-    const obj = getObjectState(this.props.id);
-    this.setPosition(obj.position);
   }
   update(time: number) {}
-
-  setPosition(position: Partial<Vector3Like>) {
-    this.physicBody.position.set(
-      position.x || this.physicBody.position.x,
-      position.y ? position.y + this.physicY : this.physicBody.position.y,
-      position.z || this.physicBody.position.z
-    );
-  }
 
   setFocus(value: boolean) {
     this.sign.setFocused(value);
@@ -121,12 +109,4 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
   });
   containner.add(target);
   return containner;
-}
-
-function initPhysicBody() {
-  const physicRadius = 4;
-  return createPhysicBox(
-    { x: physicRadius, y: PHYSIC_Y * 2, z: physicRadius },
-    { mass: 0, type: CANNON.Body.STATIC }
-  );
 }

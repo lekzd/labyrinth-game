@@ -20,7 +20,6 @@ import { pickBy } from "@/utils/pickBy.ts";
 import { loads, weaponType } from "@/loader";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import * as CANNON from "cannon";
-import { createPhysicBox } from "@/cannon";
 import { Box, Torch } from "@/uses";
 import { NpcAdditionalAnimations, NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates.ts";
 import { HealthBar } from "./healthbar.ts";
@@ -29,6 +28,7 @@ import { DissolveEffect } from "../../effects/DissolveEffect.ts";
 import { shadowSetter } from "@/utils/shadowSetter";
 import { initAnimations } from "@/utils/initAnimations";
 import { StateEntity } from "../entities/StateEntity.ts";
+import { HeroPhysicEntity } from "../entities/HeroPhysicEntity.ts";
 
 type ElementsHero = {
   leftArm: Object3D<Object3DEventMap>;
@@ -51,7 +51,6 @@ interface StateAction extends ReturnType<typeof action> {
   Exit?: () => void;
 }
 
-const PHYSIC_Y = 8;
 export class Hero {
   private target: Object3D<Object3DEventMap>;
   private stateMachine: ReturnType<typeof CharacterFSM>;
@@ -63,12 +62,13 @@ export class Hero {
 
   readonly elementsHero: ElementsHero;
   readonly animations: AnimationClip[];
-  readonly physicBody: CANNON.Body;
   readonly decceleration = new Vector3(-0.0005, -0.0001, -5.0);
   readonly acceleration = new Vector3(1, 0.25, 50.0);
   readonly velocity = new Vector3(0, 0, 0);
   readonly props: HeroProps;
   readonly state: StateEntity;
+  physicEntity: HeroPhysicEntity;
+
   constructor(props: HeroProps) {
     const model = loads.model[props.type];
 
@@ -93,12 +93,17 @@ export class Hero {
     this.mixer.timeScale = 1.5;
     this.animations = initAnimations(this.target, this.mixer);
 
-    this.physicBody = initPhysicBody(props);
+    this.physicEntity = new HeroPhysicEntity({
+      target: this.target,
+      physicY: 8,
+      physicRadius: 5,
+      mass: 5,
+    });
+
     this.elementsHero = initElementsHero(this.target);
     this.stateMachine = initStateMashine(this.animations);
     this.stateMachine2 = initStateMashine(this.animations);
     this.healthBar = HealthBar(this.state.props, this.target);
-    correctionPhysicBody(this.physicBody, this.target);
 
     this.initWeapon(this.props.weapon);
   }
@@ -109,10 +114,6 @@ export class Hero {
 
   get mesh() {
     return this.target;
-  }
-
-  get physicY() {
-    return PHYSIC_Y;
   }
 
   get position() {
@@ -154,17 +155,17 @@ export class Hero {
   }
 
   setPosition(position: Partial<Vector3Like>, lerpFactor = 1) {
-    if (!position || !this.physicBody.position) return;
+    if (!position || !this.physicEntity.body.position) return;
 
     const targetPosition = new CANNON.Vec3(
-      position.x || this.physicBody.position.x,
-      position.y ? position.y + this.physicY : this.physicBody.position.y,
-      position.z || this.physicBody.position.z
+      position.x || this.physicEntity.body.position.x,
+      position.y ? position.y + 8 : this.physicEntity.body.position.y,
+      position.z || this.physicEntity.body.position.z
     );
 
-    this.physicBody.position.vadd(
-      targetPosition.vsub(this.physicBody.position).scale(lerpFactor),
-      this.physicBody.position
+    this.physicEntity.body.position.vadd(
+      targetPosition.vsub(this.physicEntity.body.position).scale(lerpFactor),
+      this.physicEntity.body.position
     );
   }
 
@@ -202,10 +203,15 @@ export class Hero {
     if (next.rotation) {
       const q2 = new Quaternion().copy(next.rotation);
       const q1 = new Quaternion()
-        .copy(this.physicBody.quaternion)
+        .copy(this.physicEntity.body.quaternion)
         .slerp(q2, 0.05);
 
-      this.physicBody.quaternion.copy(q1);
+      this.physicEntity.body.quaternion.set(
+        q1.x,
+        q1.y,
+        q1.z,
+        q1.w
+      );
     }
   }
 
@@ -220,7 +226,12 @@ export class Hero {
 
     controlObject.quaternion.copy(npcRotation);
 
-    this.physicBody.quaternion.copy(npcRotation);
+    this.physicEntity.body.quaternion.set(
+      npcRotation.x,
+      npcRotation.y,
+      npcRotation.z,
+      npcRotation.w
+    );
   }
 
   die() {
@@ -303,31 +314,11 @@ function initElementsHero(target: Object3D<Object3DEventMap>): ElementsHero {
     torch
   };
 }
-function initPhysicBody({ mass = 5, size = 5 }) {
-  const material = new CANNON.Material("hero");
-  material.friction = 0; // Устанавливаем трение на 0
 
-  return createPhysicBox(
-    { x: size, y: PHYSIC_Y, z: size },
-    { mass, fixedRotation: true, material }
-  );
-}
 function initStateMashine(animations: AnimationClip[]) {
   const stateMachine = CharacterFSM({ animations });
   stateMachine.setState("idle");
   return stateMachine;
-}
-
-function correctionPhysicBody(
-  physicBody: CANNON.Body,
-  target: Object3D<Object3DEventMap>
-) {
-  physicBody.position.set(
-    target.position.x,
-    target.position.y + PHYSIC_Y,
-    target.position.z
-  );
-  physicBody.quaternion.copy(target.quaternion);
 }
 
 function CharacterFSM({ animations }: { animations: AnimationControllers }) {

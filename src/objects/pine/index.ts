@@ -1,4 +1,3 @@
-import * as CANNON from "cannon";
 import { DynamicObject } from "@/types";
 import {
   ConeGeometry,
@@ -8,20 +7,12 @@ import {
   Object3DEventMap,
 } from "three";
 import { assign } from "@/utils/assign";
-import { createPhysicBox } from "@/cannon";
 import { frandom } from "@/utils/random";
 import { BufferGeometryUtils } from "three/examples/jsm/Addons.js";
 import { jitterGeometry } from "@/utils/jitterGeometry";
 import { rotateUvs } from "@/utils/rotateUvs";
 import { PineMatetial } from "@/materials/pine";
-
-function initPhysicBody() {
-  const physicRadius = 10;
-  return createPhysicBox(
-    { x: physicRadius, y: 30, z: physicRadius },
-    { mass: 0, type: CANNON.Body.STATIC }
-  );
-}
+import { StaticPhysicEntity } from "../entities/StaticPhysicEntity";
 
 let material: PineMatetial;
 
@@ -52,20 +43,18 @@ const createPine = () => {
 export class Pine {
   readonly props: DynamicObject;
   readonly mesh: Object3D<Object3DEventMap>;
-  readonly physicBody: CANNON.Body;
-  readonly physicY = 0;
+  physicEntity: StaticPhysicEntity;
 
   constructor(props: DynamicObject) {
     this.props = props;
     this.mesh = createPine();
     assign(this.mesh.position, props.position);
-    this.physicBody = initPhysicBody();
 
-    this.physicBody.position.set(
-      props.position.x,
-      props.position.y,
-      props.position.z
-    );
+    this.physicEntity = new StaticPhysicEntity({
+      target: this.mesh,
+      physicY: 30,
+      physicRadius: 5,
+    });
   }
   update(timeDelta: number) {}
 }

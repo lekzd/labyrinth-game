@@ -1,23 +1,20 @@
-import { BoxGeometry, CylinderGeometry, Mesh, MeshPhongMaterial, MeshPhysicalMaterial, Object3DEventMap, QuaternionLike, Vector3Like } from "three";
+import { BoxGeometry, CylinderGeometry, Mesh, MeshPhongMaterial, MeshPhysicalMaterial, Object3DEventMap } from "three";
 import { DynamicObject } from "@/types";
-import * as CANNON from "cannon";
 import { state } from "@/state";
 import { Tween } from "@tweenjs/tween.js";
 import { loads } from "@/loader";
 import { textureRepeat } from "@/utils/textureRepeat";
 import { shadowSetter } from "@/utils/shadowSetter";
+import { GatePhysicEntity } from "../entities/GatePhysicEntity";
 
-const PHYSIC_Y = 0;
 export class Gate {
   readonly props: DynamicObject;
   readonly mesh: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
-  readonly physicBody: CANNON.Body;
-  readonly physicY = PHYSIC_Y;
 
   private leftDoor: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
   private rightDoor: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
 
-  doorShape: CANNON.Box;
+  physicEntity: GatePhysicEntity;
 
   constructor(props: DynamicObject) {
     this.props = props;
@@ -70,50 +67,21 @@ export class Gate {
     Object.assign(this.mesh.position, props.position);
     Object.assign(this.mesh.quaternion, props.rotation);
 
-    this.physicBody = this.initPhysicBody();
+    this.physicEntity = new GatePhysicEntity({
+      target: this.mesh,
+      physicY: 0,
+      physicRadius: 5,
+      mass: 100,
+    });
 
     state.listen((_, next) => {
       if (next.objects?.[this.props.id]) {
         this.updateState();
       }
     })
-
-    const obj = state.objects[this.props.id];
-    this.setPosition(obj.position);
-    this.setRotation(obj.rotation);
   }
 
   update(time: number) {}
-
-  setPosition(position: Partial<Vector3Like>) {
-    this.physicBody.position.set(
-      position.x || this.physicBody.position.x,
-      position.y ? position.y + this.physicY : this.physicBody.position.y,
-      position.z || this.physicBody.position.z
-    );
-  }
-
-  setRotation(quaternion: QuaternionLike) {
-    this.physicBody.quaternion.copy(quaternion);
-  }
-
-  initPhysicBody() {
-    const boxBody = new CANNON.Body({ mass: 0, type: CANNON.Body.STATIC });
-    boxBody.addShape(
-      new CANNON.Box(new CANNON.Vec3(5, 5, 5)),
-      new CANNON.Vec3(-10, 0, 0)
-    );
-    this.doorShape = new CANNON.Box(new CANNON.Vec3(5, 5, 2.5));
-    boxBody.addShape(
-      this.doorShape,
-      new CANNON.Vec3(0, 0, 0)
-    );
-    boxBody.addShape(
-      new CANNON.Box(new CANNON.Vec3(5, 5, 5)),
-      new CANNON.Vec3(10, 0, 0)
-    );
-    return boxBody;
-  }
 
   get closed() {
     return !!state.objects[this.props.id].state
@@ -129,7 +97,7 @@ export class Gate {
     new Tween(this.leftDoor.rotation)
       .to({ y: this.closed ? (Math.PI / 2) : 0 }, 300)
       .onComplete(() => {
-        this.doorShape.collisionResponse = !this.closed
+        this.physicEntity.doorShape.collisionResponse = !this.closed
       })
       .start();
 

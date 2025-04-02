@@ -1,4 +1,3 @@
-import * as CANNON from "cannon";
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import { createMatrix } from "@/utils/createMatrix";
@@ -8,9 +7,9 @@ import { frandom, random } from "@/utils/random";
 import { pickBy } from "@/utils/pickBy";
 import { assign } from "@/utils/assign.ts";
 import { DynamicObject } from "@/types";
-import { createPhysicBox } from "@/cannon.ts";
 import { rotateUvs } from "@/utils/rotateUvs";
 import { PineMatetial } from "@/materials/pine";
+import { StaticPhysicEntity } from "../entities/StaticPhysicEntity";
 
 export const radiusFunction = (from: number, to: number) => (t: number) => {
   return from - t * (from - to);
@@ -176,7 +175,7 @@ export const createTree = () => {
 
   return mesh;
 };
-const PHYSIC_Y = 4;
+const PHYSIC_Y = 30;
 
 const memoRandom = (func: () => THREE.Mesh, numb: number) => {
   const items: THREE.Mesh[] = [];
@@ -197,28 +196,18 @@ const memoTree = memoRandom(createTree, 20);
 export class Tree {
   readonly props: DynamicObject;
   readonly mesh: THREE.Object3D<THREE.Object3DEventMap>;
-  readonly physicBody: CANNON.Body;
-  readonly physicY = PHYSIC_Y;
+  physicEntity: StaticPhysicEntity;
 
   constructor(props: DynamicObject) {
     this.props = props;
     this.mesh = memoTree().clone();
     assign(this.mesh.position, props.position);
-    this.physicBody = initPhysicBody();
 
-    this.physicBody.position.set(
-      props.position.x,
-      props.position.y,
-      props.position.z
-    );
+    this.physicEntity = new StaticPhysicEntity({
+      target: this.mesh,
+      physicY: 30,
+      physicRadius: 4,
+    });
   }
   update(timeDelta: number) {}
-}
-
-function initPhysicBody() {
-  const physicRadius = 4;
-  return createPhysicBox(
-    { x: physicRadius, y: 30, z: physicRadius },
-    { mass: 0, type: CANNON.Body.STATIC }
-  );
 }
