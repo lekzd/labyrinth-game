@@ -67,7 +67,7 @@ export class Weapon {
         }
       });
 
-      this.setPosition({ x: 0, y: 0, z: -1000000 });
+      this.physicEntity.setPosition({ x: 0, y: 0, z: -1000000 });
     }
   }
 }
