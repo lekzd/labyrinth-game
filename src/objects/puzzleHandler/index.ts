@@ -7,7 +7,7 @@ import { createInteractivitySign } from "@/utils/interactivitySign.ts";
 import { DynamicObject } from "@/types";
 import { state } from "@/state";
 import { shadowSetter } from "@/utils/shadowSetter";
-import { StaticPhysicEntity } from "../entities/StaticPhysicEntity";
+import { StaticPhysicEntity } from "@/entities/StaticPhysicEntity";
 
 export class PuzzleHandler {
   readonly props: DynamicObject;

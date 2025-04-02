@@ -27,7 +27,7 @@ import {ParticleSystem} from "@/objects/common/ParticleSystem.ts";
 import {Shine} from "@/objects/common/Shine.ts";
 import {CustomTubeGeometry} from "@/objects/tree/CustomTubeGeometry.ts";
 import {radiusFunction} from "@/objects/tree";
-import { StumpPhysicEntity } from "../entities/StumpPhysicEntity";
+import { StumpPhysicEntity } from "@/entities/StumpPhysicEntity";
 
 const remove = (from, to) => {
   const cylinderCSG = CSG.fromMesh(from);

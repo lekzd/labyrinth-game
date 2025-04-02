@@ -4,7 +4,7 @@ import * as CANNON from "cannon";
 import { createInteractivitySign } from "@/utils/interactivitySign";
 import { state } from "@/state";
 import { currentPlayer } from "@/main";
-import { BoxPhysicEntity } from "../entities/BoxPhysicEntity";
+import { BoxPhysicEntity } from "@/entities/BoxPhysicEntity";
 
 export class AltarPart {
   readonly props: DynamicObject;

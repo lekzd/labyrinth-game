@@ -23,11 +23,11 @@ import { Box, Torch } from "@/uses";
 import { NpcAdditionalAnimations, NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates.ts";
 import { HealthBar } from "./healthbar.ts";
 import { HeroProps } from "@/types";
-import { DissolveEffect } from "../../effects/DissolveEffect.ts";
+import { DissolveEffect } from "@/effects/DissolveEffect";
 import { shadowSetter } from "@/utils/shadowSetter";
 import { initAnimations } from "@/utils/initAnimations";
-import { StateEntity } from "../entities/StateEntity.ts";
-import { HeroPhysicEntity } from "../entities/HeroPhysicEntity.ts";
+import { StateEntity } from "@/entities/StateEntity";
+import { HeroPhysicEntity } from "@/entities/HeroPhysicEntity";
 
 type ElementsHero = {
   leftArm: Object3D<Object3DEventMap>;

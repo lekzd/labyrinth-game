@@ -23,7 +23,7 @@ import { PineMatetial } from "@/materials/pine";
 import { ParticleSystem } from "../common/ParticleSystem";
 import { Shine } from "../common/Shine";
 import {assign} from "@/utils/assign.ts";
-import { StaticPhysicEntity } from "../entities/StaticPhysicEntity";
+import { StaticPhysicEntity } from "@/entities/StaticPhysicEntity";
 
 const Torch = () => {
   const torch = new PointLight(new Color("rgb(241, 48, 216)"), 5000, 100, 1); // Цвет, интенсивность, дистанция факела

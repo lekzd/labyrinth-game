@@ -14,7 +14,7 @@ import { currentPlayer } from "@/main.ts";
 import { state } from "@/state.ts";
 import { GlowMaterial } from "@/materials/glow/index.ts";
 import { HeroProps } from "@/types";
-import { StaticPhysicEntity } from "../entities/StaticPhysicEntity";
+import { StaticPhysicEntity } from "@/entities/StaticPhysicEntity";
 
 export class Weapon {
   readonly props: DynamicObject;

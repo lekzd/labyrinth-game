@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { DynamicObject } from './DynamicObject';
-import { StateEntity } from '../objects/entities/StateEntity';
-import { PhysicEntity } from '@/objects/entities/PhysicEntity';
+import { DynamicObject } from '@/types';
+import { StateEntity } from '@/entities/StateEntity';
+import { PhysicEntity } from '@/entities/PhysicEntity';
 
 export type MapObject = {
   props: DynamicObject,

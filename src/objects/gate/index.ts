@@ -5,7 +5,7 @@ import { Tween } from "@tweenjs/tween.js";
 import { loads } from "@/loader";
 import { textureRepeat } from "@/utils/textureRepeat";
 import { shadowSetter } from "@/utils/shadowSetter";
-import { GatePhysicEntity } from "../entities/GatePhysicEntity";
+import { GatePhysicEntity } from "@/entities/GatePhysicEntity";
 
 export class Gate {
   readonly props: DynamicObject;

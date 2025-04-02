@@ -25,7 +25,7 @@ import { assign } from "@/utils/assign.ts";
 import { createBranch, createBranchGeometry } from "../tree";
 import { jitterGeometry } from "@/utils/jitterGeometry";
 import { MagicMushroomPointsMaterial } from "@/materials/magicMushroomPoints";
-import { StaticPhysicEntity } from "../entities/StaticPhysicEntity";
+import { StaticPhysicEntity } from "@/entities/StaticPhysicEntity";
 
 const Torch = () => {
   const torch = new PointLight(new Color("rgb(77, 241, 48)"), 1000, 100, 1); // Цвет, интенсивность, дистанция факела

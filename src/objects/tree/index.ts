@@ -9,7 +9,7 @@ import { assign } from "@/utils/assign.ts";
 import { DynamicObject } from "@/types";
 import { rotateUvs } from "@/utils/rotateUvs";
 import { PineMatetial } from "@/materials/pine";
-import { StaticPhysicEntity } from "../entities/StaticPhysicEntity";
+import { StaticPhysicEntity } from "@/entities/StaticPhysicEntity";
 
 export const radiusFunction = (from: number, to: number) => (t: number) => {
   return from - t * (from - to);

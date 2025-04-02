@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { makeCtx } from '@/utils/makeCtx';
 import {isEqual} from "@/utils/isEqual.ts";
-import { StateEntityProps } from '../entities/StateEntity.ts';
+import { StateEntityProps } from '@/entities/StateEntity';
 
 const createTexture = () => {
   const context = makeCtx(64, 16);

@@ -2,7 +2,7 @@ import { DynamicObject } from "@/types";
 import { Object3D, Object3DEventMap } from "three";
 import { createStone } from "./stone";
 import { assign } from "@/utils/assign";
-import { StaticPhysicEntity } from "../entities/StaticPhysicEntity";
+import { StaticPhysicEntity } from "@/entities/StaticPhysicEntity";
 
 export class Stone {
   readonly props: DynamicObject;

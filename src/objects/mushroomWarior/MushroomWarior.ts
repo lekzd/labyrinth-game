@@ -15,10 +15,10 @@ import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { random } from "@/utils/random";
 import { getScalarVectorAngle } from "@/utils/getScalarVectorAngle";
 import { initAnimations } from "@/utils/initAnimations";
-import { StateEntity } from "../entities/StateEntity";
+import { StateEntity } from "@/entities/StateEntity";
 import { systems } from "@/systems";
 import { HealthBar } from "../hero/healthbar";
-import { HeroPhysicEntity } from "../entities/HeroPhysicEntity";
+import { HeroPhysicEntity } from "@/entities/HeroPhysicEntity";
 
 const MASS = 10000;
 

@@ -1,7 +1,7 @@
 import { BoxGeometry, Mesh, MeshPhongMaterial, Object3DEventMap } from "three";
 import { DynamicObject } from "@/types";
 import * as CANNON from "cannon";
-import { BoxPhysicEntity } from "../entities/BoxPhysicEntity";
+import { BoxPhysicEntity } from "@/entities/BoxPhysicEntity";
 
 export class Box {
   readonly props: DynamicObject;
