@@ -16,15 +16,14 @@ import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { random } from "@/utils/random";
 import { getScalarVectorAngle } from "@/utils/getScalarVectorAngle";
 import { initAnimations } from "@/utils/initAnimations";
-import { RecursivePartial } from "@/types/RecursivePartial";
-import { State, state } from "@/state";
-import { mergeDeep } from "@/utils/mergeDeep";
-import { send } from "process";
+import { StateEntity } from "../entities/StateEntity";
+import { systems } from "@/systems";
+import { HealthBar } from "../hero/healthbar";
 
-const PHYSIC_Y = 12;
+const PHYSIC_Y = 6;
 const MASS = 10000;
 
-function initPhysicBody({ mass = 5, size = 3 }) {
+function initPhysicBody({ mass = 5, size = 5 }) {
   const material = new CANNON.Material("mushroomWarrior");
   material.friction = 0; // Устанавливаем трение на 0
 
@@ -50,11 +49,13 @@ export class MushroomWarior {
   tickCounter: number = random(0, 100);
   room: Room | null = null;
   readonly physicY = PHYSIC_Y;
+  state: StateEntity;
 
   behaviorState: BehaviorState = BehaviorState.PATROL;
   behaviorTarget: Vector3Like | null = null;
 
   private attackCoolDown = false;
+  healthBar: ReturnType<typeof HealthBar>;
 
   constructor(props: DynamicObject) {
     this.props = props;
@@ -62,12 +63,22 @@ export class MushroomWarior {
 
     model.updateMatrix();
 
+    this.state = new StateEntity({
+      id: props.id,
+      health: 100,
+      mana: 100,
+      speed: 1,
+      mass: MASS,
+      attack: 10,
+    });
+    
     this.mesh = model as Group<Object3DEventMap>;
-
+    
     this.mesh.scale.set(0.07, 0.07, 0.07);
     this.mesh.position.copy(props.position);
 
-    this.physicBody = initPhysicBody({ mass: MASS });
+    this.physicBody = initPhysicBody({ mass: this.state.props.mass });
+    this.healthBar = HealthBar(this.state.props, this.mesh);
 
     this.physicBody.position.set(
       props.position.x,
@@ -97,6 +108,12 @@ export class MushroomWarior {
 
   setRoom(room: Room) {
     this.room = room;
+  }
+
+  onStateChange(prev: DynamicObject, next: DynamicObject) {
+    if (next.health) {
+      this.healthBar.update(this.state.props);
+    }
   }
 
   update(timeDelta: number) {
@@ -172,16 +189,14 @@ export class MushroomWarior {
           this.behaviorState = BehaviorState.ATTACK;
           this.behaviorTarget = object.position;
 
-          if (distanceToPlayer < 5 && !this.attackCoolDown) {
+          if (distanceToPlayer < 6 && !this.attackCoolDown) {
             this.attackCoolDown = true;
 
-            state.setState({
-              objects: {
-                [object.id]: {
-                  health: (state.objects[object.id]?.health ?? 100) - 10,
-                }
-              }
-            }, { server: true });
+            const hero = systems.objectsSystem.objects[object.id];
+
+            if (hero) {
+              hero.state.makeHit(this.props.attack ?? 10);
+            }
 
             setTimeout(() => {
               this.attackCoolDown = false;
@@ -225,22 +240,6 @@ export class MushroomWarior {
   }
 
   hit(by: HeroProps) {
-    const health = (state.objects[this.props.id]?.health ?? 100) - (by.attack ?? 10);
-
-    if (health <= 0) {
-      state.setState({
-        objects: {
-          [this.props.id]: null,
-        }
-      }, { server: true });
-    } else {
-      state.setState({
-        objects: {
-          [this.props.id]: {
-            health,
-          }
-        }
-      }, { server: true });
-    }
+    this.state.makeHit(by.attack ?? 10);
   }
 }

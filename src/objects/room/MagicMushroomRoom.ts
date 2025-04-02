@@ -25,7 +25,7 @@ export class MagicMushroomRoom extends Room {
       mushroomWarriorsPositions.push(
         new Vector3(
           this.center.x + Math.cos(i * (Math.PI * 2) / count) * radius,
-          0,
+          6,
           this.center.z + Math.sin(i * (Math.PI * 2) / count) * radius
         )
       );
@@ -41,7 +41,7 @@ export class MagicMushroomRoom extends Room {
     objectsToAdd[altarPartId] = createObject({
       id: altarPartId,
       type: "AltarPart",
-      position: new Vector3(this.center.x, 40, this.center.z)
+      position: new Vector3(this.center.x, 6, this.center.z)
     });
 
     mushroomWarriorsPositions.forEach((position, index) => {

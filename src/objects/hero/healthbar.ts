@@ -1,8 +1,7 @@
 import * as THREE from 'three';
 import { makeCtx } from '@/utils/makeCtx';
 import {isEqual} from "@/utils/isEqual.ts";
-import {settings} from "./settings.ts";
-import { HeroProps } from '@/types';
+import { StateEntityProps } from '../entities/StateEntity.ts';
 
 const createTexture = () => {
   const context = makeCtx(64, 16);
@@ -24,7 +23,7 @@ const updateTexture = (texture: THREE.Texture, percent: number, color: string) =
 }
 
 function createSprite({ texture = createTexture(), scale = 0.05, pos = 16 } = {}) {
-  const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+  const spriteMaterial = new THREE.SpriteMaterial({ map: texture, depthTest: false });
   const sprite = new THREE.Sprite(spriteMaterial);
 
   const size = 0.25 / scale;
@@ -40,9 +39,8 @@ const getCanvasCtx = (texture: THREE.Texture) => {
   return canvas.getContext('2d');
 }
 
-export const HealthBar = (props: HeroProps, target) =>  {
+export const HealthBar = (props: StateEntityProps, target) =>  {
   let state = {}
-  const base = settings[props.type];
 
   const healthSprite = createSprite({ scale: target.scale.x, pos: 16 }); // 75% здоровья
   const manaSprite = createSprite({ scale: target.scale.x, pos: 15.75 });
@@ -51,12 +49,15 @@ export const HealthBar = (props: HeroProps, target) =>  {
   target.add(healthSprite);
   target.add(manaSprite);
 
+  const initialHealth = props.health;
+  const initialMana = props.mana;
+
   const root = {
-    update: ({ health, mana }: HeroProps) => {
+    update: ({ health, mana }: StateEntityProps) => {
       if (isEqual(state, { health, mana })) return;
 
-      updateTexture(healthSprite, health / base.health * 100, '#ff0000');
-      updateTexture(manaSprite, mana / base.mana * 100, '#3713dd');
+      updateTexture(healthSprite, health / initialHealth * 100, '#ff0000');
+      updateTexture(manaSprite, mana / initialMana * 100, '#3713dd');
 
       state = { health, mana }
     }

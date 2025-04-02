@@ -105,7 +105,7 @@ const getShootingWeaponConfig = (
       color: new Color("#f63737")
     }),
     [HitContactType.Other]: getSwordFx({
-      scale: 7,
+      scale: 15,
       color: new Color('#FAEB9C')
     })
   },

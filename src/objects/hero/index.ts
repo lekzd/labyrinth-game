@@ -16,18 +16,19 @@ import {
   Vector3Like,
   Color,
 } from "three";
+import { pickBy } from "@/utils/pickBy.ts";
 import { loads, weaponType } from "@/loader";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import * as CANNON from "cannon";
 import { createPhysicBox } from "@/cannon";
 import { Box, Torch } from "@/uses";
 import { NpcAdditionalAnimations, NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates.ts";
-import { state } from "@/state.ts";
 import { HealthBar } from "./healthbar.ts";
 import { HeroProps } from "@/types";
 import { DissolveEffect } from "../../effects/DissolveEffect.ts";
 import { shadowSetter } from "@/utils/shadowSetter";
 import { initAnimations } from "@/utils/initAnimations";
+import { StateEntity } from "../entities/StateEntity.ts";
 
 type ElementsHero = {
   leftArm: Object3D<Object3DEventMap>;
@@ -67,13 +68,24 @@ export class Hero {
   readonly acceleration = new Vector3(1, 0.25, 50.0);
   readonly velocity = new Vector3(0, 0, 0);
   readonly props: HeroProps;
-
+  readonly state: StateEntity;
   constructor(props: HeroProps) {
     const model = loads.model[props.type];
 
     if (!model) {
       throw Error(`No model with type "${props.type}"`);
     }
+
+    this.state = new StateEntity(pickBy(props, [
+      'id',
+      'health',
+      'mana',
+      'speed',
+      'mass',
+      'attack',
+      'position',
+      'rotation',
+    ]));
 
     this.props = props;
     this.target = initTarget(model, props);
@@ -85,7 +97,7 @@ export class Hero {
     this.elementsHero = initElementsHero(this.target);
     this.stateMachine = initStateMashine(this.animations);
     this.stateMachine2 = initStateMashine(this.animations);
-    this.healthBar = HealthBar(props, this.target);
+    this.healthBar = HealthBar(this.state.props, this.target);
     correctionPhysicBody(this.physicBody, this.target);
 
     this.initWeapon(this.props.weapon);
@@ -138,8 +150,6 @@ export class Hero {
     this.weaponObject.scale.set(0.5, 0.5, 0.5);
     this.weaponObject.rotation.set(0, Math.PI * 0.3, Math.PI * 0.1);
 
-    window.weapon = this.weaponObject;
-
     weaponRightHand.add(this.weaponObject);
   }
 
@@ -178,11 +188,24 @@ export class Hero {
 
     if (next.hasOwnProperty('health')) {
       this.props.health = next.health;
-      this.healthBar.update(this.props);
+      this.healthBar.update(this.state.props);
 
       if (next.health <= 0) {
         return this.die();
       }
+    }
+
+    if (next.position) {
+      this.setPosition(next.position, 0.01);
+    }
+
+    if (next.rotation) {
+      const q2 = new Quaternion().copy(next.rotation);
+      const q1 = new Quaternion()
+        .copy(this.physicBody.quaternion)
+        .slerp(q2, 0.05);
+
+      this.physicBody.quaternion.copy(q1);
     }
   }
 
@@ -204,40 +227,20 @@ export class Hero {
     const effect = new DissolveEffect();
     effect.run(this.target, new Color("#FAEB9C"), 3);
 
-    state.setState({ objects: { [this.id]: null } });
+    this.state.makeKill();
   }
 
   hit(by: HeroProps, point: Vector3) {
     const { attack = 0 } = by;
 
-    const prev = state.objects[this.props.id]
-      ? state.objects[this.props.id].health ?? 0
-      : 0;
+    console.log('attack', attack);
 
-    if (prev <= 0) return;
-
-    state.setState({ objects: { [this.props.id]: {
-          health: prev - attack,
-        } } });
+    this.state.makeHit(attack);
   }
 
   update(timeInSeconds: number) {
     if (!this.stateMachine.currentState) {
       return;
-    }
-    const obj = state.objects[this.id];
-
-    if (!obj) return;
-
-    this.setPosition(obj.position, 0.01);
-
-    if (obj.rotation) {
-      const q2 = new Quaternion().copy(obj.rotation);
-      const q1 = new Quaternion()
-        .copy(this.physicBody.quaternion)
-        .slerp(q2, 0.05);
-
-      this.physicBody.quaternion.copy(q1);
     }
 
     if (this.animated) {
