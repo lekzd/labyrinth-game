@@ -1,6 +1,6 @@
 import { createPhysicBox } from "@/cannon";
 import { Object3D, Object3DEventMap } from "three";
-import { BasePhysicEntity } from "./BasePhysicEntity";
+import { PhysicEntity } from "./PhysicEntity";
 import { Body } from "cannon";
 
 interface StumpPhysicEntityProps {
@@ -14,7 +14,7 @@ interface StumpPhysicEntityProps {
   del: number;
 }
 
-export class StumpPhysicEntity extends BasePhysicEntity {
+export class StumpPhysicEntity extends PhysicEntity {
   constructor(props: StumpPhysicEntityProps) {
     const {
       target,

@@ -1,6 +1,6 @@
 import { createPhysicBox } from "@/cannon";
 import { Object3D, Object3DEventMap } from "three";
-import { BasePhysicEntity } from "./BasePhysicEntity";
+import { PhysicEntity } from "./PhysicEntity";
 import { Body } from "cannon";
 
 interface GatePhysicEntityProps {
@@ -11,7 +11,7 @@ interface GatePhysicEntityProps {
   type?: typeof Body.DYNAMIC | typeof Body.STATIC;
 }
 
-export class GatePhysicEntity extends BasePhysicEntity {
+export class GatePhysicEntity extends PhysicEntity {
   doorShape: CANNON.Box;
 
   constructor(props: GatePhysicEntityProps) {
