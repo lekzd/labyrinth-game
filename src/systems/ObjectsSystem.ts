@@ -191,7 +191,7 @@ export const ObjectsSystem = () => {
             if (object.hit) {
               object.hit(activeObject.props, point);
             }
-            return object.state.props.health ? HitContactType.Body : HitContactType.Other;
+            return object.state?.props.health ? HitContactType.Body : HitContactType.Other;
           }
         };
       }

@@ -10,6 +10,7 @@ import { DynamicObject } from "@/types";
 import { rotateUvs } from "@/utils/rotateUvs";
 import { PineMatetial } from "@/materials/pine";
 import { StaticPhysicEntity } from "@/entities/StaticPhysicEntity";
+import { memoRandom } from "./utils";
 
 export const radiusFunction = (from: number, to: number) => (t: number) => {
   return from - t * (from - to);
@@ -174,21 +175,6 @@ export const createTree = () => {
   mesh.add(foliage);
 
   return mesh;
-};
-const PHYSIC_Y = 30;
-
-const memoRandom = (func: () => THREE.Mesh, numb: number) => {
-  const items: THREE.Mesh[] = [];
-
-  return () => {
-    if (items.length < numb) {
-      const item = func();
-      items.push(item);
-      return item;
-    }
-
-    return items[random(0, numb)];
-  };
 };
 
 const memoTree = memoRandom(createTree, 20);
