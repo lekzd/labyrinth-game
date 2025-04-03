@@ -3,7 +3,7 @@ import { mergeDeep } from "@/utils/mergeDeep.ts";
 import { State, scale } from "@/state.ts";
 import { Tiles } from "@/config";
 import { NpcAnimationStates } from "@/objects/hero/NpcAnimationStates.ts";
-import { Quaternion, QuaternionLike, Vector3, Vector3Like } from "three";
+import { Quaternion, QuaternionLike, Vector2Like, Vector3, Vector3Like } from "three";
 import { pickBy } from "@/utils/pickBy.ts";
 import { settings } from "@/objects/hero/settings.ts";
 import { modelType } from "@/loader.ts";
@@ -25,6 +25,7 @@ interface MobConfig {
   position: Vector3Like;
   rotation?: QuaternionLike;
   patrolRadius?: number;
+  patrolPoint?: Vector2Like;
 }
 
 /*
@@ -52,7 +53,7 @@ const getQuaternion = (pos1: Vector3Like, pos2: Vector3Like) => {
   return pickBy(quaternion, ["x", "y", "z", "w"]);
 };
 
-export const Spawners = async (count = 1) => {
+export const Spawners = async () => {
   const state: Partial<State> = {};
   const dies: Record<string, boolean> = {};
 
@@ -101,8 +102,8 @@ export const Spawners = async (count = 1) => {
         y: Math.floor(position.y / scale)
       };
 
-      for (let y = base.y - 50; y < base.y + 50; y++) {
-        for (let x = base.x - 50; x < base.x + 50; x++) {
+      for (let y = base.y - 20 * scale; y < base.y + 20 * scale; y++) {
+        for (let x = base.x - 20 * scale; x < base.x + 20 * scale; x++) {
           const tile = getWorld(x, y);
 
           if (tile === Tiles.Spawner) {
@@ -127,7 +128,9 @@ export const Spawners = async (count = 1) => {
                   y: 0,
                   z: (y + Math.sin(i * (Math.PI * 2) / count) * radius) * scale
                 },
-                rotation: { w: 0.548628892113074, x: 0, y: -0.8360659894642256, z: 0 }
+                rotation: { w: 0.548628892113074, x: 0, y: -0.8360659894642256, z: 0 },
+                patrolRadius: 10 * scale,
+                patrolPoint: { x: x * scale, y: y * scale }
               };
             }
           }
@@ -136,12 +139,13 @@ export const Spawners = async (count = 1) => {
     }
 
     for (const key in spawners) {
-      const id = `mob:${key}`;
-      let item = state.objects?.[id]!;
+      const mobId = `mob:${key}`;
+      let item = state.objects?.[mobId]!;
 
       // Если есть моб у спавнера смотрим на него, иначе на позицию спавнера
       const pos = item?.position || spawners[key].position;
       const rotation = item?.rotation || spawners[key].rotation;
+
       let distance = Infinity;
       let position: Vector3Like = { x: 0, y: 0, z: 0 };
       let person: DynamicObject;
@@ -157,7 +161,9 @@ export const Spawners = async (count = 1) => {
         const pers = state.objects?.[activeObjectId];
         if (!pers) continue;
 
-        const persDistance = getDistance(pos, pers.position);
+        const personObject = systems.objectsSystem.objects[pers.id];
+        const mobPosition = systems.objectsSystem.objects[id]?.mesh.position ?? pos;
+        const persDistance = getDistance(mobPosition, personObject.mesh.position);
 
         if (distance > persDistance) {
           distance = persDistance;
@@ -166,14 +172,14 @@ export const Spawners = async (count = 1) => {
         }
       }
 
-      if (distance > 150 || item?.health <= 0 || dies[id]) continue;
+      if (distance > 150 || item?.health <= 0 || dies[mobId]) continue;
 
       // Если нет создаем
       if (!item) {
         const { x, y, z } = pos;
         const type = spawners[key].type;
         item = {
-          id,
+          id: mobId,
           type,
           ...settings[type],
           baseAnimation: NpcAnimationStates.idle,
@@ -184,17 +190,37 @@ export const Spawners = async (count = 1) => {
         next({ objects: { [item.id]: item } });
       }
 
-      // Если кто-то рядом идем
-      if (distance > 10 && distance < 100) {
+      const goTo = (point: Vector3Like) => {
         next({
           objects: {
             [item.id]: {
               baseAnimation: NpcAnimationStates.walk,
-              rotation: getQuaternion(item.position, position),
-              position: changeCoordinate(item.position, position, 5)
+              rotation: getQuaternion(item.position, point),
+              position: changeCoordinate(item.position, point, item.speed * scale)
             }
           }
         });
+      };
+
+      const patrolPoint = spawners[key].patrolPoint;
+      const patrolRadius = spawners[key].patrolRadius ?? Infinity;
+
+      if (patrolPoint) {
+        const homePoint = new Vector3(patrolPoint.x, 0, patrolPoint.y)
+        const patrolDistance = getDistance(item.position, homePoint);
+
+        if (patrolDistance > patrolRadius) {
+          goTo(homePoint);
+        } else {
+          if (distance > 10 && distance < 100) {
+            goTo(position);
+          }
+        }
+      } else {
+        // Если кто-то рядом идем
+        if (distance > 10 && distance < 100) {
+          goTo(position);
+        }
       }
 
       // Если кто-то супер тут то бьем
