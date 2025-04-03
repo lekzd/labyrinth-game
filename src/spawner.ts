@@ -1,29 +1,37 @@
-import {socket} from "@/socket.ts";
-import {mergeDeep} from "@/utils/mergeDeep.ts";
-import {State, scale} from "@/state.ts";
-import {Tiles} from "@/config";
-import {NpcAnimationStates} from "@/objects/hero/NpcAnimationStates.ts";
-import {
-  Quaternion,
-  Vector3,
-  Vector3Like,
-} from "three";
+import { socket } from "@/socket.ts";
+import { mergeDeep } from "@/utils/mergeDeep.ts";
+import { State, scale } from "@/state.ts";
+import { Tiles } from "@/config";
+import { NpcAnimationStates } from "@/objects/hero/NpcAnimationStates.ts";
+import { Quaternion, QuaternionLike, Vector3, Vector3Like } from "three";
 import { pickBy } from "@/utils/pickBy.ts";
-import {settings} from "@/objects/hero/settings.ts";
-import {modelType} from "@/loader.ts";
+import { settings } from "@/objects/hero/settings.ts";
+import { modelType } from "@/loader.ts";
 import { RecursivePartial } from "./types/RecursivePartial";
 import { DynamicObject } from "./types/DynamicObject";
 import { systems } from "./systems";
 import { getDistance } from "./utils/getDistance";
-import {getWorld} from "@/generators/getWorld.ts";
+import { getWorld } from "@/generators/getWorld.ts";
 
-const { onUpdate, send, connect } = socket({ name: 'MOBS', update: false, send: false  });
+const { onUpdate, send, connect } = socket({
+  name: "MOBS",
+  update: false,
+  send: false
+});
+
+interface MobConfig {
+  id: string;
+  type: modelType;
+  position: Vector3Like;
+  rotation?: QuaternionLike;
+  patrolRadius?: number;
+}
 
 /*
-* Не завязывается на стор и живет на своем сокете, чтобы иметь возможность переместиться с фронта на бэк
-* Не сильно хочется выполнять эту логику на бэкенде, чтобы тратилось меньше ресурсв, а бэк был прозрачным (без завязки на бизнем логику)
-*
-* */
+ * Не завязывается на стор и живет на своем сокете, чтобы иметь возможность переместиться с фронта на бэк
+ * Не сильно хочется выполнять эту логику на бэкенде, чтобы тратилось меньше ресурсв, а бэк был прозрачным (без завязки на бизнем логику)
+ *
+ * */
 
 const getQuaternion = (pos1: Vector3Like, pos2: Vector3Like) => {
   // TODO: вычесления отвязать от плоскости Threejs
@@ -41,9 +49,8 @@ const getQuaternion = (pos1: Vector3Like, pos2: Vector3Like) => {
   const quaternion = new Quaternion();
   quaternion.setFromUnitVectors(initialDirection, direction);
 
-  return pickBy(quaternion, ['x', 'y', 'z', 'w'])
-}
-
+  return pickBy(quaternion, ["x", "y", "z", "w"]);
+};
 
 export const Spawners = async (count = 1) => {
   const state: Partial<State> = {};
@@ -52,49 +59,77 @@ export const Spawners = async (count = 1) => {
   const next = (change: RecursivePartial<State>) => {
     mergeDeep(state, change);
     send(change);
-  }
+  };
 
   // Подписаться на обновления сервера
   onUpdate((next: RecursivePartial<State>) => {
     mergeDeep(state, next);
 
-    for (const id in (next.objects || {})) {
+    for (const id in next.objects || {}) {
       // console.log('id', id)
       // TODO: почему-то не приходит null у скелетона
-      if (id.startsWith('mob') && !next.objects?.[id]) {
+      if (id.startsWith("mob") && !next.objects?.[id]) {
         dies[id] = true;
-        setTimeout(() => { delete dies[id]; }, 10000)
+        setTimeout(() => {
+          delete dies[id];
+        }, 10000);
       }
     }
-  })
+  });
 
   connect();
   const attackCoolDown: Record<string, boolean> = {};
 
   const tick = () => {
     setTimeout(tick, 500);
-    
+
     if (!systems.uiSettingsSystem.settings.game.enemy_ai) {
       return;
     }
-    const spawners = {};
+    const spawners: Record<string, MobConfig> = {};
 
-    for (const id in (state?.players || {})) {
-      const {activeObjectId} = state.players?.[id];
+    for (const id in state?.players || {}) {
+      const player = state.players?.[id];
+
+      if (!player) continue;
+
+      const { activeObjectId } = player;
 
       const { position } = state.objects?.[activeObjectId]!;
-      const base = { x: Math.floor(position.x / scale), y: Math.floor(position.y / scale) };
+      const base = {
+        x: Math.floor(position.x / scale),
+        y: Math.floor(position.y / scale)
+      };
 
-      for (let y = base.y -50; y < base.y +50; y++) {
-        for (let x = base.x -50; x < base.x +50; x++) {
+      for (let y = base.y - 50; y < base.y + 50; y++) {
+        for (let x = base.x - 50; x < base.x + 50; x++) {
           const tile = getWorld(x, y);
 
           if (tile === Tiles.Spawner) {
             spawners[`${x}:${y}`] = {
-              x: x * scale,
-              y: 0,
-              z: y * scale
+              id: `${x}:${y}`,
+              type: modelType.Hallow,
+              position: { x: x * scale, y: 0, z: y * scale },
+              rotation: { w: 0.548628892113074, x: 0, y: -0.8360659894642256, z: 0 }
             };
+          }
+
+          if (tile === Tiles.MagicMushroom) {
+            const radius = 5;
+            const count = 8;
+
+            for (let i = 0; i < count; i++) {
+              spawners[`${x}:${y}_${i}`] = {
+                id: `${x}:${y}_${i}`,
+                type: modelType.Mashroom,
+                position: {
+                  x: (x + Math.cos(i * (Math.PI * 2) / count) * radius) * scale,
+                  y: 0,
+                  z: (y + Math.sin(i * (Math.PI * 2) / count) * radius) * scale
+                },
+                rotation: { w: 0.548628892113074, x: 0, y: -0.8360659894642256, z: 0 }
+              };
+            }
           }
         }
       }
@@ -105,14 +140,19 @@ export const Spawners = async (count = 1) => {
       let item = state.objects?.[id]!;
 
       // Если есть моб у спавнера смотрим на него, иначе на позицию спавнера
-      const pos = item?.position || spawners[key];
+      const pos = item?.position || spawners[key].position;
+      const rotation = item?.rotation || spawners[key].rotation;
       let distance = Infinity;
-      let position: Vector3Like;
+      let position: Vector3Like = { x: 0, y: 0, z: 0 };
       let person: DynamicObject;
 
       // Смотрим количество персонажей у спавнера
-      for (const id in (state?.players || {})) {
-        const { activeObjectId } = state.players?.[id];
+      for (const id in state?.players || {}) {
+        const player = state.players?.[id];
+
+        if (!player) continue;
+
+        const { activeObjectId } = player;
 
         const pers = state.objects?.[activeObjectId];
         if (!pers) continue;
@@ -131,14 +171,14 @@ export const Spawners = async (count = 1) => {
       // Если нет создаем
       if (!item) {
         const { x, y, z } = pos;
-        const type = modelType.Hallow;
+        const type = spawners[key].type;
         item = {
           id,
           type,
           ...settings[type],
           baseAnimation: NpcAnimationStates.idle,
           position: { x, y, z },
-          rotation: { w: 0.548628892113074, x: 0, y: -0.8360659894642256, z: 0 }
+          rotation,
         };
 
         next({ objects: { [item.id]: item } });
@@ -162,7 +202,7 @@ export const Spawners = async (count = 1) => {
         next({
           objects: {
             [item.id]: {
-              additionsAnimation: NpcAnimationStates.spell1,
+              additionsAnimation: NpcAnimationStates.spell1
             }
           }
         });
@@ -171,7 +211,7 @@ export const Spawners = async (count = 1) => {
           next({
             objects: {
               [person.id]: {
-                health: state.objects[person.id].health - item.attack,
+                health: state.objects[person.id].health - item.attack
               }
             }
           });
@@ -183,10 +223,10 @@ export const Spawners = async (count = 1) => {
         }
       }
     }
-  }
+  };
 
   setTimeout(tick, 1000);
-}
+};
 
 function changeCoordinate(pos1: Vector3Like, pos2: Vector3Like, delta: number) {
   // Вычисляем разность координат по осям x и y

@@ -185,24 +185,6 @@ export class Hero {
         return this.die();
       }
     }
-
-    if (next.position) {
-      this.setPosition(next.position, 0.01);
-    }
-
-    if (next.rotation) {
-      const q2 = new Quaternion().copy(next.rotation);
-      const q1 = new Quaternion()
-        .copy(this.physicEntity.body.quaternion)
-        .slerp(q2, 0.05);
-
-      this.physicEntity.body.quaternion.set(
-        q1.x,
-        q1.y,
-        q1.z,
-        q1.w
-      );
-    }
   }
 
   setRotation(angle: number) {
@@ -240,6 +222,26 @@ export class Hero {
   update(timeInSeconds: number) {
     if (!this.stateMachine.currentState) {
       return;
+    }
+
+    const obj = state.objects[this.id];
+
+    if (!obj) return;
+
+    this.physicEntity.setPositionLerp(obj.position, 0.01);
+
+    if (obj.rotation) {
+      const q2 = new Quaternion().copy(obj.rotation);
+      const q1 = new Quaternion()
+        .copy(this.physicEntity.body.quaternion)
+        .slerp(q2, 0.05);
+
+      this.physicEntity.body.quaternion.set(
+        q1.x,
+        q1.y,
+        q1.z,
+        q1.w
+      );
     }
 
     if (this.animated) {

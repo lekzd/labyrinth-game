@@ -1,9 +1,7 @@
+import { Vector3 } from "three";
 import { DynamicObject, RoomConfig } from "@/types";
 import { Room } from "./Room";
 import { createObject, getTileId } from "@/state";
-import { systems } from "@/systems";
-import { Vector3 } from "three";
-import { MushroomWarior } from "../mushroomWarior/MushroomWarior";
 
 export class MagicMushroomRoom extends Room {
   mushroomWarriorsIds: string[] = [];
@@ -16,21 +14,6 @@ export class MagicMushroomRoom extends Room {
     const id = getTileId(props, this.center, type);
     const altarPartId = `${id}::AltarPart`;
 
-    const radius = 20;
-    const count = 8;
-
-    const mushroomWarriorsPositions = [];
-
-    for (let i = 0; i < count; i++) {
-      mushroomWarriorsPositions.push(
-        new Vector3(
-          this.center.x + Math.cos(i * (Math.PI * 2) / count) * radius,
-          6,
-          this.center.z + Math.sin(i * (Math.PI * 2) / count) * radius
-        )
-      );
-    }
-
     objectsToAdd[id] = createObject({
       id,
       type,
@@ -42,25 +25,6 @@ export class MagicMushroomRoom extends Room {
       id: altarPartId,
       type: "AltarPart",
       position: new Vector3(this.center.x, 6, this.center.z)
-    });
-
-    mushroomWarriorsPositions.forEach((position, index) => {
-      const mushroomWarriorId = `${id}::MushroomWarior:${index}`;
-
-      this.mushroomWarriorsIds.push(mushroomWarriorId);
-
-      objectsToAdd[mushroomWarriorId] = createObject({
-        id: mushroomWarriorId,
-        type: "MushroomWarior",
-        position
-      });
-
-      setTimeout(() => {
-        const mushroomWarrior =
-          systems.objectsSystem.objects[mushroomWarriorId] as MushroomWarior;
-
-        mushroomWarrior.setRoom(this);
-      }, 1000);
     });
 
     return objectsToAdd;

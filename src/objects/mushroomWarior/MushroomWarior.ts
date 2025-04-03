@@ -1,4 +1,3 @@
-import * as CANNON from "cannon";
 import { loads } from "@/loader";
 import { DynamicObject, HeroProps } from "@/types";
 import {
@@ -8,15 +7,10 @@ import {
   Vector3Like
 } from "three";
 import { Room } from "../room/Room";
-import { selectAllPlayerObjects } from "@/utils/stateUtils";
-import { getDistance } from "@/utils/getDistance";
-import { get2DAngleBetweenPoints } from "@/utils/getAngleBetweenPoints";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { random } from "@/utils/random";
-import { getScalarVectorAngle } from "@/utils/getScalarVectorAngle";
 import { initAnimations } from "@/utils/initAnimations";
 import { StateEntity } from "@/entities/StateEntity";
-import { systems } from "@/systems";
 import { HealthBar } from "../hero/healthbar";
 import { HeroPhysicEntity } from "@/entities/HeroPhysicEntity";
 
@@ -102,128 +96,17 @@ export class MushroomWarior {
     if (next.health) {
       this.healthBar.update(this.state.props);
     }
+
+    if (next.position) {
+      this.physicEntity.setPosition(next.position);
+    }
+
+    if (next.rotation) {
+      this.physicEntity.setRotation(next.rotation);
+    }
   }
 
   update(timeDelta: number) {
-    this.tickCounter += 1;
-
-    if (this.tickCounter % 100 === 0 && this.room) {
-      const [object] = selectAllPlayerObjects({
-        objects: this.room.objectsInside
-      }).sort(
-        (a, b) =>
-          getDistance(a.position, this.room!.center) -
-          getDistance(b.position, this.room!.center)
-      );
-
-      const distanceToPlayer = object
-        ? getDistance(this.mesh.position, object.position)
-        : 10000;
-      const distanceToCenter = getDistance(
-        this.mesh.position,
-        this.room.center
-      );
-
-      const impluse = 40 * MASS;
-
-      const goToTarget = (target: Vector3Like) => {
-        if (!this.physicEntity.body) {
-          return;
-        }
-
-        const objectPosition = this.mesh.position;
-
-        if (objectPosition.y > 0) {
-          return;
-        }
-
-        const direction = new CANNON.Vec3(
-          target.x - objectPosition.x,
-          // target.y - objectPosition.y,
-          0,
-          target.z - objectPosition.z
-        );
-
-        // Нормализуем вектор, чтобы его длина была равна 1
-        direction.normalize();
-
-        // Умножаем нормализованный вектор на силу импульса
-        const impulseVector = new CANNON.Vec3(
-          direction.x * impluse * 2,
-          impluse,
-          direction.z * impluse * 2
-        );
-
-        const angleToTarget = get2DAngleBetweenPoints(
-          this.mesh.position,
-          target
-        );
-
-        this.physicEntity.body.quaternion.setFromAxisAngle(
-          new CANNON.Vec3(0, 1, 0),
-          angleToTarget + Math.PI / 2
-        );
-
-        this.physicEntity.body.applyImpulse(
-          impulseVector,
-          this.physicEntity.body.position
-        );
-      };
-
-      if (distanceToCenter < 100) {
-        // грибок в грибнице, может атаковать
-
-        if (distanceToPlayer < 50) {
-          this.behaviorState = BehaviorState.ATTACK;
-          this.behaviorTarget = object.position;
-
-          if (distanceToPlayer < 6 && !this.attackCoolDown) {
-            this.attackCoolDown = true;
-
-            const hero = systems.objectsSystem.objects[object.id];
-
-            if (hero) {
-              hero.state.makeHit(this.props.attack ?? 10);
-            }
-
-            setTimeout(() => {
-              this.attackCoolDown = false;
-            }, 1000);
-          }
-
-        } else {
-          this.behaviorState = BehaviorState.PATROL;
-
-          const angle = getScalarVectorAngle(
-            this.mesh.position.x,
-            this.mesh.position.z,
-            this.room!.center.x,
-            this.room!.center.z
-          );
-
-          const angleToTarget = (angle + Math.PI / 6) % (Math.PI * 2);
-
-          this.behaviorTarget = new CANNON.Vec3(
-            this.room!.center.x + Math.cos(angleToTarget) * 30,
-            0,
-            this.room!.center.z + Math.sin(angleToTarget) * 30
-          );
-        }
-      } else {
-        // грибок отошел от грибницы, идет обратно
-
-        if (distanceToCenter > 10) {
-          this.behaviorState = BehaviorState.RETURN;
-          this.behaviorTarget = this.room!.center;
-        }
-      }
-
-
-      if (this.behaviorState !== BehaviorState.IDLE && this.behaviorTarget) {
-        goToTarget(this.behaviorTarget)
-      }
-    }
-
     this.mixer.update(timeDelta);
   }
 
