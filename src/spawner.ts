@@ -162,7 +162,7 @@ export const Spawners = async () => {
         if (!pers) continue;
 
         const personObject = systems.objectsSystem.objects[pers.id];
-        const mobPosition = systems.objectsSystem.objects[id]?.mesh.position ?? pos;
+        const mobPosition = systems.objectsSystem.objects[mobId]?.mesh.position ?? pos;
         const persDistance = getDistance(mobPosition, personObject.mesh.position);
 
         if (distance > persDistance) {

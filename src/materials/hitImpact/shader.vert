@@ -20,17 +20,15 @@ void main() {
     vec4 modelViewPosition = modelViewMatrix * mvPosition;
 
     float progressFactor = time / animationEnd;
-    vYFactor = progressFactor * directions.y * 5.0;
+    vYFactor = progressFactor * directions.y * 0.05;
 
     gl_PointSize = (1.0 - progressFactor) * values.x; // Установка размера частицы
 
     vec4 basePosition = projectionMatrix * modelViewPosition;
 
-    basePosition.x += cos(directions.x) * (1.0 + vYFactor) * 2.0;
-
     float yFactor = vYFactor - 2.0;
 
-    basePosition.y += max(-23.0, (sin(directions.x) * (1.0 + yFactor)) - (yFactor * yFactor));
+    basePosition.y = basePosition.y + (vYFactor);
 
     gl_Position = basePosition;
 }

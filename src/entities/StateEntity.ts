@@ -51,12 +51,12 @@ export class StateEntity {
   makeHit(damage: number) {
     const health = this.props.health - damage;
 
+    this.updateState({
+      health
+    });
+
     if (health <= 0) {
       this.makeKill();
-    } else {
-      this.updateState({
-        health
-      });
     }
   }
 

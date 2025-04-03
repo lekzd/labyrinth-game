@@ -217,6 +217,10 @@ export class Hero {
     const { attack = 0 } = by;
 
     this.state.makeHit(attack);
+
+    if (this.state.props.health <= 0) {
+      this.die();
+    }
   }
 
   update(timeInSeconds: number) {
@@ -360,9 +364,9 @@ function action(animations: AnimationControllers, Name: AnimationName) {
 
         if (Name in NpcAdditionalAnimations) {
           prevAction.stop();
-          curAction.crossFadeFrom(prevAction, 0.1, true);
+          curAction.crossFadeFrom?.(prevAction, 0.1, true);
         } else {
-          curAction.crossFadeFrom(prevAction, 0.5, true);
+          curAction.crossFadeFrom?.(prevAction, 0.5, true);
         }
 
         if (Name === NpcBaseAnimations.death) {

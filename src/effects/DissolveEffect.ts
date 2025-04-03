@@ -8,6 +8,7 @@ export class DissolveEffect {
   target: Object3D;
 
   run(mesh: Object3D, color: Color, pointSize: number) {
+
     const vertices = getVerticesFromObject(mesh);
     // Создание массивов для хранения позиций частиц
     const positions = new Float32Array(vertices.length * 3); // 3 компоненты (x, y, z) на каждую частицу
@@ -48,22 +49,19 @@ export class DissolveEffect {
 
     this.target = particleSystem;
 
-    particleSystem.position.copy(mesh.position);
-    particleSystem.rotation.copy(mesh.rotation);
-    particleSystem.scale.set(10, 10, 10);
+    particleSystem.applyMatrix4(mesh.matrixWorld);
+
+    particleMaterial.uniforms.time.value = 0;
+    particleMaterial.uniformsNeedUpdate = true;
 
     scene.add(particleSystem);
 
     new Tween({ v: 0 })
       .delay(300)
-      .to({ v: -1.3 }, 1000)
+      .to({ v: -1.3 }, 500)
       .onUpdate(({ v }) => {
         particleMaterial.uniforms.time.value = v;
         particleMaterial.uniformsNeedUpdate = true;
-
-        const s = 10 + v * 2;
-
-        particleSystem.scale.set(s, s, s);
       })
       .onComplete(() => {
         scene.remove(particleSystem);
