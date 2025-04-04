@@ -13,5 +13,4 @@ export type ObjectType =
   | "Foliage"
   | "MagicTree"
   | "MagicMushroom"
-  | "MushroomWarior"
   | "AltarPart";

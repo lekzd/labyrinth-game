@@ -1,72 +1,40 @@
 import {
-  AnimationAction,
-  AnimationClip,
-  AnimationMixer,
   Group,
-  Mesh,
-  MeshBasicMaterial,
   Object3D,
   Object3DEventMap,
   Quaternion,
-  SphereGeometry,
   TextureLoader,
   MeshStandardMaterial,
   Vector3,
-  LoopOnce,
   Vector3Like,
   Color,
 } from "three";
 import { pickBy } from "@/utils/pickBy.ts";
 import { loads, weaponType } from "@/loader";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
-import { Box, Torch } from "@/uses";
-import { NpcAdditionalAnimations, NpcAnimationStates, NpcBaseAnimations } from "./NpcAnimationStates.ts";
+import { Box } from "@/uses";
+import { NpcAnimationStates } from "./NpcAnimationStates.ts";
 import { HealthBar } from "./healthbar.ts";
 import { HeroProps } from "@/types";
 import { DissolveEffect } from "@/effects/DissolveEffect";
 import { shadowSetter } from "@/utils/shadowSetter";
-import { initAnimations } from "@/utils/initAnimations";
 import { StateEntity } from "@/entities/StateEntity";
 import { HeroPhysicEntity } from "@/entities/HeroPhysicEntity";
-
-type ElementsHero = {
-  leftArm: Object3D<Object3DEventMap>;
-  leftHand: Object3D<Object3DEventMap>;
-  rightArm: Object3D<Object3DEventMap>;
-  rightHand: Object3D<Object3DEventMap>;
-  torch: Mesh<SphereGeometry, MeshBasicMaterial, Object3DEventMap>;
-};
-
-type AnimationName = keyof typeof NpcAnimationStates;
-type AnimationControllers = Record<
-  AnimationName,
-  {
-    action: AnimationAction;
-    clip: AnimationClip;
-  }
->;
-
-interface StateAction extends ReturnType<typeof action> {
-  Exit?: () => void;
-}
+import { AnimationEntity } from "@/entities/AnimationEntity.ts";
+import { state } from "@/state.ts";
 
 export class Hero {
   private target: Object3D<Object3DEventMap>;
-  private stateMachine: ReturnType<typeof CharacterFSM>;
-  private stateMachine2: ReturnType<typeof CharacterFSM>;
-  public mixer: AnimationMixer;
-  public animated = true;
   private healthBar;
   public weaponObject: Object3D<Object3DEventMap>;
 
-  readonly elementsHero: ElementsHero;
-  readonly animations: AnimationClip[];
   readonly decceleration = new Vector3(-0.0005, -0.0001, -5.0);
   readonly acceleration = new Vector3(1, 0.25, 50.0);
   readonly velocity = new Vector3(0, 0, 0);
   readonly props: HeroProps;
   readonly state: StateEntity;
   physicEntity: HeroPhysicEntity;
+  animationEntity: AnimationEntity;
 
   constructor(props: HeroProps) {
     const model = loads.model[props.type];
@@ -88,9 +56,10 @@ export class Hero {
 
     this.props = props;
     this.target = initTarget(model, props);
-    this.mixer = new AnimationMixer(this.target);
-    this.mixer.timeScale = 1.5;
-    this.animations = initAnimations(this.target, this.mixer);
+
+    this.animationEntity = new AnimationEntity({
+      target: this.target,
+    });
 
     this.physicEntity = new HeroPhysicEntity({
       target: this.target,
@@ -99,9 +68,6 @@ export class Hero {
       mass: 5,
     });
 
-    this.elementsHero = initElementsHero(this.target);
-    this.stateMachine = initStateMashine(this.animations);
-    this.stateMachine2 = initStateMashine(this.animations);
     this.healthBar = HealthBar(this.state.props, this.target);
 
     this.initWeapon(this.props.weapon);
@@ -169,12 +135,12 @@ export class Hero {
 
     if (next.baseAnimation) {
       this.props.baseAnimation = next.baseAnimation;
-      this.stateMachine.update(next.baseAnimation);
+      this.animationEntity.setBaseAnimation(next.baseAnimation);
     }
 
     if (next.hasOwnProperty('additionsAnimation')) {
       this.props.additionsAnimation = next.additionsAnimation;
-      this.stateMachine2.update(next.additionsAnimation ?? NpcAnimationStates.idle);
+      this.animationEntity.setAdditionsAnimation(next.additionsAnimation ?? NpcAnimationStates.idle);
     }
 
     if (next.hasOwnProperty('health')) {
@@ -224,10 +190,6 @@ export class Hero {
   }
 
   update(timeInSeconds: number) {
-    if (!this.stateMachine.currentState) {
-      return;
-    }
-
     const obj = state.objects[this.id];
 
     if (!obj) return;
@@ -248,9 +210,7 @@ export class Hero {
       );
     }
 
-    if (this.animated) {
-      this.mixer.update(timeInSeconds);
-    }
+    this.animationEntity.update(timeInSeconds);
   }
 }
 
@@ -286,99 +246,4 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
   });
 
   return target;
-}
-
-function initElementsHero(target: Object3D<Object3DEventMap>): ElementsHero {
-  const leftArm = target.getObjectByName("ShoulderL")!;
-  const leftHand = target.getObjectByName("Fist1L")!;
-  const rightArm = target.getObjectByName("ShoulderR")!;
-  const rightHand = target.getObjectByName("Fist1R")!;
-  const torch = new Torch().sphere;
-
-  // Прикрепляем факел к руке персонажа
-  if (leftHand && !target.name.startsWith("Skeleton")) {
-    leftHand.add(torch);
-  }
-
-  return {
-    leftArm,
-    leftHand,
-    rightArm,
-    rightHand,
-    torch
-  };
-}
-
-function initStateMashine(animations: AnimationClip[]) {
-  const stateMachine = CharacterFSM({ animations });
-  stateMachine.setState("idle");
-  return stateMachine;
-}
-
-function CharacterFSM({ animations }: { animations: AnimationControllers }) {
-  let currentState: StateAction;
-
-  const setState = (name: AnimationName) => {
-    const prevState = currentState;
-
-    if (prevState) {
-      if (prevState.Name == name) {
-        return;
-      }
-      //calling the Exit method from State
-      if (prevState.Exit) prevState.Exit();
-    }
-    //creating new instance of a state class
-    currentState = action(animations, name);
-
-    //calling the Enter method from State
-    currentState.Enter(prevState);
-  };
-
-  return {
-    get currentState() {
-      return currentState;
-    },
-    setState,
-    update(next: AnimationName) {
-      setState(next);
-    }
-  };
-}
-
-function action(animations: AnimationControllers, Name: AnimationName) {
-  return {
-    Name,
-    Enter(prevState: StateAction) {
-      const curAction = animations[Name]?.action || { play: () => {} };
-
-      // TODO: разделить анимации на базовые из NpcBaseAnimations и дополнительные из NpcAdditionalAnimations
-      // допольнительные анимации не должны вызывать crossFadeFrom
-      // пример тут: https://threejs.org/examples/#webgl_animation_skinning_additive_blending
-      if (prevState) {
-        const prevAction = animations[prevState.Name]?.action;
-
-        curAction.time = 0.0;
-        curAction.enabled = true;
-        curAction.weight = Name in NpcAdditionalAnimations ? 1000 : 500;
-
-        if (Name in NpcAdditionalAnimations) {
-          prevAction.stop();
-          curAction.crossFadeFrom?.(prevAction, 0.1, true);
-        } else {
-          curAction.crossFadeFrom?.(prevAction, 0.5, true);
-        }
-
-        if (Name === NpcBaseAnimations.death) {
-          curAction.clampWhenFinished = true;
-          curAction.loop = LoopOnce;
-        }
-
-        curAction.play();
-      } else {
-        curAction.weight = Name in NpcAdditionalAnimations ? 500 : 1000;
-        curAction.play();
-      }
-    }
-  };
 }

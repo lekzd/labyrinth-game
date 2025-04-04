@@ -10,7 +10,6 @@ import { Foliage } from "@/objects/foliage/index.ts";
 import { AltarPart } from "@/objects/altarPart/index.ts";
 import { Stump } from "@/objects/stump";
 import { MagicMushroom } from "@/objects/magicMushroom/MagicMushroom.ts";
-import { MushroomWarior } from "@/objects/mushroomWarior/MushroomWarior.ts";
 
 const constructors = {
   Campfire,
@@ -24,8 +23,7 @@ const constructors = {
   Box,
   Stump,
   AltarPart,
-  MagicMushroom,
-  MushroomWarior
+  MagicMushroom
 }
 
 // По-умолчанию все объекты просто физические

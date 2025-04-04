@@ -60,7 +60,7 @@ const BasicCharacterControllerInput = (person: Hero) => {
     }, 1000 * duration);
   };
 
-  const jumpingNaimtion = person.animations.find((item) =>
+  const jumpingNaimtion = person.animationEntity.animations.find((item) =>
     item.name === animationType.jumping
   )!;
 
@@ -75,7 +75,7 @@ const BasicCharacterControllerInput = (person: Hero) => {
         ? WEAPONS_CONFIG[person.props.weapon].attackEffect
         : null;
 
-      const animation = person.animations.find((item) =>
+      const animation = person.animationEntity.animations.find((item) =>
         animations.includes(item.name)
       );
 
