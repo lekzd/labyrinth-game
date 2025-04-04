@@ -2,6 +2,7 @@ import { Vector3 } from "three";
 import { DynamicObject, RoomConfig } from "@/types";
 import { Room } from "./Room";
 import { createObject, getTileId } from "@/state";
+import { addObjects } from "@/render";
 
 export class MagicMushroomRoom extends Room {
   mushroomWarriorsIds: string[] = [];
@@ -18,19 +19,19 @@ export class MagicMushroomRoom extends Room {
       id,
       type,
       position: this.center,
-      onHit: (by) => {}
-    });
-
-    objectsToAdd[altarPartId] = createObject({
-      id: altarPartId,
-      type: "AltarPart",
-      position: new Vector3(this.center.x, 6, this.center.z)
+      onHit: (by) => {
+        addObjects({
+          [altarPartId]: createObject({
+            id: altarPartId,
+            type: "AltarPart",
+            position: new Vector3(this.center.x, 0, this.center.z)
+          })
+        });
+      }
     });
 
     return objectsToAdd;
   }
 
-  update(_timeDelta: number) {
-
-  }
+  update(_timeDelta: number) {}
 }

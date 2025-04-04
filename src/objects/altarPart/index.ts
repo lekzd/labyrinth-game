@@ -15,18 +15,20 @@ export class AltarPart {
   constructor(props: DynamicObject) {
     const halfExtents = new CANNON.Vec3(2, 2, 2);
     this.props = props;
+
+    this.sign = createInteractivitySign();
+    this.sign.mesh.position.y = 12;
+    
     this.mesh = initMesh(halfExtents);
+    this.mesh.add(this.sign.mesh);
+    Object.assign(this.mesh.position, props.position);
+
     this.physicEntity = new BoxPhysicEntity({
       target: this.mesh,
-      physicY: 4,
+      physicY: 0,
       physicRadius: 2,
-      mass: 100,
+      mass: 10,
     });
-    this.sign = createInteractivitySign();
-
-    this.sign.mesh.position.y = 12;
-
-    this.mesh.add(this.sign.mesh);
   }
   update(time: number) {}
 

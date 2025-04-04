@@ -26,6 +26,7 @@ import { createBranch, createBranchGeometry } from "../tree";
 import { jitterGeometry } from "@/utils/jitterGeometry";
 import { MagicMushroomPointsMaterial } from "@/materials/magicMushroomPoints";
 import { StaticPhysicEntity } from "@/entities/StaticPhysicEntity";
+import { StateEntity } from "@/entities/StateEntity";
 
 const Torch = () => {
   const torch = new PointLight(new Color("rgb(77, 241, 48)"), 1000, 100, 1); // Цвет, интенсивность, дистанция факела
@@ -127,6 +128,7 @@ export class MagicMushroom {
   readonly mesh: Object3D<Object3DEventMap>;
   particleMaterial: MagicMushroomPointsMaterial;
   physicEntity: StaticPhysicEntity;
+  state: StateEntity;
 
   constructor(props: DynamicObject) {
     this.props = props;
@@ -158,10 +160,16 @@ export class MagicMushroom {
     this.mesh.add(particleSystem);
 
     assign(this.mesh.position, props.position);
+
     this.physicEntity = new StaticPhysicEntity({
       target: this.mesh,
       physicY: 30,
       physicRadius: 5,
+    });
+
+    this.state = new StateEntity({
+      id: this.props.id,
+      health: 100,
     });
   }
   update(timeDelta: number) {
@@ -169,7 +177,11 @@ export class MagicMushroom {
   }
 
   hit(by: HeroProps, point: Vector3) {
-    if (this.props.onHit) {
+    const { attack = 0 } = by;
+
+    this.state.makeHit(attack);
+
+    if (this.props.onHit && this.state.props.health <= 0) {
       this.props.onHit(by);
     }
   }
