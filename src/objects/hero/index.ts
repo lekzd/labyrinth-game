@@ -7,7 +7,7 @@ import {
   MeshStandardMaterial,
   Vector3,
   Vector3Like,
-  Color,
+  Color
 } from "three";
 import { pickBy } from "@/utils/pickBy.ts";
 import { loads, weaponType } from "@/loader";
@@ -43,29 +43,31 @@ export class Hero {
       throw Error(`No model with type "${props.type}"`);
     }
 
-    this.state = new StateEntity(pickBy(props, [
-      'id',
-      'health',
-      'mana',
-      'speed',
-      'mass',
-      'attack',
-      'position',
-      'rotation',
-    ]));
+    this.state = new StateEntity(
+      pickBy(props, [
+        "id",
+        "health",
+        "mana",
+        "speed",
+        "mass",
+        "attack",
+        "position",
+        "rotation"
+      ])
+    );
 
     this.props = props;
     this.target = initTarget(model, props);
 
     this.animationEntity = new AnimationEntity({
-      target: this.target,
+      target: this.target
     });
 
     this.physicEntity = new HeroPhysicEntity({
       target: this.target,
       physicY: 8,
       physicRadius: 5,
-      mass: 5,
+      mass: 5
     });
 
     this.healthBar = HealthBar(this.state.props, this.target);
@@ -105,13 +107,22 @@ export class Hero {
       return;
     }
 
-    const boxMesh = (new Box({ id: 'asdasd', type: 'Box', position: { x: 0, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0, w: 0 } })).mesh;
+    if (loads.weapon_glb[weaponType]) {
+      this.weaponObject = clone(loads.weapon_glb[weaponType]!);
+    } else {
+      const boxMesh = new Box({
+        id: "asdasd",
+        type: "Box",
+        position: { x: 0, y: 0, z: 0 },
+        rotation: { x: 0, y: 0, z: 0, w: 0 }
+      }).mesh;
+      const group = new Group();
+      group.add(boxMesh);
 
-    boxMesh.scale.set(0.02, 0.02, 0.02);
+      boxMesh.scale.set(0.1, 0.1, 0.1);
 
-    this.weaponObject = loads.weapon_glb[weaponType]
-      ? clone(loads.weapon_glb[weaponType]!)
-      : boxMesh;
+      this.weaponObject = group;
+    }
 
     this.weaponObject.scale.set(0.5, 0.5, 0.5);
     this.weaponObject.rotation.set(0, Math.PI * 0.3, Math.PI * 0.1);
@@ -138,12 +149,14 @@ export class Hero {
       this.animationEntity.setBaseAnimation(next.baseAnimation);
     }
 
-    if (next.hasOwnProperty('additionsAnimation')) {
+    if (next.hasOwnProperty("additionsAnimation")) {
       this.props.additionsAnimation = next.additionsAnimation;
-      this.animationEntity.setAdditionsAnimation(next.additionsAnimation ?? NpcAnimationStates.idle);
+      this.animationEntity.setAdditionsAnimation(
+        next.additionsAnimation ?? NpcAnimationStates.idle
+      );
     }
 
-    if (next.hasOwnProperty('health')) {
+    if (next.hasOwnProperty("health")) {
       this.props.health = next.health;
       this.healthBar.update(this.state.props);
 
@@ -202,12 +215,7 @@ export class Hero {
         .copy(this.physicEntity.body.quaternion)
         .slerp(q2, 0.05);
 
-      this.physicEntity.body.quaternion.set(
-        q1.x,
-        q1.y,
-        q1.z,
-        q1.w
-      );
+      this.physicEntity.body.quaternion.set(q1.x, q1.y, q1.z, q1.w);
     }
 
     this.animationEntity.update(timeInSeconds);
@@ -223,9 +231,7 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
   target.scale.multiplyScalar(0.05);
   target.updateMatrix();
 
-  const texture = new TextureLoader().load(
-    `model/${target.name}_Texture.png`
-  );
+  const texture = new TextureLoader().load(`model/${target.name}_Texture.png`);
 
   const material = new MeshStandardMaterial({
     map: texture,
@@ -240,8 +246,8 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
 
       shadowSetter(o, {
         castShadow: true,
-        receiveShadow: true,
-      })
+        receiveShadow: true
+      });
     }
   });
 
