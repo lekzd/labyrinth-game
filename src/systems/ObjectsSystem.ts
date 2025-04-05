@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { PointContainer, PointOctree } from "sparse-octree";
+import { PointContainer } from "sparse-octree";
 import { physicWorld } from "@/cannon";
 import { DynamicObject, MapObject } from "@/types";
 import { currentPlayer } from "@/main";
@@ -9,7 +9,7 @@ import { throttle } from "@/utils/throttle.ts";
 import { AABB, Body, Vec3 } from "cannon";
 import { HitContactType } from "@/types/HitContactType";
 import { getActiveObjectFromState } from "@/utils/stateUtils";
-import { scene } from "@/scene";
+import { InteractiveObjectsStorage } from "@/utils/InteractiveObjectsStorage";
 
 function isPointInsideBody(point: Vec3, body: Body) {
   // Создаем AABB для физического тела
@@ -95,92 +95,11 @@ const hitItems = throttle(
   750
 );
 
-const interactionRaycaster = (
-  quaternion: THREE.Quaternion,
-  position: THREE.Vector3
-) => {
-  const direction = new THREE.Vector3(0, 0, 1);
-
-  direction.applyQuaternion(quaternion);
-
-  const far = 10;
-
-  const raycaster = new THREE.Raycaster(position, direction, 1, far);
-  raycaster.camera = systems.uiSettingsSystem.camera;
-  raycaster.params.Points.threshold = 5;
-
-  return raycaster;
-};
-
 export const ObjectsSystem = () => {
   const objects: Record<string, MapObject> = {};
   const interactive: Record<string, MapObject> = {};
-  const debugMeshes: Record<string, THREE.Mesh> = {};
-
   const physicObjects = new Map<string, MapObject>();
-
-  // Создаем Octree
-  const min = new THREE.Vector3(-100, -100, -100);
-  const max = new THREE.Vector3(100, 100, 100);
-  const octree = new PointOctree<MapObject>(min, max, 0, 100);
-
-  const position = {
-    previous: { x: 0, y: 0, z: 0 },
-    current: { x: 0, y: 0, z: 0 }
-  };
-
-  const objectToOctree = new Map<string, THREE.Vector3>();
-
-  const octreeAdd = (object: MapObject) => {
-    const position = relativePosition(object.mesh.position)
-
-    objectToOctree.set(object.props.id, position);
-    octree.set(position, object);
-  };
-
-  const octreeRemove = (object: MapObject) => {
-    const position = objectToOctree.get(object.props.id);
-
-    if (position) {
-      objectToOctree.delete(object.props.id);
-      octree.remove(position);
-    }
-  };
-
-  const octreeMove = (object: MapObject, newPosition: THREE.Vector3) => {
-    const position = objectToOctree.get(object.props.id);
-
-    if (position) {
-      objectToOctree.delete(object.props.id);
-      objectToOctree.set(object.props.id, newPosition);
-      octree.move(position, newPosition);
-    }
-  };
-
-  const relativePosition = (
-    point: THREE.Vector3,
-    state: keyof typeof position = "current"
-  ) => {
-    const vector = point.clone();
-
-    vector.x -= position[state].x;
-    vector.y -= position[state].y;
-    vector.z -= position[state].z;
-
-    return vector;
-  };
-
-  const createDebugMesh = (position: THREE.Vector3) => {
-    const geometry = new THREE.BoxGeometry(8, 8, 8);
-    const material = new THREE.MeshBasicMaterial({
-      color: 0xff0000,
-      wireframe: true
-    });
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.position.copy(position);
-    mesh.position.y += 4;
-    return mesh;
-  };
+  const interactiveObjectsStorage = new InteractiveObjectsStorage();
 
   return {
     objects,
@@ -202,22 +121,17 @@ export const ObjectsSystem = () => {
         interactive[object.props.id] = object;
       }
     },
-    remove: (id) => {
+    remove: (id: string) => {
       const object = objects[id];
 
       if (!object) return;
 
-      if (interactive[id]) octreeRemove(object);
+      if (interactive[id]) interactiveObjectsStorage.remove(object);
 
       physicObjects.delete(id);
 
       if (object.physicEntity) {
         physicWorld.remove(object.physicEntity.body);
-      }
-
-      if (debugMeshes[id]) {
-        scene.remove(debugMeshes[id]);
-        delete debugMeshes[id];
       }
     },
 
@@ -225,9 +139,7 @@ export const ObjectsSystem = () => {
       point: THREE.Vector3,
       fromObjectId: string
     ): HitContactType | null => {
-      const cloned = point.clone();
-      cloned.y = 0;
-      const object = octree.findNearestPoint(cloned, 7, true);
+      const object = interactiveObjectsStorage.findNearestPoint(point);
       const activeObject = objects[currentPlayer.activeObjectId];
 
       if (object && object.data?.props.id !== fromObjectId) {
@@ -259,21 +171,20 @@ export const ObjectsSystem = () => {
 
     update: (timeElapsedS: number) => {
       const { position: next } = state.select(getActiveObjectFromState) || {
-        position
+        position: new THREE.Vector3(0, 0, 0)
       };
 
-      position.previous = position.current;
-      position.current = next;
+      interactiveObjectsStorage.update(next);
 
       physicWorld.step(fixedTimeStep, timeElapsedS);
 
       physicObjects.forEach((object) => {
         if (object.physicEntity) {
-          const prev = relativePosition(object.mesh.position, "previous");
-
           object.physicEntity.syncMesh();
 
-          const next = relativePosition(object.mesh.position);
+          const next = interactiveObjectsStorage.relativePosition(
+            object.mesh.position
+          );
 
           if (
             interactive[object.props.id] &&
@@ -282,32 +193,13 @@ export const ObjectsSystem = () => {
             // Если рядом добавляем, если нет - удаляем
             if (next.x < 100 && next.y < 100 && next.z < 100) {
               // Двигаем если есть, если нет добавляем
-              if (objectToOctree.get(object.props.id)) {
-                octreeMove(object, next);
+              if (interactiveObjectsStorage.has(object)) {
+                interactiveObjectsStorage.move(object, next);
               } else {
-                octreeAdd(object);
-              }
-
-              // Добавляем отладочную сетку
-              if (debugMeshes[object.props.id]) {
-                debugMeshes[object.props.id].position.copy(
-                  object.mesh.position
-                );
-                debugMeshes[object.props.id].position.y += 4;
-              } else {
-                const debugMesh = createDebugMesh(object.mesh.position);
-                debugMeshes[object.props.id] = debugMesh;
-                scene.add(debugMesh);
+                interactiveObjectsStorage.add(object);
               }
             } else {
-              if (objectToOctree.get(object.props.id)) {
-                octreeRemove(object);
-              }
-
-              if (debugMeshes[object.props.id]) {
-                scene.remove(debugMeshes[object.props.id]);
-                delete debugMeshes[object.props.id];
-              }
+              interactiveObjectsStorage.remove(object);
             }
           }
         }
@@ -317,12 +209,8 @@ export const ObjectsSystem = () => {
 
       if (!activeObject) return;
 
-      const intersects = octree.raycast(
-        interactionRaycaster(
-          activeObject.mesh.quaternion.clone(),
-          new THREE.Vector3(0, 0, 0)
-        )
-      );
+      const intersects =
+        interactiveObjectsStorage.raycastFromObject(activeObject);
 
       const { input } = systems.inputSystem;
 
@@ -345,9 +233,9 @@ export const ObjectsSystem = () => {
               );
 
               if (distance > 10) {
-                octreeMove(
+                interactiveObjectsStorage.move(
                   data,
-                  relativePosition(
+                  interactiveObjectsStorage.relativePosition(
                     new THREE.Vector3(
                       data.physicEntity.body.position.x,
                       data.physicEntity.body.position.y,

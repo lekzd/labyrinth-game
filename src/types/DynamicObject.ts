@@ -1,11 +1,6 @@
 import { ObjectType } from "./ObjectType";
 import { SettingObject } from "../objects/hero/settings.ts";
-
-export type ObjectVector3 = {
-  x: number;
-  y: number;
-  z: number;
-};
+import { Vector3 } from "three";
 
 export type ObjectQuaternion = {
   x: number;
@@ -22,6 +17,6 @@ export type DynamicObject = {
   additionsAnimation?: string;
   onHit?: (props: DynamicObject) => void;
 
-  position: ObjectVector3;
+  position: Vector3;
   rotation: ObjectQuaternion;
 } & Partial<SettingObject>;
