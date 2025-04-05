@@ -20,13 +20,28 @@ export class MagicMushroomRoom extends Room {
       type,
       position: this.center,
       onHit: (by) => {
-        addObjects({
-          [altarPartId]: createObject({
-            id: altarPartId,
+        const count = 5
+        const objects: Record<string, DynamicObject> = {}
+        const radius = 2
+        const height = 10
+        const angleStep = Math.PI * 2 / count
+
+        for (let i = 0; i < count; i++) {
+          const partId = `${altarPartId}::${i}`
+          const angle = angleStep * i
+
+          objects[partId] = createObject({
+            id: partId,
             type: "AltarPart",
-            position: new Vector3(this.center.x, 0, this.center.z)
+            position: new Vector3(
+              this.center.x + Math.cos(angle) * radius,
+              height,
+              this.center.z + Math.sin(angle) * radius
+            )
           })
-        });
+        }
+
+        addObjects(objects);
       }
     });
 

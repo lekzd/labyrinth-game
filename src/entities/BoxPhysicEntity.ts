@@ -9,6 +9,7 @@ interface BoxPhysicEntityProps {
   physicRadius?: number;
   mass?: number;
   type?: typeof Body.DYNAMIC | typeof Body.STATIC;
+  fixedRotation?: boolean;
 }
 
 export class BoxPhysicEntity extends PhysicEntity {
@@ -18,6 +19,7 @@ export class BoxPhysicEntity extends PhysicEntity {
       physicY = 8,
       physicRadius = 5,
       mass = 5,
+      fixedRotation = false,
       type = Body.DYNAMIC
     } = props;
 
@@ -26,7 +28,7 @@ export class BoxPhysicEntity extends PhysicEntity {
       physicY,
       body: createPhysicBox(
         { x: physicRadius, y: physicY, z: physicRadius },
-        { mass, type }
+        { mass, type, fixedRotation }
       )
     });
   }

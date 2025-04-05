@@ -9,6 +9,7 @@ import { throttle } from "@/utils/throttle.ts";
 import { AABB, Body, Vec3 } from "cannon";
 import { HitContactType } from "@/types/HitContactType";
 import { getActiveObjectFromState } from "@/utils/stateUtils";
+import { scene } from "@/scene";
 
 function isPointInsideBody(point: Vec3, body: Body) {
   // Создаем AABB для физического тела
@@ -82,10 +83,7 @@ const tryRunMethod = (
 const fixedTimeStep = 1.0 / 60.0; // seconds
 
 const hitItems = throttle(
-  (
-    activeObject: DynamicObject,
-    itemsToHit: PointContainer<MapObject>[]
-  ) => {
+  (activeObject: DynamicObject, itemsToHit: PointContainer<MapObject>[]) => {
     for (const itemToHit of itemsToHit) {
       const { data, point } = itemToHit;
 
@@ -117,6 +115,7 @@ const interactionRaycaster = (
 export const ObjectsSystem = () => {
   const objects: Record<string, MapObject> = {};
   const interactive: Record<string, MapObject> = {};
+  const debugMeshes: Record<string, THREE.Mesh> = {};
 
   const physicObjects = new Map<string, MapObject>();
 
@@ -127,10 +126,41 @@ export const ObjectsSystem = () => {
 
   const position = {
     previous: { x: 0, y: 0, z: 0 },
-    current: { x: 0, y: 0, z: 0 },
+    current: { x: 0, y: 0, z: 0 }
   };
 
-  const relativePosition = (point: THREE.Vector3, state: keyof typeof position = 'current') => {
+  const objectToOctree = new Map<string, THREE.Vector3>();
+
+  const octreeAdd = (object: MapObject) => {
+    const position = relativePosition(object.mesh.position)
+
+    objectToOctree.set(object.props.id, position);
+    octree.set(position, object);
+  };
+
+  const octreeRemove = (object: MapObject) => {
+    const position = objectToOctree.get(object.props.id);
+
+    if (position) {
+      objectToOctree.delete(object.props.id);
+      octree.remove(position);
+    }
+  };
+
+  const octreeMove = (object: MapObject, newPosition: THREE.Vector3) => {
+    const position = objectToOctree.get(object.props.id);
+
+    if (position) {
+      objectToOctree.delete(object.props.id);
+      objectToOctree.set(object.props.id, newPosition);
+      octree.move(position, newPosition);
+    }
+  };
+
+  const relativePosition = (
+    point: THREE.Vector3,
+    state: keyof typeof position = "current"
+  ) => {
     const vector = point.clone();
 
     vector.x -= position[state].x;
@@ -138,7 +168,19 @@ export const ObjectsSystem = () => {
     vector.z -= position[state].z;
 
     return vector;
-  }
+  };
+
+  const createDebugMesh = (position: THREE.Vector3) => {
+    const geometry = new THREE.BoxGeometry(8, 8, 8);
+    const material = new THREE.MeshBasicMaterial({
+      color: 0xff0000,
+      wireframe: true
+    });
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.copy(position);
+    mesh.position.y += 4;
+    return mesh;
+  };
 
   return {
     objects,
@@ -150,7 +192,9 @@ export const ObjectsSystem = () => {
           physicObjects.set(object.props.id, object);
           physicWorld.addBody(object.physicEntity.body);
         } else {
-          console.error("ObjectsSystem: physical object should have physicEntity!");
+          console.error(
+            "ObjectsSystem: physical object should have physicEntity!"
+          );
         }
       }
 
@@ -163,17 +207,24 @@ export const ObjectsSystem = () => {
 
       if (!object) return;
 
-      if (interactive[id])
-        octree.remove(relativePosition(object.mesh.position));
+      if (interactive[id]) octreeRemove(object);
 
       physicObjects.delete(id);
 
       if (object.physicEntity) {
         physicWorld.remove(object.physicEntity.body);
       }
+
+      if (debugMeshes[id]) {
+        scene.remove(debugMeshes[id]);
+        delete debugMeshes[id];
+      }
     },
 
-    checkPointHitColision: (point: THREE.Vector3, fromObjectId: string): HitContactType | null => {
+    checkPointHitColision: (
+      point: THREE.Vector3,
+      fromObjectId: string
+    ): HitContactType | null => {
       const cloned = point.clone();
       cloned.y = 0;
       const object = octree.findNearestPoint(cloned, 7, true);
@@ -182,25 +233,34 @@ export const ObjectsSystem = () => {
       if (object && object.data?.props.id !== fromObjectId) {
         hitItems(activeObject.props, [object]);
 
-        return object.data?.props.health ? HitContactType.Body : HitContactType.Other;
+        return object.data?.props.health
+          ? HitContactType.Body
+          : HitContactType.Other;
       } else {
         const cannonPoint = new Vec3(point.x, point.y, point.z);
 
         for (const object of physicObjects.values()) {
-          if (object.physicEntity && isPointInsideBody(cannonPoint, object.physicEntity.body)) {
+          if (
+            object.physicEntity &&
+            isPointInsideBody(cannonPoint, object.physicEntity.body)
+          ) {
             if (object.hit) {
               object.hit(activeObject.props, point);
             }
-            return object.state?.props.health ? HitContactType.Body : HitContactType.Other;
+            return object.state?.props.health
+              ? HitContactType.Body
+              : HitContactType.Other;
           }
-        };
+        }
       }
 
       return null;
     },
 
     update: (timeElapsedS: number) => {
-      const { position: next } = state.select(getActiveObjectFromState) || { position };
+      const { position: next } = state.select(getActiveObjectFromState) || {
+        position
+      };
 
       position.previous = position.current;
       position.current = next;
@@ -209,25 +269,45 @@ export const ObjectsSystem = () => {
 
       physicObjects.forEach((object) => {
         if (object.physicEntity) {
-          const prev = relativePosition(object.mesh.position, 'previous');
+          const prev = relativePosition(object.mesh.position, "previous");
 
-          object.physicEntity.syncMesh()
+          object.physicEntity.syncMesh();
 
           const next = relativePosition(object.mesh.position);
 
-          if (interactive[object.props.id] && object.props.id !== currentPlayer.activeObjectId) {
+          if (
+            interactive[object.props.id] &&
+            object.props.id !== currentPlayer.activeObjectId
+          ) {
             // Если рядом добавляем, если нет - удаляем
             if (next.x < 100 && next.y < 100 && next.z < 100) {
-
               // Двигаем если есть, если нет добавляем
-              if (octree.get(prev))
-                octree.move(prev, next);
-              else
-                octree.set(next, object);
+              if (objectToOctree.get(object.props.id)) {
+                octreeMove(object, next);
+              } else {
+                octreeAdd(object);
+              }
 
+              // Добавляем отладочную сетку
+              if (debugMeshes[object.props.id]) {
+                debugMeshes[object.props.id].position.copy(
+                  object.mesh.position
+                );
+                debugMeshes[object.props.id].position.y += 4;
+              } else {
+                const debugMesh = createDebugMesh(object.mesh.position);
+                debugMeshes[object.props.id] = debugMesh;
+                scene.add(debugMesh);
+              }
             } else {
-              if (octree.get(prev))
-                octree.remove(prev);
+              if (objectToOctree.get(object.props.id)) {
+                octreeRemove(object);
+              }
+
+              if (debugMeshes[object.props.id]) {
+                scene.remove(debugMeshes[object.props.id]);
+                delete debugMeshes[object.props.id];
+              }
             }
           }
         }
@@ -265,13 +345,15 @@ export const ObjectsSystem = () => {
               );
 
               if (distance > 10) {
-                octree.move(
-                  relativePosition(data?.mesh.position),
-                  relativePosition(new THREE.Vector3(
-                    data.physicEntity.body.position.x,
-                    data.physicEntity.body.position.y,
-                    data.physicEntity.body.position.z
-                  ))
+                octreeMove(
+                  data,
+                  relativePosition(
+                    new THREE.Vector3(
+                      data.physicEntity.body.position.x,
+                      data.physicEntity.body.position.y,
+                      data.physicEntity.body.position.z
+                    )
+                  )
                 );
               }
             }

@@ -107,7 +107,7 @@ export class Hero {
 
     const boxMesh = (new Box({ id: 'asdasd', type: 'Box', position: { x: 0, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0, w: 0 } })).mesh;
 
-    boxMesh.scale.set(0.2, 0.2, 0.2);
+    boxMesh.scale.set(0.02, 0.02, 0.02);
 
     this.weaponObject = loads.weapon_glb[weaponType]
       ? clone(loads.weapon_glb[weaponType]!)

@@ -25,12 +25,14 @@ export class AltarPart {
 
     this.physicEntity = new BoxPhysicEntity({
       target: this.mesh,
-      physicY: 0,
+      physicY: 6,
       physicRadius: 2,
       mass: 10,
+      fixedRotation: true,
     });
   }
-  update(time: number) {}
+  update(time: number) {
+  }
 
   setFocus(value: boolean) {
     this.sign.setFocused(value);
