@@ -1,6 +1,5 @@
-import { modelType, weaponType } from "./loader";
+import { npcModelType, weaponType } from "./loader";
 import { DynamicObject, Player, RoomConfig } from "@/types";
-import { something } from "./utils/something";
 import { NpcAnimationStates } from "./objects/hero/NpcAnimationStates.ts";
 import { mergeDeep } from "./utils/mergeDeep.ts";
 import { settings } from "./objects/hero/settings.ts";
@@ -108,7 +107,7 @@ export const createObject = (data: Partial<DynamicObject>): DynamicObject => {
 export const createHeroObject = (
   data: Partial<DynamicObject>
 ): DynamicObject => {
-  const type = modelType.Journey;
+  const type = npcModelType.Journey;
 
   return createObject({
     ...data,

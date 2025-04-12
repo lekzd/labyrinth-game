@@ -6,7 +6,7 @@ import { NpcAnimationStates } from "@/objects/hero/NpcAnimationStates.ts";
 import { Quaternion, QuaternionLike, Vector2Like, Vector3, Vector3Like } from "three";
 import { pickBy } from "@/utils/pickBy.ts";
 import { settings } from "@/objects/hero/settings.ts";
-import { modelType } from "@/loader.ts";
+import { npcModelType } from "@/loader.ts";
 import { RecursivePartial } from "./types/RecursivePartial";
 import { DynamicObject } from "./types/DynamicObject";
 import { systems } from "./systems";
@@ -21,7 +21,7 @@ const { onUpdate, send, connect } = socket({
 
 interface MobConfig {
   id: string;
-  type: modelType;
+  type: npcModelType;
   position: Vector3Like;
   rotation?: QuaternionLike;
   patrolRadius?: number;
@@ -99,7 +99,7 @@ export const Spawners = async () => {
           if (tile === Tiles.Spawner) {
             spawners[`${x}:${y}`] = {
               id: `${x}:${y}`,
-              type: modelType.Hallow,
+              type: npcModelType.Hallow,
               position: { x: x * scale, y: 0, z: y * scale },
               rotation: { w: 0.548628892113074, x: 0, y: -0.8360659894642256, z: 0 }
             };
@@ -112,7 +112,7 @@ export const Spawners = async () => {
             for (let i = 0; i < count; i++) {
               spawners[`${x}:${y}_${i}`] = {
                 id: `${x}:${y}_${i}`,
-                type: modelType.Mashroom,
+                type: npcModelType.Mashroom,
                 position: {
                   x: (x + Math.cos(i * (Math.PI * 2) / count) * radius) * scale,
                   y: 0,

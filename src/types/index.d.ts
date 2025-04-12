@@ -1,5 +1,5 @@
 import { DynamicObject } from "./DynamicObject";
-import { modelType } from "@/loader";
+import { npcModelType } from "@/loader";
 import { MapObject } from "./MapObject";
 import { Tiles } from "@/config";
 import { ObjectType } from "./ObjectType";
@@ -19,13 +19,13 @@ type RoomConfig = {
   y: number;
 };
 interface HeroProps extends DynamicObject {
-  type: modelType;
+  type: npcModelType;
 }
 
 export type {
   DynamicObject,
   HeroProps,
-  modelType,
+  npcModelType as modelType,
   MapObject,
   Tiles,
   ObjectType,

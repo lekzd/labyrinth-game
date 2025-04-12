@@ -4,21 +4,26 @@ import { Object3D, Object3DEventMap, Vector3Like } from "three";
 interface BasePhysicEntityProps {
   target: Object3D<Object3DEventMap>,
   physicY: number
-  body: CANNON.Body
+  body: CANNON.Body,
+  skipSyncMesh?: boolean
 }
 
 export class PhysicEntity {
   target: Object3D<Object3DEventMap>
   physicY: number
   body: CANNON.Body
+  skipSyncMesh?: boolean
 
   constructor(props: BasePhysicEntityProps) {
     this.target = props.target;
     this.physicY = props.physicY;
     this.body = props.body;
+    this.skipSyncMesh = props.skipSyncMesh;
 
-    this.syncBody();
-    this.syncMesh();
+    if (!this.skipSyncMesh) {
+      this.syncBody();
+      this.syncMesh();
+    }
   }
 
   syncBody() {

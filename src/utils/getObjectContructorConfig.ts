@@ -1,6 +1,11 @@
 import { ObjectType } from "@/types";
 import { Box, Campfire, Hero, PuzzleHandler, Weapon } from "@/uses";
-import {modelType, weaponType} from "../loader.ts";
+import {
+  npcModelType,
+  modelTypeGlb,
+  weaponType,
+  modelType
+} from "../loader.ts";
 import { Gate } from "../objects/gate/index.ts";
 import { Tree } from "@/objects/tree";
 import { MagicTree } from "@/objects/tree/MagicTree";
@@ -10,6 +15,7 @@ import { Foliage } from "@/objects/foliage/index.ts";
 import { AltarPart } from "@/objects/altarPart/index.ts";
 import { Stump } from "@/objects/stump";
 import { MagicMushroom } from "@/objects/magicMushroom/MagicMushroom.ts";
+import { PhysicModel } from "@/objects/physicModel/index.ts";
 
 const constructors: Partial<Record<string, any>> = {
   Campfire,
@@ -24,9 +30,9 @@ const constructors: Partial<Record<string, any>> = {
   Stump,
   AltarPart,
   MagicMushroom
-}
+};
 
-type ObjectProps = { physical?: boolean, interactive?: boolean };
+type ObjectProps = { physical?: boolean; interactive?: boolean };
 
 // По-умолчанию все объекты просто физические
 const props: Partial<Record<string, ObjectProps>> = {
@@ -34,13 +40,24 @@ const props: Partial<Record<string, ObjectProps>> = {
   Gate: { physical: true, interactive: true },
   Foliage: {},
   Campfire: {},
-  AltarPart: { physical: true, interactive: true },
-}
+  AltarPart: { physical: true, interactive: true }
+};
 
 // Прокидываем всех персонажей
-for (const key of Object.values(modelType)) {
+for (const key of Object.values(npcModelType)) {
   constructors[key] = Hero;
   props[key] = { physical: true, interactive: true };
+}
+
+// Прокидываем все физические объекты
+const objectType = [
+  ...Object.values(modelTypeGlb),
+  ...Object.values(modelType)
+] as const;
+
+for (const key of objectType) {
+  constructors[key] = PhysicModel;
+  props[key] = { physical: false, interactive: false };
 }
 
 // Прокидываем все вещи
@@ -51,5 +68,5 @@ for (const key of Object.values(weaponType)) {
 
 export const getObjectContructorConfig = (type: ObjectType) => ({
   Constructor: constructors[type],
-  ...(props[type] || { physical: true  })
+  ...(props[type] || { physical: true })
 });

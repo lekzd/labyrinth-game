@@ -1,4 +1,4 @@
-import {modelType, modelTypeGlb, weaponType} from "../../loader.ts";
+import {npcModelType, modelTypeGlb, weaponType} from "../../loader.ts";
 
 export type SettingObject = {
   health: number,
@@ -10,7 +10,7 @@ export type SettingObject = {
   attack: number,
 }
 
-export const settings: Record<modelType & modelTypeGlb, SettingObject> = {
+export const settings: Record<npcModelType & modelTypeGlb, SettingObject> = {
   // [modelType.Monk]: {
   //   health: 100,
   //   mana: 10,
@@ -47,28 +47,21 @@ export const settings: Record<modelType & modelTypeGlb, SettingObject> = {
   //   mass: 25,
   //   attack: 5,
   // },
-  [modelType.Journey]: {
+  [npcModelType.Journey]: {
     health: 50,
     mana: 10,
     speed: 2.5,
     mass: 25,
     attack: 5,
   },
-  [modelType.Mashroom]: {
+  [npcModelType.Mashroom]: {
     health: 10,
     mana: 10,
     speed: 2.5,
     mass: 25,
     attack: 5,
   },
-  [modelType.Hallow]: {
-    health: 10,
-    mana: 10,
-    speed: 2.5,
-    mass: 25,
-    attack: 5,
-  },
-  [modelTypeGlb.Mushroom_Warrior]: {
+  [npcModelType.Hallow]: {
     health: 10,
     mana: 10,
     speed: 2.5,

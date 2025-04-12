@@ -47,25 +47,17 @@ export enum animationType {
   idle = 'idle',
 }
 
-export enum modelType {
-  // Monk = 'Monk',
-  // Cleric = 'Cleric',
-  // Rogue = 'Rogue',
-  // Warrior = 'Warrior',
-  // Wizard = 'Wizard',
-
+export enum npcModelType {
   Journey = 'Journey',
   Hallow = 'Hallow',
   Mashroom = 'Mashroom',
+}
 
-  // Skeleton_Mage = 'Skeleton_Mage',
-  // Skeleton_Minion = 'Skeleton_Minion',
-  // Skeleton_Rogue = 'Skeleton_Rogue',
-  // Skeleton_Warrior = 'Skeleton_Warrior',
+export enum modelType {
+  // MagicMushroom = 'MagicMushroom',
 }
 
 export enum modelTypeGlb {
-  Mushroom_Warrior = 'Mushroom_Warrior',
 }
 
 export enum weaponType {
@@ -83,7 +75,7 @@ export enum weaponType {
 }
 
 type ItemsType = {
-  model: Partial<Record<modelType, THREE.Group<THREE.Object3DEventMap>>>
+  model: Partial<Record<npcModelType, THREE.Group<THREE.Object3DEventMap>>>
   model_glb: Partial<Record<modelTypeGlb, THREE.Group<THREE.Object3DEventMap>>>
   weapon: Partial<Record<weaponType, THREE.Group<THREE.Object3DEventMap>>>
   weapon_glb: Partial<Record<weaponType, THREE.Group<THREE.Object3DEventMap>>>
@@ -107,12 +99,12 @@ type AbstractLoader = {
 const load = (
   loader: AbstractLoader,
   types: Record<string, string>,
-  dir: keyof ItemsType = 'world',
+  dir: keyof ItemsType = 'model',
   ext = ''
 ) => {
   let loaded = 0
   const entries = Object.entries(types)
-  loads[dir] = {};
+  // loads[dir] = {};
 
   return new Promise<void>(resolve => {
     entries.forEach(([, name], index) => {
@@ -120,6 +112,7 @@ const load = (
 
       loader.load(path, obj => {
         obj.name = name;
+
         if (obj.scene) {
           // @ts-expect-error
           loads[dir][name] = obj.scene;  
@@ -134,12 +127,17 @@ const load = (
         }
       });
     })
+
+    if (entries.length === 0) {
+      resolve()
+    }
   })
 }
 
 export const loaders = [
   load(textureLoader, texturesType, 'texture'),
   load(fbxLoader, modelType, 'model', '.fbx'),
+  load(fbxLoader, npcModelType, 'model', '.fbx'),
   load(fbxLoader, animationType, 'animation', '.fbx'),
   load(gltfLoader, weaponType, 'weapon_glb', '.glb'),
   load(gltfLoader, modelTypeGlb, 'model_glb', '.glb'),

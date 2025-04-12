@@ -1,7 +1,7 @@
-import { modelType, weaponType } from "../loader";
+import { npcModelType, weaponType } from "../loader";
 
 export type ObjectType =
-  | modelType
+  | npcModelType
   | weaponType
   | "Campfire"
   | "Box"
