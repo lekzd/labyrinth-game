@@ -205,7 +205,7 @@ export class Hero {
   update(timeInSeconds: number) {
     const obj = state.objects[this.id];
 
-    if (!obj) return;
+    if (!obj || !obj.position) return;
 
     this.physicEntity.setPositionLerp(obj.position, 0.01);
 

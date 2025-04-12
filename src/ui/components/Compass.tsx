@@ -128,9 +128,9 @@ export const Compass: FC<IProps> = (props: IProps) => {
         const activeObject = state.select(getActiveObjectFromState)
 
         coordinatesRef.current.innerHTML = `
-          <div>X: ${Math.round(activeObject?.position.x ?? 0)}</div>
-          <div>Y: ${Math.round(activeObject?.position.y ?? 0)}</div>
-          <div>Z: ${Math.round(activeObject?.position.z ?? 0)}</div>
+          <div>X: ${Math.round(activeObject?.position?.x ?? 0)}</div>
+          <div>Y: ${Math.round(activeObject?.position?.y ?? 0)}</div>
+          <div>Z: ${Math.round(activeObject?.position?.z ?? 0)}</div>
         `
       }
     }

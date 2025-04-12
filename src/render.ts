@@ -53,6 +53,11 @@ export const addObjects = (items: Record<string, DynamicObject>) => {
       continue;
     }
 
+    // После смерти объекта дошло еще обновление стейта, а объект уже удален
+    if (!objectConfig.type) {
+      continue;
+    }
+
     const controllable = currentPlayer.activeObjectId === id;
     const { Constructor: ObjectConstructor, ...config } = getObjectContructorConfig(objectConfig.type);
 
@@ -126,7 +131,7 @@ export const render = () => {
 
       const { objects } = systems.objectsSystem;
 
-      const focusVector = objects[currentPlayer.activeObjectId].mesh.position;
+      const focusVector = objects[currentPlayer.activeObjectId]?.mesh.position ?? new THREE.Vector3();
       const distance = camera.position.distanceTo(focusVector);
       bokehPass.uniforms['focus'].value = distance;
 
