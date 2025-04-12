@@ -1,6 +1,6 @@
 import { socket } from "@/socket.ts";
 import { mergeDeep } from "@/utils/mergeDeep.ts";
-import { State, scale } from "@/state.ts";
+import { State, scale, state as globalState } from "@/state.ts";
 import { Tiles } from "@/config";
 import { NpcAnimationStates } from "@/objects/hero/NpcAnimationStates.ts";
 import { Quaternion, QuaternionLike, Vector2Like, Vector3, Vector3Like } from "three";
@@ -26,6 +26,7 @@ interface MobConfig {
   rotation?: QuaternionLike;
   patrolRadius?: number;
   patrolPoint?: Vector2Like;
+  reSpawnTime?: number;
 }
 
 /*
@@ -63,19 +64,8 @@ export const Spawners = async () => {
   };
 
   // Подписаться на обновления сервера
-  onUpdate((next: RecursivePartial<State>) => {
-    mergeDeep(state, next);
-
-    for (const id in next.objects || {}) {
-      // console.log('id', id)
-      // TODO: почему-то не приходит null у скелетона
-      if (id.startsWith("mob") && !next.objects?.[id]) {
-        dies[id] = true;
-        setTimeout(() => {
-          delete dies[id];
-        }, 10000);
-      }
-    }
+  onUpdate((nextState: RecursivePartial<State>) => {
+    mergeDeep(state, nextState);
   });
 
   connect();
@@ -130,7 +120,8 @@ export const Spawners = async () => {
                 },
                 rotation: { w: 0.548628892113074, x: 0, y: -0.8360659894642256, z: 0 },
                 patrolRadius: 10 * scale,
-                patrolPoint: { x: x * scale, y: y * scale }
+                patrolPoint: { x: x * scale, y: y * scale },
+                reSpawnTime: 10000
               };
             }
           }
@@ -141,6 +132,26 @@ export const Spawners = async () => {
     for (const key in spawners) {
       const mobId = `mob:${key}`;
       let item = state.objects?.[mobId]!;
+
+      if (item && !globalState.objects?.[mobId] && !dies[mobId]) {
+        const reSpawnTime = spawners[key].reSpawnTime ?? 0
+
+        next({
+          objects: {
+            [mobId]: null
+          }
+        })
+
+        delete state.objects[mobId];
+
+        dies[mobId] = true;
+
+        if (reSpawnTime) {
+          setTimeout(() => {
+            delete dies[mobId];
+          }, reSpawnTime);
+        }
+      }
 
       // Если есть моб у спавнера смотрим на него, иначе на позицию спавнера
       const pos = item?.position || spawners[key].position;
@@ -188,6 +199,11 @@ export const Spawners = async () => {
         };
 
         next({ objects: { [item.id]: item } });
+        globalState.setState({
+          objects: {
+            [item.id]: item
+          }
+        }, { server: true })
       }
 
       const goTo = (point: Vector3Like) => {

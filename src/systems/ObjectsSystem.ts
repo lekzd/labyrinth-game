@@ -133,6 +133,8 @@ export const ObjectsSystem = () => {
       if (object.physicEntity) {
         physicWorld.remove(object.physicEntity.body);
       }
+
+      delete objects[id];
     },
 
     checkPointHitColision: (

@@ -43,7 +43,7 @@ export const addObjects = (items: Record<string, DynamicObject>) => {
 
     // Delete object
     if (!objectConfig) {
-      scene.remove(systems.objectsSystem.objects[id].mesh);
+      scene.remove(systems.objectsSystem.objects[id]?.mesh);
       systems.objectsSystem.remove(id);
       return;
     }

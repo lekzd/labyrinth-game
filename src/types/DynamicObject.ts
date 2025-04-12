@@ -1,6 +1,7 @@
 import { ObjectType } from "./ObjectType";
 import { SettingObject } from "../objects/hero/settings.ts";
 import { Vector3 } from "three";
+import { StateEntity } from "@/entities/StateEntity.ts";
 
 export type ObjectQuaternion = {
   x: number;
@@ -12,7 +13,7 @@ export type ObjectQuaternion = {
 export type DynamicObject = {
   id: string;
   type: ObjectType;
-  state?: any;
+  state: StateEntity;
   baseAnimation?: string;
   additionsAnimation?: string;
   onHit?: (props: DynamicObject) => void;
