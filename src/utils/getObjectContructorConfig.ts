@@ -11,7 +11,7 @@ import { AltarPart } from "@/objects/altarPart/index.ts";
 import { Stump } from "@/objects/stump";
 import { MagicMushroom } from "@/objects/magicMushroom/MagicMushroom.ts";
 
-const constructors = {
+const constructors: Partial<Record<string, any>> = {
   Campfire,
   Tree,
   Stone,
@@ -26,8 +26,10 @@ const constructors = {
   MagicMushroom
 }
 
+type ObjectProps = { physical?: boolean, interactive?: boolean };
+
 // По-умолчанию все объекты просто физические
-const props = {
+const props: Partial<Record<string, ObjectProps>> = {
   PuzzleHandler: { physical: true, interactive: true },
   Gate: { physical: true, interactive: true },
   Foliage: {},

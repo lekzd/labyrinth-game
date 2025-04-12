@@ -13,4 +13,6 @@ export type ObjectType =
   | "Foliage"
   | "MagicTree"
   | "MagicMushroom"
-  | "AltarPart";
+  | "AltarPart"
+  | "Stump"
+  | "Hallow";
