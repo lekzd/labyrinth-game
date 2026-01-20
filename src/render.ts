@@ -23,6 +23,7 @@ import { CentralRoom } from "./objects/room/CentralRoom.ts";
 import { MagicTreeRoom } from "./objects/room/MagicTreeRoom.ts";
 import {StumpTreeRoom} from "@/objects/room/StumpRoom.ts";
 import { MagicMushroomRoom } from "./objects/room/MagicMushroomRoom.ts";
+import { Hero } from "./uses/index.ts";
 
 const stats = new Stats();
 
@@ -72,6 +73,14 @@ export const addObjects = (items: Record<string, DynamicObject>) => {
     systems.objectsSystem.add(object, config);
     subscribers.push(object);
     scene.add(object.mesh);
+
+    if (ObjectConstructor === Hero) {
+      const bbox = new THREE.Box3().setFromObject(object.mesh);
+      const bboxHelper = new THREE.Box3Helper(bbox, 0xff0000);
+      scene.add(bboxHelper); // добавьте в сцену
+      console.log('BBox size:', bbox.getSize(new THREE.Vector3()));
+    }
+    
 
     if (controllable) {
       const { camera } = systems.uiSettingsSystem;

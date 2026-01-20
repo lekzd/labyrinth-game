@@ -48,9 +48,12 @@ export enum animationType {
 }
 
 export enum npcModelType {
-  Journey = 'Journey',
   Hallow = 'Hallow',
   Mashroom = 'Mashroom',
+}
+
+export enum npcModelTypeGlb {
+  Journey = 'Journey',
 }
 
 export enum modelType {
@@ -75,7 +78,7 @@ export enum weaponType {
 }
 
 type ItemsType = {
-  model: Partial<Record<npcModelType, THREE.Group<THREE.Object3DEventMap>>>
+  model: Partial<Record<npcModelType | npcModelTypeGlb, THREE.Group<THREE.Object3DEventMap>>>
   model_glb: Partial<Record<modelTypeGlb, THREE.Group<THREE.Object3DEventMap>>>
   weapon: Partial<Record<weaponType, THREE.Group<THREE.Object3DEventMap>>>
   weapon_glb: Partial<Record<weaponType, THREE.Group<THREE.Object3DEventMap>>>
@@ -114,6 +117,10 @@ const load = (
         obj.name = name;
 
         if (obj.scene) {
+          // Анимации поставляются из общего 
+          obj.scene.animations = obj.animations.concat(obj.scene.animations);
+          obj.scene.name = name;
+
           // @ts-expect-error
           loads[dir][name] = obj.scene;  
         } else {
@@ -138,6 +145,7 @@ export const loaders = [
   load(textureLoader, texturesType, 'texture'),
   load(fbxLoader, modelType, 'model', '.fbx'),
   load(fbxLoader, npcModelType, 'model', '.fbx'),
+  load(gltfLoader, npcModelTypeGlb, 'model', '.glb'),
   load(fbxLoader, animationType, 'animation', '.fbx'),
   load(gltfLoader, weaponType, 'weapon_glb', '.glb'),
   load(gltfLoader, modelTypeGlb, 'model_glb', '.glb'),

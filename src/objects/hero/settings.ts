@@ -1,4 +1,4 @@
-import {npcModelType, modelTypeGlb, weaponType} from "../../loader.ts";
+import {npcModelType, modelTypeGlb, weaponType, npcModelTypeGlb} from "../../loader.ts";
 
 export type SettingObject = {
   health: number,
@@ -47,7 +47,7 @@ export const settings: Record<npcModelType & modelTypeGlb, SettingObject> = {
   //   mass: 25,
   //   attack: 5,
   // },
-  [npcModelType.Journey]: {
+  [npcModelTypeGlb.Journey]: {
     health: 50,
     mana: 10,
     speed: 2.5,

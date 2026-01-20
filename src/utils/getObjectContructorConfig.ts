@@ -4,7 +4,8 @@ import {
   npcModelType,
   modelTypeGlb,
   weaponType,
-  modelType
+  modelType,
+  npcModelTypeGlb
 } from "../loader.ts";
 import { Gate } from "../objects/gate/index.ts";
 import { Tree } from "@/objects/tree";
@@ -43,8 +44,13 @@ const props: Partial<Record<string, ObjectProps>> = {
   AltarPart: { physical: true, interactive: true }
 };
 
+const heroTypes = [
+  ...Object.values(npcModelType),
+  ...Object.values(npcModelTypeGlb)
+] as const;
+
 // Прокидываем всех персонажей
-for (const key of Object.values(npcModelType)) {
+for (const key of heroTypes) {
   constructors[key] = Hero;
   props[key] = { physical: true, interactive: true };
 }

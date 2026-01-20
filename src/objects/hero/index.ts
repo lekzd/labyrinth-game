@@ -58,6 +58,30 @@ export class Hero {
 
     this.props = props;
     this.target = initTarget(model, props);
+    // console.log('initTarget', model, props);
+
+    console.log('=== DEBUG HERO MODEL ===');
+    console.log('Model loaded:', model);
+    console.log('Target after init:', this.target);
+    console.log('Target children:', this.target.children.length);
+    console.log('Target visible:', this.target.visible);
+
+
+    // Проверяем меши внутри
+    let meshCount = 0;
+    this.target.traverse((obj) => {
+      if (obj.isMesh) {
+        meshCount++;
+        console.log(`Mesh ${meshCount}:`, {
+          name: obj.name,
+          visible: obj.visible,
+          material: obj.material,
+          geometry: obj.geometry,
+          vertices: obj.geometry.attributes.position?.count || 0
+        });
+      }
+    });
+    console.log(`Total meshes: ${meshCount}`);
 
     this.animationEntity = new AnimationEntity({
       target: this.target
@@ -95,7 +119,7 @@ export class Hero {
   }
 
   private initWeapon(weaponType?: weaponType) {
-    const weaponRightHand = this.target.getObjectByName("handR_end");
+    const weaponRightHand = this.target.getObjectByName("handR");
 
     if (!weaponRightHand) {
       return;
@@ -228,7 +252,8 @@ function initTarget(model: Group<Object3DEventMap>, props: HeroProps) {
   Object.assign(target.position, props.position);
   Object.assign(target.quaternion, props.rotation);
 
-  target.scale.multiplyScalar(0.05);
+  target.scale.multiplyScalar(5);
+  
   target.updateMatrix();
 
   const texture = new TextureLoader().load(`model/${target.name}_Texture.png`);
