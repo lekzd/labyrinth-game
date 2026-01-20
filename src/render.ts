@@ -74,14 +74,6 @@ export const addObjects = (items: Record<string, DynamicObject>) => {
     subscribers.push(object);
     scene.add(object.mesh);
 
-    if (ObjectConstructor === Hero) {
-      const bbox = new THREE.Box3().setFromObject(object.mesh);
-      const bboxHelper = new THREE.Box3Helper(bbox, 0xff0000);
-      scene.add(bboxHelper); // добавьте в сцену
-      console.log('BBox size:', bbox.getSize(new THREE.Vector3()));
-    }
-    
-
     if (controllable) {
       const { camera } = systems.uiSettingsSystem;
       subscribers.push(Camera({ camera, target: object }));
