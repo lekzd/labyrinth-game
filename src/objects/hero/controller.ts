@@ -38,8 +38,6 @@ const BasicCharacterControllerInput = (person: Hero) => {
   let timeout = null;
   const { speed } = settings[person.props.type];
 
-  console.log('person', person)
-
   const animate = (animationName: string, duration: number) => {
     if (animationName in NpcAdditionalAnimations) {
       state.setState({ objects: { [person.id]: {

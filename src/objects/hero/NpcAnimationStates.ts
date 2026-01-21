@@ -2,6 +2,7 @@ export enum NpcBaseAnimations {
   idle = "idle",
   walk = "walk",
   run = "run",
+  
   death = "death",
   pickup = "pickup",
   receivehit = "receivehit"

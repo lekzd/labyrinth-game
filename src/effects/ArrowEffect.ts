@@ -17,7 +17,6 @@ export class ArrowEffect implements AbstactEffect {
   constructor() {}
 
   run(person: Hero) {
-    console.log('person', person)
     const mountedEffects: Mesh[] = [];
     const weaponRight = person.weaponObject;
     const peakPoint = weaponRight.getObjectByName("peak_point");

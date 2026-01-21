@@ -114,19 +114,17 @@ const load = (
       const path = `/${dir}/${name}${ext}`;
 
       loader.load(path, obj => {
-        obj.name = name;
+        let model = obj;
 
-        if (obj.scene) {
+        if (model.scene) {
+          model = obj.scene;  
           // Анимации поставляются из общего 
-          obj.scene.animations = obj.animations.concat(obj.scene.animations);
-          obj.scene.name = name;
-
-          // @ts-expect-error
-          loads[dir][name] = obj.scene;  
-        } else {
-          // @ts-expect-error
-          loads[dir][name] = obj;
+          model.animations = obj.animations.concat(model.animations || []);
         }
+        model.name = name;
+
+        // @ts-expect-error
+        loads[dir][name] = model;
         loaded++
 
         if (loaded === entries.length) {
