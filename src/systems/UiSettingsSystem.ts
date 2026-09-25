@@ -7,10 +7,25 @@ import { scene } from "@/scene.ts";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass.js";
-import {
-  GammaCorrectionShader,
-  ShaderPass
-} from "three/examples/jsm/Addons.js";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { GradeShader } from "@/materials/grade";
+
+const toneMappingTypes = {
+  off: THREE.NoToneMapping,
+  Linear: THREE.LinearToneMapping,
+  Reinhard: THREE.ReinhardToneMapping,
+  Custom: THREE.CustomToneMapping,
+  Cineon: THREE.CineonToneMapping,
+  ACESFilmic: THREE.ACESFilmicToneMapping,
+  AgX: THREE.AgXToneMapping,
+  Neutral: THREE.NeutralToneMapping
+};
+
+// В настройках тон-маппинг хранится именем из списка; старые сохранения с числом получают дефолт
+const getToneMapping = (value: unknown) =>
+  toneMappingTypes[value as keyof typeof toneMappingTypes] ?? THREE.NeutralToneMapping;
 
 const DEFAULTS = {
   renderer: {
@@ -18,11 +33,13 @@ const DEFAULTS = {
     alpha: false,
     precision: "highp",
     pixelRatio: window.devicePixelRatio,
-    toneMapping: THREE.NoToneMapping,
-    toneMappingExposure: 1.0,
+    toneMapping: "Neutral",
+    toneMappingExposure: 1.1,
     checkShaderErrors: false,
     shadows: true,
     bokehPass: true,
+    bloom: true,
+    grading: true,
   },
   camera: {
     fov: 40,
@@ -77,7 +94,12 @@ export const UiSettingsSystem = () => {
   };
 
   const store = loadSettings();
-  const renderer = new THREE.WebGLRenderer(store.renderer);
+  const renderer = new THREE.WebGLRenderer(store.renderer as THREE.WebGLRendererParameters);
+
+  renderer.toneMapping = getToneMapping(store.renderer.toneMapping);
+  renderer.toneMappingExposure = store.renderer.toneMappingExposure;
+  // Мягкие края теней, как у рассеянного солнца
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   const camera = new THREE.PerspectiveCamera(
     store.camera.fov,
     window.innerWidth / window.innerHeight,
@@ -102,15 +124,28 @@ export const UiSettingsSystem = () => {
     height: window.innerHeight
   });
 
-  if (store.renderer.bokehPass) {
-    composer.addPass(bokehPass);
-  }
+  // Свечение ярких мест: огонь, магия, солнце в тумане
+  const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    0.35,
+    0.7,
+    0.9
+  );
 
-  const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader);
+  // Тон-маппинг и перевод в sRGB: при рендере через composer сам рендерер их не делает
+  const outputPass = new OutputPass();
+  const gradePass = new ShaderPass(GradeShader);
 
-  if (store.renderer.bokehPass) {
-    composer.addPass(gammaCorrectionPass);
-  }
+  const syncPasses = () => {
+    [bokehPass, bloomPass, outputPass, gradePass].forEach((pass) => composer.removePass(pass));
+
+    if (store.renderer.bokehPass) composer.addPass(bokehPass);
+    if (store.renderer.bloom) composer.addPass(bloomPass);
+    composer.addPass(outputPass);
+    if (store.renderer.grading) composer.addPass(gradePass);
+  };
+
+  syncPasses();
 
   type ApplyFn = (attr: string, value: any) => void;
 
@@ -147,17 +182,6 @@ export const UiSettingsSystem = () => {
   };
 
   const addRenderingControlls = () => {
-    const toneMappingTypes = {
-      off: THREE.NoToneMapping,
-      Linear: THREE.LinearToneMapping,
-      Reinhard: THREE.ReinhardToneMapping,
-      Custom: THREE.CustomToneMapping,
-      Cineon: THREE.CineonToneMapping,
-      ACESFilmic: THREE.ACESFilmicToneMapping,
-      AgX: THREE.AgXToneMapping,
-      Neutral: THREE.NeutralToneMapping
-    };
-
     const rederingGui = gui.addFolder("Рендеринг");
 
     const applyRenderingChange = (attr: string, value: any) => {
@@ -168,23 +192,22 @@ export const UiSettingsSystem = () => {
           location.reload();
           break;
         case "toneMapping":
-          renderer[attr] =
-            toneMappingTypes[value as keyof typeof toneMappingTypes];
+          renderer.toneMapping = getToneMapping(value);
           break;
         case "shadows":
           renderer.shadowMap.enabled = value as boolean;
+          break;
+        case "pixelRatio":
+          renderer.setPixelRatio(value as number);
+          composer.setPixelRatio(value as number);
           break;
         case "checkShaderErrors":
           renderer.debug.checkShaderErrors = value as boolean;
           break;
         case "bokehPass":
-          if (value) {
-            composer.addPass(bokehPass);
-            composer.addPass(gammaCorrectionPass);
-          } else {
-            composer.removePass(bokehPass);
-            composer.removePass(gammaCorrectionPass);
-          }
+        case "bloom":
+        case "grading":
+          syncPasses();
           break;
         default:
           // @ts-expect-error
@@ -218,6 +241,8 @@ export const UiSettingsSystem = () => {
     addRenderingParam("Тени", "shadows");
     addRenderingParam("Дебаг шейдеров", "checkShaderErrors");
     addRenderingParam("Глубина резкости", "bokehPass");
+    addRenderingParam("Свечение", "bloom");
+    addRenderingParam("Цветокоррекция", "grading");
   };
 
   const addCameraControlls = () => {
@@ -286,6 +311,7 @@ export const UiSettingsSystem = () => {
     renderer,
     composer,
     bokehPass,
+    gradePass,
     camera,
     dom: gui.domElement,
     events

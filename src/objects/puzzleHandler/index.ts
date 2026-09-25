@@ -10,6 +10,8 @@ import { shadowSetter } from "@/utils/shadowSetter";
 import { StaticPhysicEntity } from "@/entities/StaticPhysicEntity";
 
 export class PuzzleHandler {
+  // анимация героя при взаимодействии (по умолчанию pickup)
+  readonly interactAnimation = "interact";
   readonly props: DynamicObject;
   readonly mesh: Mesh<BoxGeometry, MeshPhongMaterial, Object3DEventMap>;
 

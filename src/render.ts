@@ -29,12 +29,36 @@ const stats = new Stats();
 
 const ROOM_SIZE = 20;
 
-const subscribers: { update: (time: number) => void }[] = [
+// Больше этого шага за кадр не симулируем (вкладка была в фоне, отладчик и т.п.)
+const MAX_FRAME_TIME = 0.1;
+
+type Subscriber = { update: (time: number) => void; mesh?: THREE.Object3D };
+
+const subscribers = new Set<Subscriber>([
   stats,
   systems.grassSystem,
   systems.inputSystem,
-  systems.environmentSystem
-];
+  systems.environmentSystem,
+  systems.lightSystem
+]);
+
+// Камера и контроллер, привязанные к объекту: уходят вместе с ним
+const attachedSubscribers = new Map<string, Subscriber[]>();
+
+const removeObject = (id: string) => {
+  const object = systems.objectsSystem.objects[id];
+
+  if (!object) return;
+
+  scene.remove(object.mesh);
+  subscribers.delete(object);
+
+  for (const item of attachedSubscribers.get(id) ?? []) subscribers.delete(item);
+  attachedSubscribers.delete(id);
+
+  systems.objectsSystem.remove(id);
+  object.dispose?.();
+};
 
 export const addObjects = (items: Record<string, DynamicObject>) => {
   const res: Record<string, MapObject> = {};
@@ -44,9 +68,8 @@ export const addObjects = (items: Record<string, DynamicObject>) => {
 
     // Delete object
     if (!objectConfig) {
-      scene.remove(systems.objectsSystem.objects[id]?.mesh);
-      systems.objectsSystem.remove(id);
-      return;
+      removeObject(id);
+      continue;
     }
 
     if (id in systems.objectsSystem.objects) {
@@ -71,13 +94,18 @@ export const addObjects = (items: Record<string, DynamicObject>) => {
     res[id] = object;
 
     systems.objectsSystem.add(object, config);
-    subscribers.push(object);
+    subscribers.add(object);
     scene.add(object.mesh);
 
     if (controllable) {
       const { camera } = systems.uiSettingsSystem;
-      subscribers.push(Camera({ camera, target: object }));
-      subscribers.push(KeyboardCharacterController(object));
+      const attached = [
+        Camera({ camera, target: object }),
+        KeyboardCharacterController(object)
+      ];
+
+      attached.forEach((item) => subscribers.add(item));
+      attachedSubscribers.set(id, attached);
     }
   }
 
@@ -94,13 +122,17 @@ export const render = () => {
 
   physicWorld.addBody(createGroundBody());
 
-  const { composer, bokehPass, renderer, camera, settings } = systems.uiSettingsSystem;
+  const { composer, bokehPass, gradePass, renderer, camera, settings } = systems.uiSettingsSystem;
 
   // Stats
   container.appendChild(stats.dom);
 
+  renderer.setPixelRatio(settings.renderer.pixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = true;
+  composer.setPixelRatio(settings.renderer.pixelRatio);
+  composer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = settings.renderer.shadows;
+  renderer.getDrawingBufferSize(gradePass.uniforms.resolution.value);
   container.appendChild(renderer.domElement);
   container.appendChild(systems.uiSettingsSystem.dom);
 
@@ -108,6 +140,8 @@ export const render = () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    composer.setSize(window.innerWidth, window.innerHeight);
+    renderer.getDrawingBufferSize(gradePass.uniforms.resolution.value);
   };
 
   window.addEventListener("resize", onWindowResize, false);
@@ -115,7 +149,7 @@ export const render = () => {
 
   if (settings.game.physics_boxes) {
     const cannonDebugRenderer = new CannonDebugRenderer(scene, physicWorld);
-    subscribers.push(cannonDebugRenderer);
+    subscribers.add(cannonDebugRenderer);
   }
 
   /*
@@ -130,18 +164,20 @@ export const render = () => {
 
       renderLoop();
 
+      const timeElapsedS = Math.min((t - prevTime) * 0.001, MAX_FRAME_TIME);
+
+      prevTime = t;
+
       const { objects } = systems.objectsSystem;
-
       const focusVector = objects[currentPlayer.activeObjectId]?.mesh.position ?? new THREE.Vector3();
-      const distance = camera.position.distanceTo(focusVector);
-      bokehPass.uniforms['focus'].value = distance;
 
-      composer.render();
-
-      const timeElapsedS = (t - prevTime) * 0.001;
+      systems.environmentSystem.setFocus(focusVector);
 
       // Updates
       for (const item of subscribers) {
+        // Объекты выгруженных комнат не обновляем
+        if (item.mesh && !item.mesh.parent) continue;
+
         item.update(timeElapsedS);
       }
 
@@ -149,8 +185,8 @@ export const render = () => {
       let x = Math.floor(pos.x / scale);
       let z = Math.floor(pos.z / scale);
 
-      x-= x % ROOM_SIZE;
-      z-= z % ROOM_SIZE;
+      x -= x % ROOM_SIZE;
+      z -= z % ROOM_SIZE;
 
       const rooms = roomChunks(x, z, ROOM_SIZE);
 
@@ -172,7 +208,9 @@ export const render = () => {
         systems.objectsSystem.update(timeElapsedS);
       }
 
-      prevTime = t;
+      // Рендерим после всех апдейтов, иначе на экране кадр с прошлым состоянием
+      bokehPass.uniforms['focus'].value = camera.position.distanceTo(focusVector);
+      composer.render();
     });
   };
 
@@ -192,11 +230,18 @@ export const roomChunks = (x: number, z: number, slice = ROOM_SIZE) => {
 
   const roomsArray = getRoomsRadius({ x, y: 0, z }, slice, 2);
 
+  // Генерация комнаты тяжёлая (400 тайлов шума + объекты), поэтому не больше одной за кадр, ближайшую первой
+  const missing = roomsArray
+    .filter(({ x, y }) => !(`${x}_${y}` in all))
+    .sort((a, b) => Math.hypot(a.x - x, a.y - z) - Math.hypot(b.x - x, b.y - z));
+
   for (const pos of roomsArray) {
     const { x, y } = pos;
     const id = `${x}_${y}`;
 
     if (!(id in all)) {
+      if (pos !== missing[0]) continue;
+
       // Если комната еще не распаршена добавляем
       const room: RoomConfig = {
         id,

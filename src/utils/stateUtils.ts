@@ -12,7 +12,7 @@ export const selectObjectsByType =
   (...types: string[]) =>
   (state: Partial<State>) => {
     return Object.values(state.objects ?? {}).filter(
-      (object) => object && types.includes(object.type)
+      (object) => object && types.includes(object.type as string)
     );
   };
 

@@ -5,6 +5,7 @@ export enum NpcBaseAnimations {
   
   death = "death",
   pickup = "pickup",
+  interact = "interact",
   receivehit = "receivehit"
 }
 

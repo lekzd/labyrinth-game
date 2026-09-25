@@ -6,6 +6,7 @@ import {
   PointLight,
   SphereGeometry,
 } from "three";
+import { virtualLight } from "@/systems/virtualLights";
 
 export class Torch {
   readonly sphere: Mesh<SphereGeometry, MeshBasicMaterial, Object3DEventMap>;
@@ -48,5 +49,5 @@ function createTorch() {
     castShadow: true,
   })
 
-  return torch;
+  return virtualLight(torch);
 }

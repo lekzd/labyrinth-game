@@ -27,6 +27,7 @@ import { jitterGeometry } from "@/utils/jitterGeometry";
 import { MagicMushroomPointsMaterial } from "@/materials/magicMushroomPoints";
 import { StaticPhysicEntity } from "@/entities/StaticPhysicEntity";
 import { StateEntity } from "@/entities/StateEntity";
+import { virtualLight } from "@/systems/virtualLights";
 
 const Torch = () => {
   const torch = new PointLight(new Color("rgb(77, 241, 48)"), 1000, 100, 1); // Цвет, интенсивность, дистанция факела
@@ -44,7 +45,7 @@ const Torch = () => {
     torch.shadow.autoUpdate = false;
   }, 1000);
 
-  return torch;
+  return virtualLight(torch);
 };
 
 const MushroomCap = () => {

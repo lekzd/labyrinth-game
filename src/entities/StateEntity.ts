@@ -9,6 +9,13 @@ export interface StateEntityProps extends SettingObject {
   rotation?: QuaternionLike;
 };
 
+interface StateEntityOptions {
+  // Отправлять урон на сервер, чтобы его видели остальные клиенты
+  networked?: boolean;
+  // Удалять объект сразу при health <= 0. Персонажи отключают это и удаляют себя сами после анимации смерти
+  killOnZeroHealth?: boolean;
+}
+
 const defaultState: Omit<StateEntityProps, "id"> = {
   health: 100,
   mana: 100,
@@ -25,17 +32,22 @@ export class StateEntity {
     id: ""
   };
 
-  constructor(props: Partial<StateEntityProps>) {
+  private readonly options: Required<StateEntityOptions>;
+  private readonly unsubscribe: () => void;
+
+  constructor(props: Partial<StateEntityProps>, options: StateEntityOptions = {}) {
     this.props = {
       ...defaultState,
       ...props,
     };
 
-    state.listen((prev, next) => {
+    this.options = { networked: false, killOnZeroHealth: true, ...options };
+
+    this.unsubscribe = state.listen((_, next) => {
       if (next.objects?.[this.props.id]) {
         Object.assign(this.props, next.objects[this.props.id]);
       }
-    });
+    }) as unknown as () => void;
   }
 
   private updateState(props: Partial<StateEntityProps>) {
@@ -43,7 +55,7 @@ export class StateEntity {
       objects: {
         [this.props.id]: props
       }
-    }, { server: true });
+    }, { server: !this.options.networked });
 
     Object.assign(this.props, state.objects[this.props.id]);
   }
@@ -55,7 +67,7 @@ export class StateEntity {
       health
     });
 
-    if (health <= 0) {
+    if (health <= 0 && this.options.killOnZeroHealth) {
       this.makeKill();
     }
   }
@@ -76,5 +88,9 @@ export class StateEntity {
       },
       { server: true }
     );
+  }
+
+  dispose() {
+    this.unsubscribe();
   }
 }

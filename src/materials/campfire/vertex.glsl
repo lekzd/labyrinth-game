@@ -1,24 +1,33 @@
 uniform float time;
+uniform float scale;
 
-varying vec2 vMapUv;
-varying float vIndex;
+attribute vec3 values; // x — порядковый номер, y — размер, z — скорость
 
-attribute vec3 values; // Атрибут для размера частиц
+varying float vLife;
 
-float HEIGHT = 13.0;
+#include <fog_pars_vertex>
+
+float HEIGHT = 22.0;
 
 void main() {
-  vec4 pos = vec4(position, 1.0);
+  float offset = values.x * 17.0;
 
-  vIndex = values.x;
-  float YFactor = (mod(time + values.y + (values.x * HEIGHT), HEIGHT)) * 3.0;
-  float animation = sin(time * 2.0 * (values.x * 2.0));
+  // Каждая искра живёт по кругу: рождается у углей, взлетает, остывает и гаснет
+  vLife = fract(time * (0.12 + values.z * 0.18) + offset);
 
-  pos.y = mod(pos.y + YFactor, HEIGHT * values.x);
-  pos.x = (pos.x + animation) * ((HEIGHT - pos.y) * 0.1);
-  pos.z = (pos.z + animation) * ((HEIGHT - pos.y) * 0.1);
+  vec3 pos = position;
+  float t = time + offset * 3.0;
 
-  csm_PointSize = (HEIGHT - pos.y) * max(0.5, values.x);
+  pos.y = vLife * HEIGHT * (0.5 + values.z * 0.5);
+  // У каждой искры своё направление сноса, поверх — турбулентность
+  float drift = fract(sin(values.x * 91.7) * 437.5) * 6.2831;
+  pos.x += cos(drift) * vLife * 3.0 + sin(t * 1.7 + vLife * 6.0) * vLife * 1.2;
+  pos.z += sin(drift) * vLife * 3.0 + cos(t * 1.3 + vLife * 5.0) * vLife * 1.2;
 
-  csm_PositionRaw = projectionMatrix * modelViewMatrix * pos;
+  vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+
+  gl_PointSize = values.y * (1.0 - vLife * 0.6) * (scale / -mvPosition.z);
+  gl_Position = projectionMatrix * mvPosition;
+
+  #include <fog_vertex>
 }

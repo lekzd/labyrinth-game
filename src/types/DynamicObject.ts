@@ -15,7 +15,7 @@ export type DynamicObject = {
   type: ObjectType;
   state: StateEntity;
   baseAnimation?: string;
-  additionsAnimation?: string;
+  additionsAnimation?: string | null;
   onHit?: (props: DynamicObject) => void;
 
   position: Vector3;

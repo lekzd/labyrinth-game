@@ -228,6 +228,10 @@ export const ObjectsSystem = () => {
 
           if (input.interact) {
             tryRunMethod(data, "interactWith");
+            // анимация героя: поднять предмет или толкнуть (у предмета может быть interactAnimation)
+            (activeObject as { playAction?: (name: string) => void }).playAction?.(
+              (data as { interactAnimation?: string }).interactAnimation ?? "pickup"
+            );
 
             if (data?.mesh.position && data?.physicEntity?.body.position) {
               const distance = data?.mesh.position.distanceTo(

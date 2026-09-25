@@ -15,11 +15,12 @@ import { systems } from "@/systems";
 import { DissolveEffect } from "./DissolveEffect";
 import { WEAPONS_CONFIG } from "@/config/WEAPONS_CONFIG";
 import { weaponType } from "@/loader";
+import { virtualLight } from "@/systems/virtualLights";
 
 function createTorch() {
   const torch = new PointLight(0x00ccff, 2000, 100); // Цвет, интенсивность, дистанция факела
   torch.position.set(0, 0, 0); // Позиция факела (относительно руки персонажа)
-  return torch;
+  return virtualLight(torch);
 }
 
 export class MagicBallEffect implements AbstactEffect {

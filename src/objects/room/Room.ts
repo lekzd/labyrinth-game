@@ -53,9 +53,14 @@ export class Room {
     mesh.visible = false;
     mesh.position.set(props.x * scale, 0, props.y * scale);
 
+    const floorMaterial = createFloorMaterial(props);
+
+    // Один общий цвет на все комнаты: его меняет цикл суток
+    floorMaterial.color = systems.environmentSystem.values.groundColor;
+
     const floorMesh = new Mesh(
       new PlaneGeometry(props.width * scale, props.height * scale),
-      createFloorMaterial(props)
+      floorMaterial
     );
 
     floorMesh.position.set(
@@ -160,6 +165,8 @@ export class Room {
     scene.remove(this.mesh);
 
     for (const id in this.objects) {
+      if (this.forgetRemoved(id)) continue;
+
       const { mesh, physicEntity } = this.objects[id];
 
       if (mesh) {
@@ -189,6 +196,9 @@ export class Room {
     this.mesh.visible = true;
 
     for (const id in this.objects) {
+      // Убитые/подобранные объекты не должны возвращаться в сцену вместе с комнатой
+      if (this.forgetRemoved(id)) continue;
+
       const { mesh, physicEntity } = this.objects[id];
 
       if (mesh) {
@@ -208,6 +218,14 @@ export class Room {
     this.updateInterval = setInterval(() => {
       this.updateObjectsInside();
     }, 1000);
+  }
+
+  private forgetRemoved(id: string) {
+    if (id in systems.objectsSystem.objects) return false;
+
+    delete this.objects[id];
+
+    return true;
   }
 
   isPointInside(point: Vector3Like) {

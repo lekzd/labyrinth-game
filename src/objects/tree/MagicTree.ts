@@ -24,6 +24,7 @@ import { ParticleSystem } from "../common/ParticleSystem";
 import { Shine } from "../common/Shine";
 import {assign} from "@/utils/assign.ts";
 import { StaticPhysicEntity } from "@/entities/StaticPhysicEntity";
+import { virtualLight } from "@/systems/virtualLights";
 
 const Torch = () => {
   const torch = new PointLight(new Color("rgb(241, 48, 216)"), 5000, 100, 1); // Цвет, интенсивность, дистанция факела
@@ -41,7 +42,7 @@ const Torch = () => {
     torch.shadow.autoUpdate = false;
   }, 1000);
 
-  return torch;
+  return virtualLight(torch);
 };
 
 export const createMagicTree = () => {

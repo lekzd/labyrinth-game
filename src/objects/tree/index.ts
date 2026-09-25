@@ -11,6 +11,7 @@ import { rotateUvs } from "@/utils/rotateUvs";
 import { PineMatetial } from "@/materials/pine";
 import { StaticPhysicEntity } from "@/entities/StaticPhysicEntity";
 import { memoRandom } from "./utils";
+import { castShadows } from "@/utils/castShadows";
 
 export const radiusFunction = (from: number, to: number) => (t: number) => {
   return from - t * (from - to);
@@ -186,7 +187,7 @@ export class Tree {
 
   constructor(props: DynamicObject) {
     this.props = props;
-    this.mesh = memoTree().clone();
+    this.mesh = castShadows(memoTree().clone());
     assign(this.mesh.position, props.position);
 
     this.physicEntity = new StaticPhysicEntity({

@@ -10,7 +10,7 @@ import { throttle } from "@/utils/throttle.ts";
 import { Hero } from "./index.ts";
 import { WEAPONS_CONFIG } from "../../config/WEAPONS_CONFIG.ts";
 
-const sendThrottle = throttle(state.setState, 500);
+const sendThrottle = throttle(state.setState, 100);
 const send = state.setState;
 
 const isEqualParams = (
@@ -36,6 +36,8 @@ const isEqualParams = (
 
 const BasicCharacterControllerInput = (person: Hero) => {
   let timeout = null;
+
+  person.isLocal = true;
   const { speed } = settings[person.props.type];
 
   const animate = (animationName: string, duration: number) => {
@@ -53,24 +55,28 @@ const BasicCharacterControllerInput = (person: Hero) => {
       state.setState({
         objects: { [person.id]: {
           baseAnimation: NpcAnimationStates.idle,
-          additionsAnimation: undefined,
+          // null, а не undefined: JSON.stringify выкидывает undefined, и остальные клиенты не узнают о конце атаки
+          additionsAnimation: null,
         } }
       });
       timeout = null;
     }, 1000 * duration);
   };
 
-  const jumpingNaimtion = person.animationEntity.animations.find((item) =>
+  const jumpingAnimation = person.animationEntity.animations.find((item) =>
     item.name === animationType.jumping
-  )!;
+  );
 
   systems.inputSystem.onKeyDown((input) => {
+    if (person.isDead) return;
+
     if (input.attack) {
       if (timeout) clearTimeout(timeout);
 
-      const animations = person.props.weapon
+      // без оружия — удар рукой (клип attack)
+      const animations: string[] = person.props.weapon
         ? WEAPONS_CONFIG[person.props.weapon].animations
-        : [];
+        : [NpcAnimationStates.attack];
       const effect = person.props.weapon
         ? WEAPONS_CONFIG[person.props.weapon].attackEffect
         : null;
@@ -92,8 +98,9 @@ const BasicCharacterControllerInput = (person: Hero) => {
       }
     }
 
-    if (input.jumping) {
-      animate(jumpingNaimtion.name, jumpingNaimtion.duration);
+    if (input.jumping && jumpingAnimation) {
+      // getDuration учитывает timeScale миксера, иначе клип успевает начаться заново
+      animate(jumpingAnimation.name, person.animationEntity.getDuration(jumpingAnimation.name));
     }
   });
 
@@ -103,7 +110,7 @@ const BasicCharacterControllerInput = (person: Hero) => {
       const { id, velocity, decceleration, acceleration } = person;
       const prev = state.objects[id];
 
-      if (!prev) return;
+      if (!prev || person.isDead) return;
 
       const next: Partial<DynamicObject> = {};
 

@@ -54,14 +54,14 @@ export const settings: Record<npcModelType & modelTypeGlb, SettingObject> = {
     mass: 25,
     attack: 5,
   },
-  [npcModelType.Mashroom]: {
+  [npcModelTypeGlb.Mashroom]: {
     health: 10,
     mana: 10,
     speed: 2.5,
     mass: 25,
     attack: 5,
   },
-  [npcModelType.Hallow]: {
+  [npcModelTypeGlb.Hallow]: {
     health: 10,
     mana: 10,
     speed: 2.5,

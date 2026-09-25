@@ -16,6 +16,7 @@ import { SwordPathMaterial } from "@/materials/swordPath";
 import { AbstactEffect } from "./AbstactEffect";
 import { shadowSetter } from "@/utils/shadowSetter";
 import { loads } from "@/loader";
+import { virtualLight } from "@/systems/virtualLights";
 
 function createTorch() {
   const torch = new PointLight(0xffcc00, 200, 50); // Цвет, интенсивность, дистанция факела
@@ -38,7 +39,7 @@ function createTorch() {
     castShadow: true
   });
 
-  return torch;
+  return virtualLight(torch);
 }
 
 export class HeroLightsEffect implements AbstactEffect {

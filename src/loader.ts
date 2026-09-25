@@ -47,13 +47,14 @@ export enum animationType {
   idle = 'idle',
 }
 
+// Персонажи в FBX (сейчас все переведены на GLB, см. src/assets/scripts/export_mobs.py)
 export enum npcModelType {
-  Hallow = 'Hallow',
-  Mashroom = 'Mashroom',
 }
 
 export enum npcModelTypeGlb {
   Journey = 'Journey',
+  Hallow = 'Hallow',
+  Mashroom = 'Mashroom',
 }
 
 export enum modelType {

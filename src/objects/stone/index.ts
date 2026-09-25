@@ -3,6 +3,7 @@ import { Object3D, Object3DEventMap } from "three";
 import { createStone } from "./stone";
 import { assign } from "@/utils/assign";
 import { StaticPhysicEntity } from "@/entities/StaticPhysicEntity";
+import { castShadows } from "@/utils/castShadows";
 
 export class Stone {
   readonly props: DynamicObject;
@@ -11,7 +12,7 @@ export class Stone {
 
   constructor(props: DynamicObject) {
     this.props = props;
-    this.mesh = createStone();
+    this.mesh = castShadows(createStone());
     assign(this.mesh.position, props.position);
 
     this.physicEntity = new StaticPhysicEntity({

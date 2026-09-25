@@ -9,17 +9,20 @@ const createTexture = () => {
   return new THREE.CanvasTexture(context.canvas);
 }
 
-const updateTexture = (texture: THREE.Texture, percent: number, color: string) => {
-  const ctx = getCanvasCtx(texture.material.map!)
-  const canvas = ctx.canvas
+const updateTexture = (sprite: THREE.Sprite, percent: number, color: string) => {
+  const texture = sprite.material.map!;
+  const ctx = getCanvasCtx(texture);
+  const canvas = ctx.canvas;
+  const fill = Math.max(0, Math.min(100, percent));
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
   ctx.fillRect(2, 2, canvas.width - 4, canvas.height - 4);
   ctx.fillStyle = color;
-  ctx.fillRect(2, 2, (canvas.width - 4) * (percent / 100), canvas.height - 4);
+  ctx.fillRect(2, 2, (canvas.width - 4) * (fill / 100), canvas.height - 4);
 
-  texture.material.map = new THREE.CanvasTexture(canvas)
+  // Перезаливаем ту же текстуру, а не создаём новую на каждое изменение
+  texture.needsUpdate = true;
 }
 
 function createSprite({ texture = createTexture(), scale = 0.05, pos = 16 } = {}) {
@@ -35,8 +38,8 @@ function createSprite({ texture = createTexture(), scale = 0.05, pos = 16 } = {}
 }
 
 const getCanvasCtx = (texture: THREE.Texture) => {
-  const canvas = texture.source.data;
-  return canvas.getContext('2d');
+  const canvas = texture.source.data as HTMLCanvasElement;
+  return canvas.getContext('2d')!;
 }
 
 export const HealthBar = (props: StateEntityProps, target) =>  {
@@ -60,6 +63,12 @@ export const HealthBar = (props: StateEntityProps, target) =>  {
       updateTexture(manaSprite, mana / initialMana * 100, '#3713dd');
 
       state = { health, mana }
+    },
+    dispose: () => {
+      for (const sprite of [healthSprite, manaSprite]) {
+        sprite.material.map?.dispose();
+        sprite.material.dispose();
+      }
     }
   }
 

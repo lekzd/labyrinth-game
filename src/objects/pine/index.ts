@@ -13,6 +13,7 @@ import { jitterGeometry } from "@/utils/jitterGeometry";
 import { rotateUvs } from "@/utils/rotateUvs";
 import { PineMatetial } from "@/materials/pine";
 import { StaticPhysicEntity } from "@/entities/StaticPhysicEntity";
+import { castShadows } from "@/utils/castShadows";
 
 let material: PineMatetial;
 
@@ -47,7 +48,7 @@ export class Pine {
 
   constructor(props: DynamicObject) {
     this.props = props;
-    this.mesh = createPine();
+    this.mesh = castShadows(createPine());
     assign(this.mesh.position, props.position);
 
     this.physicEntity = new StaticPhysicEntity({

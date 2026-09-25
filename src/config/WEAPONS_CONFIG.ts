@@ -143,7 +143,7 @@ export const WEAPONS_CONFIG: Record<weaponType, IWeaponConfig> = {
   }),
   [weaponType.crossbow]: getShootingWeaponConfig({
     type: weaponType.crossbow,
-    animations: [],
+    animations: [NpcAnimationStates.gunplay],
     attackEffect: new ArrowEffect()
   }),
   [weaponType.dagger]: getMeleeWeaponConfig({
